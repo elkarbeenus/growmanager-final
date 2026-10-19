@@ -1,5 +1,9 @@
 # Patch notes – growmanager
 
+## v1.6.0
+- **Dimming profile for LED lamps:** per lamp you can set the brightness in veg (default 60 %), at the start of flower (default 60 %), after the ramp (default 100 %) and the ramp length in weeks (default 3). In flower the brightness is increased linearly from the start to the end value and then stays there. If you do not dim, set all values to 100 %.
+- **Electricity costs day by day:** the calculation takes the brightness of every day into account. The breakdown shows e.g. "18 h @ 60 % · 12 h @ 60→100 %" per lamp.
+
 ## v1.5.0
 - **Other devices:** In Settings you can add exhaust fans, clip fans / circulation, grow controllers, dehumidifiers, humidifiers and other devices with model, power (watts), average run time per day (default 24 h, 8 h for dehumidifiers/humidifiers) and phase (veg, flower or both).
 - **Devices per grow:** When creating/editing a grow and in the "Costs & yield" section you choose which devices are used.

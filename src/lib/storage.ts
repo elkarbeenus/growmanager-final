@@ -67,8 +67,16 @@ export function normalizeSettings(input: unknown): AppSettings | undefined {
     ? o.lamps
         .filter((l) => !!l && typeof (l as { name?: unknown }).name === 'string' && Number.isFinite(Number((l as { watts?: unknown }).watts)))
         .map((l) => {
-          const x = l as { id?: string; name: string; watts: unknown };
-          return { id: x.id ?? crypto.randomUUID(), name: x.name, watts: Math.max(0, Number(x.watts)) };
+          const x = l as { id?: string; name: string; watts: unknown; dimVeg?: unknown; dimFlowerStart?: unknown; dimFlowerEnd?: unknown; rampWeeks?: unknown };
+          return {
+            id: x.id ?? crypto.randomUUID(),
+            name: x.name,
+            watts: Math.max(0, Number(x.watts)),
+            dimVeg: num(x.dimVeg, 0, 100),
+            dimFlowerStart: num(x.dimFlowerStart, 0, 100),
+            dimFlowerEnd: num(x.dimFlowerEnd, 0, 100),
+            rampWeeks: num(x.rampWeeks, 0, 12),
+          };
         })
     : undefined;
   const TYPES = ['exhaust', 'clipfan', 'controller', 'dehumidifier', 'humidifier', 'other'];

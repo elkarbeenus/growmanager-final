@@ -12,6 +12,39 @@ export const MAX_LAMPS_PER_GROW = 4;
 export const hoursVeg = (s?: AppSettings) => s?.hoursVeg ?? DEFAULT_HOURS_VEG;
 export const hoursFlower = (s?: AppSettings) => s?.hoursFlower ?? DEFAULT_HOURS_FLOWER;
 
+/** Standard-Dimmprofil einer LED-Lampe: Wachstum 60 %, Blüte 60 % → 100 % innerhalb von 3 Wochen, danach 100 %. */
+export const DEFAULT_DIM = { veg: 60, flowerStart: 60, flowerEnd: 100, rampWeeks: 3 };
+
+export function lampDim(l: Lamp) {
+  return {
+    veg: l.dimVeg ?? DEFAULT_DIM.veg,
+    flowerStart: l.dimFlowerStart ?? DEFAULT_DIM.flowerStart,
+    flowerEnd: l.dimFlowerEnd ?? DEFAULT_DIM.flowerEnd,
+    rampWeeks: l.rampWeeks ?? DEFAULT_DIM.rampWeeks,
+  };
+}
+
+/** Helligkeit in % am n-ten Blütetag (0 = erster Tag): linear von Start- auf Endwert, danach Endwert. */
+export function flowerDimAt(l: Lamp, day: number): number {
+  const d = lampDim(l);
+  const rampDays = d.rampWeeks * 7;
+  if (rampDays <= 0 || day >= rampDays) return d.flowerEnd;
+  return d.flowerStart + ((d.flowerEnd - d.flowerStart) * day) / rampDays;
+}
+
+/** Summe der Helligkeit (als Anteil, 1 = 100 %) über die ersten n Blütetage. */
+export function flowerDimDays(l: Lamp, n: number): number {
+  let sum = 0;
+  for (let i = 0; i < n; i++) sum += flowerDimAt(l, i) / 100;
+  return sum;
+}
+
+/** kWh einer LED-Lampe für gegebene Tage (berücksichtigt das Dimmprofil). */
+export function ledKwh(l: Lamp, count: number, vegDays: number, flowerDays: number, hv: number, hf: number): number {
+  const d = lampDim(l);
+  return ((vegDays * hv * (d.veg / 100) + hf * flowerDimDays(l, flowerDays)) * l.watts * count) / 1000;
+}
+
 export const DEVICE_TYPES: DeviceType[] = ['exhaust', 'clipfan', 'controller', 'dehumidifier', 'humidifier', 'other'];
 
 /** Voreingestellte Laufzeit pro Tag je Gerätetyp (anpassbar). */
@@ -129,15 +162,16 @@ export function autoPowerCost(grow: Grow, settings: AppSettings | undefined, tod
   const lines: PowerLine[] = [];
   if (lamp) {
     const w = lamp.watts * count;
-    const kwh = ((d.vegDays * hv + d.flowerDays * hf) * w) / 1000;
-    const pk = planned ? ((planned.vegDays * hv + planned.flowerDays * hf) * w) / 1000 : undefined;
+    const dim = lampDim(lamp);
+    const kwh = ledKwh(lamp, count, d.vegDays, d.flowerDays, hv, hf);
+    const pk = planned ? ledKwh(lamp, count, planned.vegDays, planned.flowerDays, hv, hf) : undefined;
     lines.push({
       id: lamp.id,
       kind: 'led',
       name: lamp.name,
       count,
       watts: w,
-      hoursLabel: `${hv} h / ${hf} h`,
+      hoursLabel: `${hv} h @ ${dim.veg} % · ${hf} h @ ${dim.flowerStart === dim.flowerEnd ? `${dim.flowerEnd} %` : `${dim.flowerStart}→${dim.flowerEnd} %`}`,
       kwh,
       cost: kwh * price,
       plannedKwh: pk,

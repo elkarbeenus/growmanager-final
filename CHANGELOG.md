@@ -1,5 +1,9 @@
 # Patchnotes – growmanager
 
+## v1.6.0
+- **Dimm-Profil für LED-Lampen:** Pro Lampe lassen sich die Helligkeit im Wachstum (Standard 60 %), zu Beginn der Blüte (Standard 60 %), nach der Rampe (Standard 100 %) und die Länge der Rampe in Wochen (Standard 3) einstellen. In der Blüte wird die Helligkeit linear vom Start- auf den Endwert gesteigert, danach bleibt sie beim Endwert. Wer nicht dimmt, setzt alle Werte auf 100 %.
+- **Stromkosten tagesgenau:** Die Berechnung berücksichtigt die Helligkeit jedes Tages. In der Aufstellung steht je Lampe z. B. „18 h @ 60 % · 12 h @ 60→100 %“.
+
 ## v1.5.0
 - **Weitere Geräte:** In den Einstellungen lassen sich Abluft, Clip-Fan/Umluft, Grow-Controller, Entfeuchter, Befeuchter und Sonstiges mit Modell, Leistung (Watt), durchschnittlicher Laufzeit pro Tag (Voreinstellung 24 h, bei Ent-/Befeuchter 8 h) und Phase (Wachstum, Blüte oder beides) anlegen.
 - **Geräte im Grow:** Beim Anlegen/Bearbeiten und im Bereich „Kosten & Ertrag“ wählst du, welche Geräte genutzt werden.

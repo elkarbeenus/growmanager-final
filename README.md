@@ -33,7 +33,7 @@ growmanager is an offline desktop app (Linux AppImage and Windows installer) for
 
 ### Settings
 - Enter your **electricity price (€/kWh)** and light hours (default 18 h veg / 12 h flower) once.
-- Add your **LED lamps** and **other devices** with model and watts; choose per grow which ones are used.
+- Add your **LED lamps** (with a **dimming profile**: e.g. 60 % in veg, 60 → 100 % during the first weeks of flower) and **other devices** with model and watts; choose per grow which ones are used.
 
 ### PDF reports
 - Create a PDF report for a single grow or an overview of all grows.

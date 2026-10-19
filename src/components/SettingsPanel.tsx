@@ -3,7 +3,7 @@ import { Settings, Plus, Trash2, Zap, Info } from 'lucide-react';
 import DarkSelect from './DarkSelect';
 import type { AppSettings, Device, DevicePhase, DeviceType, Grow, Lamp } from '@/types';
 import ConfirmDialog from './ConfirmDialog';
-import { DEFAULT_DEVICE_HOURS, DEFAULT_HOURS_FLOWER, DEFAULT_HOURS_VEG, DEVICE_TYPES, devicePhaseLabel, deviceTypeLabel, kwhPerDay } from '@/lib/power';
+import { DEFAULT_DEVICE_HOURS, DEFAULT_DIM, DEFAULT_HOURS_FLOWER, DEFAULT_HOURS_VEG, DEVICE_TYPES, devicePhaseLabel, deviceTypeLabel, kwhPerDay, lampDim } from '@/lib/power';
 import { formatMoney } from '@/lib/growStats';
 import { t, fmtNum } from '@/lib/i18n';
 
@@ -194,12 +194,40 @@ export default function SettingsPanel({ settings, grows, onChange }: Props) {
                       <Trash2 size={15} />
                     </button>
                   </div>
-                  <div className="text-[11px] text-ink-500 mt-2 tabular-nums">
-                    {t('Blüte', 'Flower')} ({hf} h): {fmtNum(kwhPerDay(l.watts, hf), 2)} kWh/{t('Tag', 'day')}
-                    {s.kwhPrice !== undefined && ` · ≈ ${formatMoney(kwhPerDay(l.watts, hf) * s.kwhPrice)}/${t('Tag', 'day')}`}
-                    {' · '}
-                    {t('Wachstum', 'Veg')} ({hv} h): {fmtNum(kwhPerDay(l.watts, hv), 2)} kWh/{t('Tag', 'day')}
-                    {n > 0 && ` · ${t('genutzt von', 'used by')} ${n} ${n === 1 ? 'Grow' : 'Grows'}`}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-2.5" data-testid="lamp-dim">
+                    <label className="block">
+                      <span className="text-[11px] text-ink-500 mb-1 block">{t('Wachstum', 'Veg')}</span>
+                      <NumField testid="lamp-dim-veg" value={l.dimVeg} onCommit={(v) => setLamps(lamps.map((x) => (x.id === l.id ? { ...x, dimVeg: v } : x)))} placeholder={String(DEFAULT_DIM.veg)} suffix="%" max={100} />
+                    </label>
+                    <label className="block">
+                      <span className="text-[11px] text-ink-500 mb-1 block">{t('Blüte Start', 'Flower start')}</span>
+                      <NumField testid="lamp-dim-fs" value={l.dimFlowerStart} onCommit={(v) => setLamps(lamps.map((x) => (x.id === l.id ? { ...x, dimFlowerStart: v } : x)))} placeholder={String(DEFAULT_DIM.flowerStart)} suffix="%" max={100} />
+                    </label>
+                    <label className="block">
+                      <span className="text-[11px] text-ink-500 mb-1 block">{t('Blüte danach', 'Flower after')}</span>
+                      <NumField testid="lamp-dim-fe" value={l.dimFlowerEnd} onCommit={(v) => setLamps(lamps.map((x) => (x.id === l.id ? { ...x, dimFlowerEnd: v } : x)))} placeholder={String(DEFAULT_DIM.flowerEnd)} suffix="%" max={100} />
+                    </label>
+                    <label className="block">
+                      <span className="text-[11px] text-ink-500 mb-1 block">{t('Rampe', 'Ramp')}</span>
+                      <NumField testid="lamp-ramp" value={l.rampWeeks} onCommit={(v) => setLamps(lamps.map((x) => (x.id === l.id ? { ...x, rampWeeks: v } : x)))} placeholder={String(DEFAULT_DIM.rampWeeks)} suffix={t('Wo.', 'wk')} max={12} />
+                    </label>
+                  </div>
+                  <div className="text-[11px] text-ink-500 mt-2 tabular-nums" data-testid="lamp-info">
+                    {(() => {
+                      const dm = lampDim(l);
+                      const perDay = (pct: number, h: number) => kwhPerDay(l.watts * (pct / 100), h);
+                      return (
+                        <>
+                          {t('Wachstum', 'Veg')} ({hv} h × {dm.veg} %): {fmtNum(perDay(dm.veg, hv), 2)} kWh/{t('Tag', 'day')}
+                          {s.kwhPrice !== undefined && ` (≈ ${formatMoney(perDay(dm.veg, hv) * s.kwhPrice)})`}
+                          {' · '}
+                          {t('Blüte', 'Flower')} ({hf} h): {fmtNum(perDay(dm.flowerStart, hf), 2)}
+                          {dm.flowerStart !== dm.flowerEnd && `→${fmtNum(perDay(dm.flowerEnd, hf), 2)}`} kWh/{t('Tag', 'day')}
+                          {dm.flowerStart !== dm.flowerEnd && dm.rampWeeks > 0 && ` ${t('in', 'within')} ${dm.rampWeeks} ${t('Wochen', 'weeks')}`}
+                          {n > 0 && ` · ${t('genutzt von', 'used by')} ${n} ${n === 1 ? 'Grow' : 'Grows'}`}
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               );
@@ -237,8 +265,8 @@ export default function SettingsPanel({ settings, grows, onChange }: Props) {
           <Info size={13} className="shrink-0 mt-0.5" />
           <span>
             {t(
-              'Trage die tatsächliche Leistungsaufnahme in Watt ein (Steckdosen-Messgerät oder Herstellerangabe bei voller Helligkeit) – nicht die Angabe „entspricht x Watt HPS“.',
-              'Enter the actual power draw in watts (plug meter or manufacturer value at full brightness) – not the “equals x W HPS” figure.'
+              'Trage die Leistungsaufnahme bei 100 % Helligkeit in Watt ein (Steckdosen-Messgerät oder Herstellerangabe) – nicht die Angabe „entspricht x Watt HPS“. Das Dimm-Profil bestimmt, wie viel davon wirklich gezogen wird: Voreinstellung 60 % im Wachstum, in der Blüte 60 % zu Beginn und nach 3 Wochen 100 % (linear gesteigert). Setze alle Werte auf 100 %, wenn deine Lampe nicht gedimmt läuft.',
+              'Enter the power draw at 100 % brightness in watts (plug meter or manufacturer value) – not the “equals x W HPS” figure. The dimming profile defines how much is actually drawn: default 60 % in veg, in flower 60 % at the start and 100 % after 3 weeks (increased linearly). Set all values to 100 % if your lamp runs undimmed.'
             )}
           </span>
         </div>

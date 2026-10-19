@@ -43,7 +43,11 @@ export interface CostEntry {
 export interface Lamp {
   id: string;
   name: string; // Modell / Bezeichnung
-  watts: number; // tatsächliche Leistungsaufnahme in Watt
+  watts: number; // Leistungsaufnahme in Watt bei 100 %
+  dimVeg?: number; // Helligkeit im Wachstum in % (Standard 60)
+  dimFlowerStart?: number; // Helligkeit zu Beginn der Blüte in % (Standard 60)
+  dimFlowerEnd?: number; // Helligkeit nach der Rampe in % (Standard 100)
+  rampWeeks?: number; // Wochen, in denen von Start- auf Endwert gesteigert wird (Standard 3)
 }
 
 export type DeviceType = 'exhaust' | 'clipfan' | 'controller' | 'dehumidifier' | 'humidifier' | 'other';

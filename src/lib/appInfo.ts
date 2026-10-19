@@ -3,7 +3,7 @@
 // Die Version wird beim Build aus package.json übernommen (siehe vite.config.ts).
 import { t } from '@/lib/i18n';
 
-export const APP_VERSION: string = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.5.0';
+export const APP_VERSION: string = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.6.0';
 
 export const APP_NAME = 'growmanager';
 
@@ -20,6 +20,13 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '1.6.0',
+    items: [
+      { de: 'LED-Lampen mit Dimm-Profil: Helligkeit im Wachstum (Standard 60 %), in der Blüte von Startwert (60 %) auf Endwert (100 %) innerhalb einer einstellbaren Rampe (Standard 3 Wochen)', en: 'LED lamps with a dimming profile: brightness in veg (default 60 %), in flower from a start value (60 %) to an end value (100 %) within an adjustable ramp (default 3 weeks)' },
+      { de: 'Die Stromkosten berücksichtigen das Dimm-Profil tagesgenau; in der Aufstellung steht die Helligkeit je Phase', en: 'Electricity costs take the dimming profile into account day by day; the breakdown shows the brightness per phase' },
+    ],
+  },
   {
     version: '1.5.0',
     items: [

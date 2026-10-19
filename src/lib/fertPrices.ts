@@ -2,9 +2,10 @@
 // Kostenrechnung aus dem Dünger-Verbrauch. Es sind grobe Richtwerte für den deutschen/europäischen
 // Markt (Stand 2026, gerundet, Preise je nach Shop und Flaschengröße unterschiedlich) – sie lassen
 // sich in der App pro Produkt an die eigenen Preise anpassen.
-import type { Grow, NutrientBatch } from '@/types';
+import type { AppSettings, Grow, NutrientBatch } from '@/types';
 import { type FertSchedule } from '@/lib/fertilizerData';
 import { computeUsage } from '@/lib/fertUsage';
+import { autoPowerCost } from '@/lib/power';
 import { t } from '@/lib/i18n';
 
 export const DEFAULT_FERT_PRICES: Record<string, number> = {
@@ -124,6 +125,7 @@ export function autoFertCost(
 }
 
 export const AUTO_COST_ID = 'auto-fert';
+export const AUTO_POWER_ID = 'auto-power';
 
 /**
  * Liefert Kopien der Grows, in denen die automatisch berechneten Dünger-Kosten als zusätzlicher
@@ -134,23 +136,31 @@ export function withAutoCosts(
   allGrows: Grow[],
   batches: NutrientBatch[],
   globalFertId: string | undefined,
-  prices?: Record<string, number>
+  prices?: Record<string, number>,
+  settings?: AppSettings
 ): Grow[] {
   return targets.map((g) => {
+    const extra: NonNullable<Grow['costs']> = [];
     const a = autoFertCost(g, allGrows, batches, globalFertId, prices);
-    if (!a.enabled || a.amount <= 0) return g;
-    return {
-      ...g,
-      costs: [
-        ...(g.costs ?? []),
-        {
-          id: AUTO_COST_ID,
-          category: 'nutrients' as const,
-          label: t('Dünger (automatisch aus Nährlösung)', 'Fertilizer (automatic from nutrient solution)'),
-          amount: a.amount,
-          auto: true,
-        },
-      ],
-    };
+    if (a.enabled && a.amount > 0) {
+      extra.push({
+        id: AUTO_COST_ID,
+        category: 'nutrients' as const,
+        label: t('Dünger (automatisch aus Nährlösung)', 'Fertilizer (automatic from nutrient solution)'),
+        amount: a.amount,
+        auto: true,
+      });
+    }
+    const pw = autoPowerCost(g, settings);
+    if (pw.enabled && pw.reason === 'ok' && pw.amount > 0) {
+      extra.push({
+        id: AUTO_POWER_ID,
+        category: 'electricity' as const,
+        label: t('Strom (automatisch aus Lampe × Zeit)', 'Electricity (automatic from lamp × time)'),
+        amount: pw.amount,
+        auto: true,
+      });
+    }
+    return extra.length ? { ...g, costs: [...(g.costs ?? []), ...extra] } : g;
   });
 }

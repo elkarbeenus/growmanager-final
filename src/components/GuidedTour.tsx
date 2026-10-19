@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 import { setTourSeen } from '@/lib/hints';
 import { t } from '@/lib/i18n';
 
-export type TourTab = 'grows' | 'overview' | 'nutrient' | 'athena' | 'shotsize' | 'backup' | 'about';
+export type TourTab = 'grows' | 'overview' | 'nutrient' | 'athena' | 'shotsize' | 'backup' | 'settings' | 'about';
 
 interface Step {
   id: string;
@@ -74,6 +74,16 @@ function steps(): Step[] {
       bullets: [
         t('Eine Übersicht zeigt, wo welche Backups gespeichert werden.', 'An overview shows where each backup is stored.'),
         t('Vor jedem Import oder jeder Wiederherstellung wird automatisch ein Sicherungs-Backup angelegt – nichts geht verloren.', 'Before every import or restore a safety backup is created automatically – nothing gets lost.'),
+      ],
+    },
+    {
+      id: 'settings',
+      tab: 'settings',
+      title: t('Einstellungen', 'Settings'),
+      intro: t('Hinterlege deinen Strompreis, die Lichtzeiten, deine LED-Lampen und weitere Geräte (Abluft, Clip-Fan, Controller, Ent-/Befeuchter) mit Watt.', 'Enter your electricity price, light hours, your LED lamps and other devices (exhaust, clip fan, controller, dehumidifier/humidifier) with their wattage.'),
+      bullets: [
+        t('Beim Anlegen oder Bearbeiten eines Grows wählst du, welche Lampe und welche Geräte genutzt werden.', 'When creating or editing a grow you choose which lamp and devices are used.'),
+        t('Daraus werden die Stromkosten automatisch berechnet und in „Kosten & Ertrag“ eingerechnet.', 'The electricity costs are then calculated automatically and included in “Costs & yield”.'),
       ],
     },
     {

@@ -1,5 +1,16 @@
 # Patchnotes – growmanager
 
+## v1.5.0
+- **Weitere Geräte:** In den Einstellungen lassen sich Abluft, Clip-Fan/Umluft, Grow-Controller, Entfeuchter, Befeuchter und Sonstiges mit Modell, Leistung (Watt), durchschnittlicher Laufzeit pro Tag (Voreinstellung 24 h, bei Ent-/Befeuchter 8 h) und Phase (Wachstum, Blüte oder beides) anlegen.
+- **Geräte im Grow:** Beim Anlegen/Bearbeiten und im Bereich „Kosten & Ertrag“ wählst du, welche Geräte genutzt werden.
+- **Stromkosten erweitert:** Die automatische Berechnung umfasst LED-Lampe und alle gewählten Geräte, mit Aufstellung je Gerät (Leistung, Laufzeit, kWh, Kosten). Gelöschte Geräte werden auch aus den Grows entfernt.
+
+## v1.4.0
+- **Neuer Reiter „Einstellungen“:** Strompreis in € pro kWh, Lichtstunden pro Tag (Standard 18 h Wachstum / 12 h Blüte) und LED-Lampen mit Modell und Leistung (Watt) anlegen, bearbeiten und löschen. Die Einstellungen sind Teil des Backups.
+- **Lampenauswahl im Grow:** Beim Anlegen oder Bearbeiten wählst du die genutzte Lampe und die Anzahl (1–4). Im Bereich „Kosten & Ertrag“ lässt sie sich auch direkt ändern.
+- **Stromkosten automatisch:** Lampenleistung × Lichtstunden × Tage (Wachstum/Blüte aus den Meilensteinen) × Strompreis. Angezeigt werden die Kosten bis heute bzw. bis zur Ernte und – bei geplanter Ernte – bis zum Erntedatum. Sie fließen in Gesamtkosten, Kosten pro Pflanze/Gramm, Übersicht und PDF ein; pro Grow abschaltbar, mit Warnung vor doppelter Erfassung.
+- Einführungstour um den Reiter „Einstellungen“ ergänzt.
+
 ## v1.3.0
 - **Dünger-Kosten automatisch:** Im Bereich „Kosten & Ertrag“ eines Grows werden die Dünger-Kosten aus dem Dünger-Verbrauch (angemischte Nährlösung) × Preis pro Liter berechnet. Eine Aufstellung zeigt Verbrauch, Preis und Kosten je Produkt.
 - **Durchschnittspreise:** Für alle Produkte der Düngeschemata sind Richtwerte in € pro Liter hinterlegt. Eigene Preise lassen sich im Reiter „Dünger“ („Preise für die Kostenrechnung“) und direkt im Grow („Preise anpassen“) eintragen. Sie sind Teil des Backups.

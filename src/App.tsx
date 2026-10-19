@@ -15,6 +15,7 @@ import {
   Hourglass,
   Info,
   Archive,
+  Settings,
 } from 'lucide-react';
 import type { AppData, Grow, NutrientBatch } from '@/types';
 import {
@@ -45,6 +46,7 @@ import GuidedTour from '@/components/GuidedTour';
 import ImportSummaryModal from '@/components/ImportSummaryModal';
 import { diffData, type ImportSummary } from '@/lib/importDiff';
 import { saveBackupAs } from '@/lib/backupExport';
+import SettingsPanel from '@/components/SettingsPanel';
 import ResetDialog from '@/components/ResetDialog';
 import { resetHints, setTourSeen } from '@/lib/hints';
 import { resetSelectedFertilizer } from '@/lib/fertilizerSelection';
@@ -53,7 +55,7 @@ import VersionBadge from '@/components/VersionBadge';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { t, useLang } from '@/lib/i18n';
 
-type Tab = 'grows' | 'overview' | 'nutrient' | 'athena' | 'shotsize' | 'backup' | 'about';
+type Tab = 'grows' | 'overview' | 'nutrient' | 'athena' | 'shotsize' | 'backup' | 'settings' | 'about';
 
 const nGrows = (n: number) => `${n} ${n === 1 ? 'Grow' : 'Grows'}`;
 const nBatches = (n: number) => `${n} ${n === 1 ? t('Ansatz', 'batch') : t('Ansätze', 'batches')}`;
@@ -106,13 +108,13 @@ export default function App() {
     setFormOpen(true);
   };
 
-  const submitForm = (input: { name: string; strain: string; color: string; plantCount: number }) => {
+  const submitForm = (input: { name: string; strain: string; color: string; plantCount: number; lampId?: string; lampCount?: number; deviceIds?: string[] }) => {
     if (editingGrow) {
       setData((d) => ({
         ...d,
         grows: d.grows.map((g) =>
           g.id === editingGrow.id
-            ? { ...g, name: input.name, strain: input.strain, color: input.color, plantCount: input.plantCount }
+            ? { ...g, name: input.name, strain: input.strain, color: input.color, plantCount: input.plantCount, lampId: input.lampId, lampCount: input.lampCount, deviceIds: input.deviceIds }
             : g
         ),
       }));
@@ -123,6 +125,9 @@ export default function App() {
         strain: input.strain,
         color: input.color,
         plantCount: input.plantCount,
+        lampId: input.lampId,
+        lampCount: input.lampCount,
+        deviceIds: input.deviceIds,
         milestones: {},
         logs: [],
         createdAt: new Date().toISOString(),
@@ -236,6 +241,7 @@ export default function App() {
   const showAthena = tab === 'athena';
   const showShotSize = tab === 'shotsize';
   const showBackup = tab === 'backup';
+  const showSettings = tab === 'settings';
   const showAbout = tab === 'about';
 
   return (
@@ -270,6 +276,31 @@ export default function App() {
         <ShotSizeCalculator />
       ) : showBackup ? (
         <BackupPanel data={data} onRestore={handleRestoreFromBackup} />
+      ) : showSettings ? (
+        <SettingsPanel
+          settings={data.settings}
+          grows={data.grows}
+          onChange={(settings) =>
+            setData((d) => {
+              // Gelöschte Lampen aus den Grows entfernen, damit keine ins Leere zeigende Zuordnung bleibt
+              const ids = new Set((settings?.lamps ?? []).map((l) => l.id));
+              const devIds = new Set((settings?.devices ?? []).map((x) => x.id));
+              return {
+                ...d,
+                settings,
+                grows: d.grows.map((g) => {
+                  let next = g;
+                  if (g.lampId && !ids.has(g.lampId)) next = { ...next, lampId: undefined, lampCount: undefined };
+                  if (g.deviceIds?.some((x) => !devIds.has(x))) {
+                    const keep = g.deviceIds.filter((x) => devIds.has(x));
+                    next = { ...next, deviceIds: keep.length ? keep : undefined };
+                  }
+                  return next;
+                }),
+              };
+            })
+          }
+        />
       ) : showAbout ? (
         <AboutPanel onStartTour={() => setTourOpen(true)} onReset={() => setResetOpen(true)} />
       ) : selectedGrow ? (
@@ -277,6 +308,8 @@ export default function App() {
           <GrowDetail
             grow={selectedGrow}
             allGrows={data.grows}
+            settings={data.settings}
+            onOpenSettings={() => setTab('settings')}
             fertPrices={data.fertPrices}
             onFertPricesChange={(prices) => setData((d) => ({ ...d, fertPrices: prices }))}
             batches={data.batches ?? []}
@@ -289,7 +322,9 @@ export default function App() {
             open={formOpen}
             onClose={() => setFormOpen(false)}
             onSubmit={submitForm}
-            initial={editingGrow ? { name: editingGrow.name, strain: editingGrow.strain ?? '', color: editingGrow.color, plantCount: plantsOf(editingGrow) } : undefined}
+            initial={editingGrow ? { name: editingGrow.name, strain: editingGrow.strain ?? '', color: editingGrow.color, plantCount: plantsOf(editingGrow), lampId: editingGrow.lampId, lampCount: editingGrow.lampCount, deviceIds: editingGrow.deviceIds } : undefined}
+            lamps={data.settings?.lamps ?? []}
+            devices={data.settings?.devices ?? []}
             mode="edit"
           />
           <ConfirmDialog
@@ -411,7 +446,9 @@ export default function App() {
             open={formOpen}
             onClose={() => setFormOpen(false)}
             onSubmit={submitForm}
-            initial={editingGrow ? { name: editingGrow.name, strain: editingGrow.strain ?? '', color: editingGrow.color, plantCount: plantsOf(editingGrow) } : undefined}
+            initial={editingGrow ? { name: editingGrow.name, strain: editingGrow.strain ?? '', color: editingGrow.color, plantCount: plantsOf(editingGrow), lampId: editingGrow.lampId, lampCount: editingGrow.lampCount, deviceIds: editingGrow.deviceIds } : undefined}
+            lamps={data.settings?.lamps ?? []}
+            devices={data.settings?.devices ?? []}
             mode={editingGrow ? 'edit' : 'create'}
           />
           <ConfirmDialog
@@ -612,6 +649,13 @@ function Shell({
               onClick={() => onTabChange('backup')}
               icon={<Database size={15} />}
               label="Backup"
+            />
+            <TabButton
+              tour="settings"
+              active={tab === 'settings'}
+              onClick={() => onTabChange('settings')}
+              icon={<Settings size={15} />}
+              label={t('Einstellungen', 'Settings')}
             />
             <TabButton
               tour="about"

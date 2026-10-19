@@ -2,7 +2,7 @@
 // Es werden nur Standard-Schriften verwendet; Sonderzeichen außerhalb von
 // WinAnsi (Latin-1) werden ersetzt, damit nie ein Fehler beim Erzeugen auftritt.
 import type { PDFDocument, PDFFont, PDFPage, RGB } from 'pdf-lib';
-import type { NutrientBatch } from '@/types';
+import type { AppSettings, NutrientBatch } from '@/types';
 import type { Grow } from '@/types';
 import { APP_VERSION } from '@/lib/appInfo';
 import {
@@ -440,7 +440,8 @@ export async function buildGrowReport(
   batches: NutrientBatch[] = [],
   allGrows: Grow[] = [grow],
   globalFertId?: string,
-  fertPrices?: Record<string, number>
+  fertPrices?: Record<string, number>,
+  settings?: AppSettings
 ): Promise<ReportResult> {
   const lib = await import('pdf-lib');
   const title = `${t('Grow-Bericht', 'Grow report')}: ${grow.name}`;
@@ -448,7 +449,7 @@ export async function buildGrowReport(
   await r.init();
 
   // Dünger-Kosten automatisch aus Nährlösung × Preis einrechnen
-  const effGrow = withAutoCosts([grow], allGrows, batches, globalFertId, fertPrices)[0];
+  const effGrow = withAutoCosts([grow], allGrows, batches, globalFertId, fertPrices, settings)[0];
   const stats = statsOf(effGrow);
   const phase = currentPhase(grow);
   const progress = phaseProgress(grow);

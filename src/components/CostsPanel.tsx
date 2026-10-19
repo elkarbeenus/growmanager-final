@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { Scale, Leaf, Plus, Trash2, Sprout, FlaskConical, ChevronDown } from 'lucide-react';
-import type { CostCategory, CostEntry, Grow, NutrientBatch } from '@/types';
+import { Scale, Leaf, Plus, Trash2, Sprout, FlaskConical, ChevronDown, Zap } from 'lucide-react';
+import type { AppSettings, CostCategory, CostEntry, Grow, NutrientBatch } from '@/types';
 import DateField from './DateField';
 import DarkSelect from './DarkSelect';
 import FertPriceEditor from './FertPriceEditor';
 import { autoFertCost, withAutoCosts } from '@/lib/fertPrices';
 import { useSelectedFertilizer } from '@/lib/fertilizerSelection';
 import { formatMl } from '@/lib/fertUsage';
+import { autoPowerCost, MAX_LAMPS_PER_GROW } from '@/lib/power';
 import { formatDate } from '@/lib/growLogic';
 import {
   COST_CATEGORIES,
@@ -28,13 +29,18 @@ interface Props {
   fertPrices: Record<string, number> | undefined;
   onFertPricesChange: (prices: Record<string, number> | undefined) => void;
   onToggleAuto: (enabled: boolean) => void;
+  settings: AppSettings | undefined;
+  onOpenSettings?: () => void;
+  onToggleAutoPower: (enabled: boolean) => void;
+  onLampChange: (lampId: string | undefined, count: number) => void;
+  onDevicesChange: (ids: string[]) => void;
   onChange: (costs: CostEntry[] | undefined) => void;
 }
 
 const inputCls =
   'w-full bg-ink-850 border border-ink-700/70 rounded-xl px-3 py-2.5 text-sm text-ink-100 placeholder-ink-600 focus:outline-none focus:border-primary-500/60 focus:ring-2 focus:ring-primary-500/20 transition-all';
 
-export default function CostsPanel({ grow, allGrows, batches, fertPrices, onFertPricesChange, onToggleAuto, onChange }: Props) {
+export default function CostsPanel({ grow, allGrows, batches, fertPrices, onFertPricesChange, onToggleAuto, settings, onOpenSettings, onToggleAutoPower, onLampChange, onDevicesChange, onChange }: Props) {
   const [category, setCategory] = useState<CostCategory>('nutrients');
   const [label, setLabel] = useState('');
   const [amount, setAmount] = useState('');
@@ -45,7 +51,11 @@ export default function CostsPanel({ grow, allGrows, batches, fertPrices, onFert
   const costs = costsOf(grow);
   // Dünger-Kosten automatisch aus der Nährlösung (Verbrauch × Preis) – fließen in Summen und Auswertungen ein
   const auto = autoFertCost(grow, allGrows, batches, globalFert, fertPrices);
-  const eff = withAutoCosts([grow], allGrows, batches, globalFert, fertPrices)[0];
+  const power = autoPowerCost(grow, settings);
+  const eff = withAutoCosts([grow], allGrows, batches, globalFert, fertPrices, settings)[0];
+  const lamps = settings?.lamps ?? [];
+  const devices = settings?.devices ?? [];
+  const manualElectricity = costs.filter((c) => c.category === 'electricity').reduce((sum, c) => sum + c.amount, 0);
   const stats = statsOf(eff);
   const breakdown = costByCategory([eff]);
   const manualNutrients = costs.filter((c) => c.category === 'nutrients').reduce((sum, c) => sum + c.amount, 0);
@@ -224,6 +234,179 @@ export default function CostsPanel({ grow, allGrows, batches, fertPrices, onFert
                 {auto.schedules.map((sch) => (
                   <FertPriceEditor key={sch.id} schedule={sch} prices={fertPrices} onChange={onFertPricesChange} />
                 ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Strom-Kosten automatisch aus Lampe × Zeit */}
+      <div className="rounded-2xl border border-warning-500/25 bg-warning-500/5 p-4 mb-4" data-testid="auto-power-cost">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="flex items-start gap-3 min-w-0">
+            <div className="h-9 w-9 rounded-lg bg-warning-500/10 border border-warning-500/20 flex items-center justify-center shrink-0 text-warning-300">
+              <Zap size={16} />
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-white">{t('Strom-Kosten automatisch', 'Electricity costs automatic')}</div>
+              <p className="text-xs text-ink-400 mt-0.5 leading-relaxed">
+                {t(
+                  'Berechnet aus Leistung × Laufzeit × Tage × Strompreis für LED-Lampe und weitere Geräte (Einstellungen).',
+                  'Calculated from power × run time × days × electricity price for the LED lamp and other devices (settings).'
+                )}
+              </p>
+            </div>
+          </div>
+          <label className="flex items-center gap-2 text-xs text-ink-300 cursor-pointer select-none shrink-0">
+            <input
+              data-testid="auto-power-toggle"
+              type="checkbox"
+              checked={power.enabled}
+              onChange={(e) => onToggleAutoPower(e.target.checked)}
+              className="accent-emerald-500 h-4 w-4"
+            />
+            {t('einrechnen', 'include')}
+          </label>
+        </div>
+
+        {/* Lampe für diesen Grow */}
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          {lamps.length > 0 ? (
+            <>
+              <div className="min-w-[14rem] flex-1 max-w-sm">
+                <DarkSelect
+                  testid="grow-lamp-inline"
+                  value={grow.lampId ?? ''}
+                  onChange={(v) => onLampChange(v || undefined, grow.lampCount ?? 1)}
+                  options={[{ value: '', label: t('Keine Lampe gewählt', 'No lamp selected') }, ...lamps.map((l) => ({ value: l.id, label: `${l.name} (${l.watts} W)` }))]}
+                />
+              </div>
+              {grow.lampId && (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-ink-400">{t('Anzahl', 'Count')}</span>
+                  {Array.from({ length: MAX_LAMPS_PER_GROW }, (_, i) => i + 1).map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      data-testid={`inline-lamp-count-${n}`}
+                      onClick={() => onLampChange(grow.lampId, n)}
+                      className={`h-7 w-7 rounded-lg text-xs font-semibold tabular-nums border transition-colors ${
+                        (grow.lampCount ?? 1) === n ? 'text-ink-950 bg-primary-500 border-primary-500' : 'text-ink-300 bg-ink-850 border-ink-700/70 hover:bg-ink-800'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="text-xs text-ink-500" data-testid="auto-power-nolamps">
+              {t('Noch keine LED-Lampe angelegt.', 'No LED lamp added yet.')}
+            </p>
+          )}
+          {onOpenSettings && (
+            <button type="button" onClick={onOpenSettings} data-testid="open-settings" className="text-xs font-medium text-warning-300 hover:text-warning-200 underline underline-offset-2">
+              {t('Einstellungen öffnen', 'Open settings')}
+            </button>
+          )}
+        </div>
+
+        {devices.length > 0 && (
+          <div className="mt-3" data-testid="device-chips">
+            <div className="text-[11px] uppercase tracking-wide text-ink-500 mb-1.5">{t('Weitere Geräte in diesem Grow', 'Other devices in this grow')}</div>
+            <div className="flex flex-wrap gap-2">
+              {devices.map((d) => {
+                const on = (grow.deviceIds ?? []).includes(d.id);
+                return (
+                  <button
+                    key={d.id}
+                    type="button"
+                    data-testid={`inline-device-${d.id}`}
+                    onClick={() => onDevicesChange(on ? (grow.deviceIds ?? []).filter((x) => x !== d.id) : [...(grow.deviceIds ?? []), d.id])}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                      on ? 'text-primary-200 bg-primary-500/15 border-primary-500/50' : 'text-ink-300 bg-ink-850 border-ink-700/70 hover:bg-ink-800'
+                    }`}
+                  >
+                    {on ? '✓ ' : ''}
+                    {d.name} ({d.watts} W)
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {power.reason === 'noLamp' && (
+          <p className="text-xs text-ink-500 mt-3" data-testid="auto-power-reason">
+            {t('Wähle oben eine Lampe oder Geräte, damit die Stromkosten berechnet werden können.', 'Choose a lamp or devices above so the electricity costs can be calculated.')}
+          </p>
+        )}
+        {power.reason === 'noPrice' && (
+          <p className="text-xs text-warning-300 mt-3" data-testid="auto-power-reason">
+            {t('Trage in den Einstellungen deinen Strompreis (€ pro kWh) ein.', 'Enter your electricity price (€ per kWh) in the settings.')}
+          </p>
+        )}
+        {power.reason === 'noDates' && (
+          <p className="text-xs text-ink-500 mt-3" data-testid="auto-power-reason">
+            {t('Setze oben bei den Meilensteinen ein Startdatum (Steckling), damit die Lichttage gezählt werden können.', 'Set a start date (clone) under milestones so the light days can be counted.')}
+          </p>
+        )}
+
+        {power.reason === 'ok' && (
+          <>
+            <div className="flex items-end justify-between gap-3 mt-3 flex-wrap">
+              <div>
+                <div className="text-[10px] uppercase tracking-wide text-ink-500">{t('Stromkosten bisher', 'Electricity so far')}</div>
+                <div className={`text-2xl font-bold tabular-nums ${power.enabled ? 'text-white' : 'text-ink-600 line-through'}`} data-testid="auto-power-amount">
+                  {formatMoney(power.amount)}
+                </div>
+              </div>
+              {power.plannedAmount !== undefined && (
+                <div className="text-right">
+                  <div className="text-[10px] uppercase tracking-wide text-ink-500">{t('bis geplante Ernte', 'until planned harvest')}</div>
+                  <div className="text-sm font-semibold text-ink-200 tabular-nums" data-testid="auto-power-planned">
+                    {formatMoney(power.plannedAmount)}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="mt-3 rounded-xl border border-ink-800 bg-ink-900/50 overflow-x-auto" data-testid="auto-power-detail">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-[10px] uppercase tracking-wide text-ink-500 border-b border-ink-800">
+                    <th className="px-3 py-2 text-left font-semibold">{t('Gerät', 'Device')}</th>
+                    <th className="px-3 py-2 text-right font-semibold">{t('Leistung', 'Power')}</th>
+                    <th className="px-3 py-2 text-right font-semibold">{t('Laufzeit/Tag', 'Run time/day')}</th>
+                    <th className="px-3 py-2 text-right font-semibold">kWh</th>
+                    <th className="px-3 py-2 text-right font-semibold">{t('Kosten', 'Cost')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {power.lines.map((l) => (
+                    <tr key={l.id} className="border-b border-ink-850 last:border-0" data-testid="auto-power-row">
+                      <td className="px-3 py-1.5 text-ink-200 whitespace-nowrap">
+                        {l.count > 1 ? `${l.count}× ` : ''}
+                        {l.name}
+                      </td>
+                      <td className="px-3 py-1.5 text-right tabular-nums text-ink-300 whitespace-nowrap">{l.watts} W</td>
+                      <td className="px-3 py-1.5 text-right tabular-nums text-ink-300 whitespace-nowrap">{l.hoursLabel}</td>
+                      <td className="px-3 py-1.5 text-right tabular-nums text-ink-300 whitespace-nowrap">{l.kwh.toLocaleString(undefined, { maximumFractionDigits: 1 })}</td>
+                      <td className="px-3 py-1.5 text-right tabular-nums font-semibold text-ink-100 whitespace-nowrap">{formatMoney(l.cost)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-2 text-[11px] text-ink-500 tabular-nums" data-testid="auto-power-days">
+              {formatMoney(power.priceKwh)}/kWh · {power.vegDays} {t('Tage Wachstum', 'veg days')} + {power.flowerDays} {t('Tage Blüte', 'flower days')} · {power.kwh.toLocaleString(undefined, { maximumFractionDigits: 1 })} kWh
+            </div>
+            {power.enabled && manualElectricity > 0 && (
+              <div className="mt-3 rounded-lg border border-warning-500/30 bg-warning-500/5 px-3 py-2 text-xs text-warning-300" data-testid="auto-power-double">
+                {t(
+                  `Achtung: Du hast zusätzlich manuelle Einträge in der Kategorie „Strom“ (${formatMoney(manualElectricity)}). Diese werden zusätzlich gezählt – lösche sie oder schalte „einrechnen“ aus, wenn der Strom doppelt erfasst ist.`,
+                  `Note: you also have manual entries in the “Electricity” category (${formatMoney(manualElectricity)}). They are counted in addition – delete them or switch “include” off if the power is entered twice.`
+                )}
               </div>
             )}
           </>

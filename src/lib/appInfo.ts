@@ -3,7 +3,7 @@
 // Die Version wird beim Build aus package.json übernommen (siehe vite.config.ts).
 import { t } from '@/lib/i18n';
 
-export const APP_VERSION: string = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.3.0';
+export const APP_VERSION: string = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.5.0';
 
 export const APP_NAME = 'growmanager';
 
@@ -20,6 +20,21 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '1.5.0',
+    items: [
+      { de: 'Einstellungen: weitere Geräte anlegen – Abluft, Clip-Fan, Grow-Controller, Entfeuchter, Befeuchter – mit Watt, Laufzeit pro Tag und Phase', en: 'Settings: add other devices – exhaust fan, clip fan, grow controller, dehumidifier, humidifier – with watts, run time per day and phase' },
+      { de: 'Beim Grow wählbar, welche Geräte genutzt werden; die Stromkosten umfassen jetzt LED-Lampe und alle gewählten Geräte (mit Aufstellung)', en: 'Choose per grow which devices are used; electricity costs now cover the LED lamp and all selected devices (with breakdown)' },
+    ],
+  },
+  {
+    version: '1.4.0',
+    items: [
+      { de: 'Neuer Reiter „Einstellungen“: Strompreis (€/kWh), Lichtstunden und LED-Lampen mit Watt anlegen', en: 'New “Settings” tab: enter electricity price (€/kWh), light hours and LED lamps with wattage' },
+      { de: 'Beim Anlegen/Bearbeiten eines Grows lässt sich die genutzte LED-Lampe (und Anzahl) wählen', en: 'When creating/editing a grow you can choose the LED lamp used (and the number)' },
+      { de: 'Stromkosten werden automatisch berechnet (Lampenleistung × Lichtstunden × Tage × Strompreis) und in Kosten, Übersicht und PDF eingerechnet', en: 'Electricity costs are calculated automatically (lamp power × light hours × days × price) and included in costs, overview and PDF' },
+    ],
+  },
   {
     version: '1.3.0',
     items: [

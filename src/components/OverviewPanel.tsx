@@ -37,8 +37,8 @@ export default function OverviewPanel({ data, onOpenGrow }: Props) {
     const filtered = data.grows
       .filter((g) => year === 'all' || growYear(g) === year)
       .sort((a, b) => ((a.milestones.cloneStart ?? a.createdAt) < (b.milestones.cloneStart ?? b.createdAt) ? 1 : -1));
-    return withAutoCosts(filtered, data.grows, data.batches ?? [], globalFert, data.fertPrices);
-  }, [data.grows, data.batches, data.fertPrices, globalFert, year]);
+    return withAutoCosts(filtered, data.grows, data.batches ?? [], globalFert, data.fertPrices, data.settings);
+  }, [data.grows, data.batches, data.fertPrices, data.settings, globalFert, year]);
 
   const agg = aggregate(grows);
   const cats = costByCategory(grows);

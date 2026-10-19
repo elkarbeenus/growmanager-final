@@ -40,6 +40,32 @@ export interface CostEntry {
   auto?: boolean; // nur zur Laufzeit: automatisch aus der Nährlösung berechnet (wird nicht gespeichert)
 }
 
+export interface Lamp {
+  id: string;
+  name: string; // Modell / Bezeichnung
+  watts: number; // tatsächliche Leistungsaufnahme in Watt
+}
+
+export type DeviceType = 'exhaust' | 'clipfan' | 'controller' | 'dehumidifier' | 'humidifier' | 'other';
+export type DevicePhase = 'both' | 'veg' | 'flower';
+
+export interface Device {
+  id: string;
+  type: DeviceType;
+  name: string; // Modell / Bezeichnung
+  watts: number; // Leistungsaufnahme in Watt
+  hours: number; // Laufzeit pro Tag (Durchschnitt)
+  phase: DevicePhase; // in welcher Phase das Gerät läuft
+}
+
+export interface AppSettings {
+  kwhPrice?: number; // Strompreis in € pro kWh
+  hoursVeg?: number; // Lichtstunden pro Tag (Steckling/Wachstum), Standard 18
+  hoursFlower?: number; // Lichtstunden pro Tag (Blüte), Standard 12
+  lamps?: Lamp[]; // angelegte LED-Lampen
+  devices?: Device[]; // weitere Geräte: Abluft, Clip-Fan, Controller, Ent-/Befeuchter
+}
+
 export interface Grow {
   id: string;
   name: string;
@@ -48,6 +74,10 @@ export interface Grow {
   milestones: Milestones;
   logs: LogEntry[];
   drying?: DryingData;
+  lampId?: string; // genutzte LED-Lampe (aus den Einstellungen)
+  lampCount?: number; // Anzahl dieser Lampen (1–4)
+  deviceIds?: string[]; // genutzte weitere Geräte (aus den Einstellungen)
+  powerCostAuto?: boolean; // false = Stromkosten NICHT automatisch berechnen (Standard: an)
   fertCostAuto?: boolean; // false = Dünger-Kosten NICHT automatisch aus der Nährlösung berechnen (Standard: an)
   fertilizerId?: string; // gewähltes Düngeschema (z. B. 'athena') für die Verbrauchsauswertung
   plantCount?: number; // 1–10 Pflanzen pro Grow (Daten wie Start etc. gelten für alle gleich)
@@ -69,6 +99,7 @@ export interface AppData {
   version: number;
   grows: Grow[];
   batches?: NutrientBatch[]; // Nährlösungs-Ansätze
+  settings?: AppSettings; // Strompreis, Lichtstunden, LED-Lampen
   fertPrices?: Record<string, number>; // eigene Düngerpreise (€ pro Liter), Schlüssel "schemaId:produktKey"
 }
 

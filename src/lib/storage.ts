@@ -1,4 +1,4 @@
-import type { AppData, CostEntry, Grow, NutrientBatch } from '@/types';
+import type { AppData, AppSettings, CostEntry, Device, Grow, NutrientBatch } from '@/types';
 import { t } from '@/lib/i18n';
 
 const STORAGE_KEY = 'growhub:data:v1';
@@ -54,6 +54,49 @@ export function normalizeFertPrices(input: unknown): Record<string, number> | un
   return Object.keys(out).length ? out : undefined;
 }
 
+const num = (v: unknown, min: number, max: number): number | undefined => {
+  const n = Number(v);
+  return v !== undefined && v !== null && v !== '' && Number.isFinite(n) && n >= min && n <= max ? n : undefined;
+};
+
+/** Einstellungen bereinigen (Strompreis, Lichtstunden, LED-Lampen). */
+export function normalizeSettings(input: unknown): AppSettings | undefined {
+  if (!input || typeof input !== 'object') return undefined;
+  const o = input as Record<string, unknown>;
+  const lamps = Array.isArray(o.lamps)
+    ? o.lamps
+        .filter((l) => !!l && typeof (l as { name?: unknown }).name === 'string' && Number.isFinite(Number((l as { watts?: unknown }).watts)))
+        .map((l) => {
+          const x = l as { id?: string; name: string; watts: unknown };
+          return { id: x.id ?? crypto.randomUUID(), name: x.name, watts: Math.max(0, Number(x.watts)) };
+        })
+    : undefined;
+  const TYPES = ['exhaust', 'clipfan', 'controller', 'dehumidifier', 'humidifier', 'other'];
+  const devices: Device[] | undefined = Array.isArray(o.devices)
+    ? o.devices
+        .filter((d) => !!d && typeof (d as { name?: unknown }).name === 'string' && Number.isFinite(Number((d as { watts?: unknown }).watts)))
+        .map((d) => {
+          const x = d as { id?: string; type?: string; name: string; watts: unknown; hours?: unknown; phase?: string };
+          return {
+            id: x.id ?? crypto.randomUUID(),
+            type: (TYPES.includes(x.type ?? '') ? x.type : 'other') as Device['type'],
+            name: x.name,
+            watts: Math.max(0, Number(x.watts)),
+            hours: num(x.hours, 0, 24) ?? 24,
+            phase: (x.phase === 'veg' || x.phase === 'flower' ? x.phase : 'both') as Device['phase'],
+          };
+        })
+    : undefined;
+  const out: AppSettings = {
+    devices: devices && devices.length ? devices : undefined,
+    kwhPrice: num(o.kwhPrice, 0, 10),
+    hoursVeg: num(o.hoursVeg, 0, 24),
+    hoursFlower: num(o.hoursFlower, 0, 24),
+    lamps: lamps && lamps.length ? lamps : undefined,
+  };
+  return Object.values(out).some((v) => v !== undefined) ? out : undefined;
+}
+
 export function normalizePlantCount(v: unknown): number | undefined {
   const n = Number(v);
   if (!Number.isFinite(n)) return undefined;
@@ -70,6 +113,10 @@ export function normalizeGrow(g: Partial<Grow>): Grow {
     milestones: g.milestones ?? {},
     logs: Array.isArray(g.logs) ? g.logs : [],
     drying: g.drying,
+    lampId: typeof g.lampId === 'string' && g.lampId ? g.lampId : undefined,
+    deviceIds: Array.isArray(g.deviceIds) && g.deviceIds.some((x) => typeof x === 'string') ? g.deviceIds.filter((x): x is string => typeof x === 'string') : undefined,
+    lampCount: g.lampId ? Math.min(4, Math.max(1, Math.round(Number(g.lampCount ?? 1)) || 1)) : undefined,
+    powerCostAuto: g.powerCostAuto === false ? false : undefined,
     fertCostAuto: g.fertCostAuto === false ? false : undefined,
     fertilizerId: typeof g.fertilizerId === 'string' && g.fertilizerId ? g.fertilizerId : undefined,
     plantCount: normalizePlantCount(g.plantCount),
@@ -89,7 +136,7 @@ export function loadData(): AppData {
       milestones: g.milestones ?? {},
       logs: Array.isArray(g.logs) ? g.logs : [],
     }));
-    return { ...parsed, batches: normalizeBatches(parsed.batches), fertPrices: normalizeFertPrices(parsed.fertPrices), version: CURRENT_VERSION };
+    return { ...parsed, batches: normalizeBatches(parsed.batches), fertPrices: normalizeFertPrices(parsed.fertPrices), settings: normalizeSettings(parsed.settings), version: CURRENT_VERSION };
   } catch (e) {
     console.error('Failed to load GrowHub data', e);
     return emptyData();
@@ -333,6 +380,7 @@ export function normalizeAppData(d: AppData): AppData {
     grows: d.grows.map((g: Partial<Grow>) => normalizeGrow(g)),
     batches: normalizeBatches(d.batches),
     fertPrices: normalizeFertPrices(d.fertPrices),
+    settings: normalizeSettings(d.settings),
   };
 }
 
@@ -388,6 +436,7 @@ export function importDataFromJSON(file: File): Promise<AppData> {
           grows: parsed.grows.map((g: Partial<Grow>) => normalizeGrow(g)),
           batches: normalizeBatches(parsed.batches),
           fertPrices: normalizeFertPrices(parsed.fertPrices),
+          settings: normalizeSettings(parsed.settings),
         };
         addBackupLog('import', 'success', `${t('Import aus Datei', 'Import from file')}: ${verification.growCount} Grows, ${verification.logCount} ${t('Einträge', 'entries')}. ${t('Verifiziert.', 'Verified.')}`);
         resolve(normalized);

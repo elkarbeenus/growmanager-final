@@ -8,7 +8,7 @@ import {
   Hourglass,
   Target,
 } from 'lucide-react';
-import type { Grow, LogEntry, Milestones, DryingData, CostEntry, NutrientBatch } from '@/types';
+import type { AppSettings, Grow, LogEntry, Milestones, DryingData, CostEntry, NutrientBatch } from '@/types';
 import {
   currentPhase,
   phaseProgress,
@@ -35,6 +35,8 @@ import { plantsOf, plantsLabel } from '@/lib/growStats';
 interface GrowDetailProps {
   grow: Grow;
   allGrows: Grow[];
+  settings: AppSettings | undefined;
+  onOpenSettings: () => void;
   fertPrices: Record<string, number> | undefined;
   onFertPricesChange: (prices: Record<string, number> | undefined) => void;
   batches: NutrientBatch[];
@@ -47,6 +49,8 @@ interface GrowDetailProps {
 export default function GrowDetail({
   grow,
   allGrows,
+  settings,
+  onOpenSettings,
   fertPrices,
   onFertPricesChange,
   batches,
@@ -134,7 +138,7 @@ export default function GrowDetail({
               testid="grow-pdf"
               label={t('PDF-Bericht', 'PDF report')}
               title={t('Bericht dieses Grows als PDF speichern', 'Save a report of this grow as PDF')}
-              build={() => buildGrowReport(grow, batches, allGrows, getSelectedFertilizer(), fertPrices)}
+              build={() => buildGrowReport(grow, batches, allGrows, getSelectedFertilizer(), fertPrices, settings)}
             />
             <button
               onClick={onEditGrow}
@@ -327,6 +331,11 @@ export default function GrowDetail({
           fertPrices={fertPrices}
           onFertPricesChange={onFertPricesChange}
           onToggleAuto={(enabled) => onUpdateGrow({ ...grow, fertCostAuto: enabled ? undefined : false })}
+          settings={settings}
+          onOpenSettings={onOpenSettings}
+          onToggleAutoPower={(enabled) => onUpdateGrow({ ...grow, powerCostAuto: enabled ? undefined : false })}
+          onLampChange={(lampId, count) => onUpdateGrow({ ...grow, lampId, lampCount: lampId ? count : undefined })}
+          onDevicesChange={(ids) => onUpdateGrow({ ...grow, deviceIds: ids.length ? ids : undefined })}
           onChange={saveCosts}
         />
       </div>

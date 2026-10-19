@@ -1,0 +1,56 @@
+# Patchnotes – growmanager
+
+## v1.1.1
+- **Reiter „Dünger“:** Dosierungen werden jetzt in **mL pro 10 Liter** angezeigt (Englisch: **mL pro Gallone**), in den Wochenkarten und in den Schema-Tabellen. Die Verbrauchsrechnung ist davon nicht betroffen.
+
+## v1.1.0
+- **Einführungstour:** Startet einmalig beim ersten Start und erklärt, wo du was findest (Reiter für Reiter). Mit „Beim nächsten Start nicht mehr anzeigen“; erneut startbar über das „?“ oben rechts oder im Reiter „Über“.
+- **Hinweis-Karten:** Kleine Tipps im Grow und im Reiter „Nährlösung“, dauerhaft ausblendbar („Verstanden – nicht mehr anzeigen“). Im Reiter „Über“ wieder einblendbar.
+- **Schnellsprung im Grow:** Chips springen direkt zu Meilensteine, Tagebuch, Trocknung, Dünger-Verbrauch, Kosten & Ertrag.
+- **Pflanzenanzahl** lässt sich jetzt direkt im Bereich „Meilensteine“ ganz oben im Grow einstellen.
+- **Dünger-Verbrauch nach Phase:** mL je Produkt getrennt nach Wachstum und Blüte (und Start/Flush). Der im Reiter „Dünger“ gewählte Dünger gilt als Standard; pro Grow lässt er sich überschreiben. Ansätze werden automatisch dem Grow zugeordnet, der an diesem Datum lief (manuell änderbar). Die Auswertung gibt es im Grow, im Reiter „Nährlösung“ (alle Grows) und im PDF-Bericht.
+
+## v1.0.9
+- **PDF-Vorschau:** Der Bericht öffnet zuerst in einem Pop-up-Fenster (mit Zoom). Gespeichert wird erst per „Speichern unter …“ aus der Vorschau.
+- **Dünger-Verbrauch pro Grow:** Dünger/Schema im Grow wählen – daraus werden die verbrauchten mL je Produkt, die angemischten Liter Nährlösung, der Verbrauch pro Pflanze und die Nährlösung pro Pflanze berechnet.
+- **Nährlösung:** Ansätze lassen sich einem Grow zuordnen (beim Eintragen oder nachträglich) und optional einer Schema-Woche (automatisch aus den Meilensteinen oder manuell).
+- Der Verbrauch ist auch im PDF-Bericht enthalten. Backups enthalten die Zuordnungen.
+
+## v1.0.8
+- **PDF-Bericht pro Grow:** Überblick, Meilensteine, Trocknung/Ernte, Kosten (mit Kategorien), Tagebuch-Auswertung mit Diagrammen (pH, EC, Temperatur, Luftfeuchtigkeit) und vollständige Tagebuchtabelle. Speichern über „Speichern unter …“.
+- **Anzahl Pflanzen pro Grow (1–10):** Startdatum und Meilensteine bleiben für alle Pflanzen eines Grows gleich.
+- **Kosten pro Grow:** Kategorien Dünger, Strom, Equipment, Substrat, Samen/Stecklinge, Sonstiges. Kennzahlen: Gesamtkosten, Kosten pro Pflanze, Ertrag pro Pflanze, Kosten pro Gramm.
+- **Neuer Reiter „Übersicht“:** Vergleich aller Grows (Pflanzen, Dauer, Ertrag, Kosten, € pro Gramm), Jahresfilter, Diagramme und PDF-Export.
+- Backups, Import und Wiederherstellung enthalten die neuen Felder (Pflanzenanzahl, Kosten). Ältere Backups bleiben kompatibel.
+- Neue Abhängigkeit: `pdf-lib`.
+
+## v1.0.7 (final)
+- **Backup:** „Speichern unter …“ mit frei wählbarem Pfad bleibt erhalten. Der Versand per E-Mail wurde wieder entfernt.
+- **Backup:** Neue Übersicht „Wo werden meine Backups gespeichert?“ (Auto-/manuelle Backups, Export als Datei, gewählter Backup-Ordner).
+- **Export:** Nach dem Export bzw. „Speichern unter …“ wird der Speicherort angezeigt (in der Desktop-App der vollständige Pfad).
+- **Windows:** Der GitHub-Workflow baut jetzt zusätzlich zum Linux-AppImage eine Windows-Version (Setup-`.exe`, NSIS). Dafür wurde ein Windows-Icon (`icon.ico`) ergänzt.
+- **Version:** Die Versionsnummer wird nur noch als Hinweis unten links angezeigt. Der Versionswechsel wurde entfernt.
+- Version angehoben auf 1.0.7 (package.json, package-lock.json, tauri.conf.json, Cargo.toml, GitHub-Workflow).
+
+## v1.0.6
+- Neuer Reiter „Über“ mit Infos zur App und zum Entwickler (Dominic Lesina) und Patchnotes.
+- Versionsanzeige (Version wird beim Build aus package.json übernommen).
+- Backup: „Speichern unter …“ mit frei wählbarem Dateipfad.
+- Fix: Auf den Grow-Karten wird im Deutschen „T“ statt „d“ für Tage angezeigt.
+- Tauri: Externe Links öffnen im Standardbrowser, Freigaben für „Speichern unter“ und Datei schreiben.
+
+## v1.0.5
+- Neuer Reiter „Shot Size“: Crop-Steering-Shotgröße (vegetativ 4–6 %, generativ 2–4 %) in % und mL, Eingabe in Litern (EN: Gallonen), Regler zum Anpassen.
+- Grows-Reiter gegliedert in Aktiv, Geplant und Bisherige Grows (nach Jahren); neuer Zähler „Ausstehend“.
+- Karten geplanter Grows zeigen „Start in X T“.
+- Fix: Grows mit Startdatum in der Zukunft wurden fälschlich als „Wachstum“ angezeigt.
+- Name `growmanager`, Version 1.0.5.
+
+## Frühere Versionen (bis 1.0.4)
+- Grows mit Meilensteinen, Phasen, Timeline und Tagebuch (pH, EC, Temperatur, Luftfeuchtigkeit, Gießmenge).
+- Reiter „Nährlösung“ mit Ansätzen und Erneuerungs-Erinnerung.
+- Reiter „Dünger“ mit Athena-Schemata.
+- Trocknung und Erntemenge.
+- Backup: JSON-Export/-Import, tägliche Auto-Backups (bis 14 Tage), Backup-Verlauf, Backup-Ordner.
+- Deutsch/Englisch inkl. Gallonen-Umrechnung.
+- Tauri-Build (AppImage) per GitHub-Workflow.

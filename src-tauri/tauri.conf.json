@@ -1,0 +1,51 @@
+{
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devPath": "http://localhost:5173",
+    "distDir": "../dist",
+    "withGlobalTauri": true
+  },
+  "package": {
+    "productName": "growmanager",
+    "version": "1.1.1"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "shell": {
+        "open": true
+      },
+      "dialog": {
+        "all": false,
+        "save": true
+      },
+      "fs": {
+        "all": false,
+        "writeFile": true,
+        "scope": ["$DOWNLOAD/**", "$DOCUMENT/**", "$DESKTOP/**", "$HOME/**"]
+      }
+    },
+    "bundle": {
+  "active": true,
+  "targets": "all",
+  "identifier": "com.growmanager.app",
+  "icon": [
+    "icons/icon.png",
+    "icons/icon.ico"
+  ]
+},
+    "security": {
+      "csp": null
+    },
+    "windows": [
+      {
+        "fullscreen": false,
+        "height": 600,
+        "resizable": true,
+        "title": "Grow Kalender",
+        "width": 800
+      }
+    ]
+  }
+}

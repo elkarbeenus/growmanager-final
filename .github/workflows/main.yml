@@ -40,7 +40,7 @@ jobs:
         run: npm install
 
       - name: Tauri Build
-        uses: tauri-apps/tauri-action@v0.5.2
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

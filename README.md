@@ -1,11 +1,13 @@
+
 # growmanager
+<img width="1600" height="1662" alt="screenshot-1-grows" src="https://github.com/user-attachments/assets/a1e46151-e528-47df-bcda-bbe7e2721c53" />
 
 **A personal grow manager for tracking your plants, nutrients, costs and yield. It runs offline as a desktop app and keeps all data on your device.**
 
 growmanager helps you plan and document every grow from the first clone to the final harvest. It combines a grow journal, nutrient solution tracking, fertilizer schedules, cost and yield analysis and PDF reports in one app. It is available in English and German.
 
 ## What it does
-
+<img width="1600" height="1125" alt="screenshot-2-fertilizer-usage" src="https://github.com/user-attachments/assets/cfa41dec-bc8c-433f-85fc-8647173f0def" />
 ### Grows & journal
 - Create grows with name, strain and **1–10 plants**. Start date and milestones apply equally to all plants of a grow.
 - Track milestones (clone start, veg, flower, end of stretch, expected and actual harvest) with an automatic phase timeline and progress.

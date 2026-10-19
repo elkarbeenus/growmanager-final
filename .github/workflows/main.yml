@@ -44,8 +44,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v1.2.1
-          releaseName: 'Grow Manager v1.2.1'
+          tagName: v1.6.0
+          releaseName: 'Grow Manager v1.6.0'
           releaseBody: 'Automatisierter Build: Linux AppImage und Windows Setup (.exe).'
           tauriScript: 'npx tauri'
           args: ${{ matrix.args }}

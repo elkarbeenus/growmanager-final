@@ -10,6 +10,7 @@ import { useSelectedFertilizer } from '@/lib/fertilizerSelection';
 import { autoWeekIndex, inferGrowForDate, scheduleById } from '@/lib/fertUsage';
 import FertOverviewCard from './FertOverviewCard';
 import HintCard from './HintCard';
+import DarkSelect from './DarkSelect';
 import { t, displayToLiters, litersToDisplay, volumeUnit, fmtNum } from '@/lib/i18n';
 
 interface Props {
@@ -156,52 +157,39 @@ export default function NutrientPanel({ batches, grows = [], onChange }: Props) 
         </div>
         <div className="grid sm:grid-cols-2 gap-3">
           {grows.length > 0 && (
-            <label className="block">
+            <div className="block">
               <span className="text-sm font-medium text-ink-200 mb-1.5 block">
                 {t('Für Grow', 'For grow')} <span className="text-ink-600 font-normal">(optional)</span>
               </span>
-              <select
-                data-testid="nutrient-grow"
+              <DarkSelect
+                testid="nutrient-grow"
                 value={growId}
-                onChange={(e) => {
-                  setGrowId(e.target.value);
+                onChange={(v) => {
+                  setGrowId(v);
                   setWeekChoice('auto');
                 }}
-                className={inputCls}
-              >
-                <option value="">
-                  {t('Automatisch nach Datum', 'Automatic by date')}
-                  {!growId && selectedGrow ? ` (${selectedGrow.name})` : ''}
-                </option>
-                {grows.map((g) => (
-                  <option key={g.id} value={g.id}>
-                    {g.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+                options={[
+                  { value: '', label: `${t('Automatisch nach Datum', 'Automatic by date')}${!growId && selectedGrow ? ` (${selectedGrow.name})` : ''}` },
+                  ...grows.map((g) => ({ value: g.id, label: g.name })),
+                ]}
+              />
+            </div>
           )}
           {selectedSchedule && (
-            <label className="block">
+            <div className="block">
               <span className="text-sm font-medium text-ink-200 mb-1.5 block">
                 {t('Schema-Woche', 'Schedule week')} <span className="text-ink-600 font-normal">· {selectedSchedule.brand}</span>
               </span>
-              <select
-                data-testid="nutrient-week"
+              <DarkSelect
+                testid="nutrient-week"
                 value={weekChoice}
-                onChange={(e) => setWeekChoice(e.target.value)}
-                className={inputCls}
-              >
-                <option value="auto">
-                  {t('Automatisch', 'Automatic')} ({autoIdx !== null ? selectedSchedule.weeks[autoIdx].label : '—'})
-                </option>
-                {selectedSchedule.weeks.map((w, i) => (
-                  <option key={i} value={i}>
-                    {w.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+                onChange={setWeekChoice}
+                options={[
+                  { value: 'auto', label: `${t('Automatisch', 'Automatic')} (${autoIdx !== null ? selectedSchedule.weeks[autoIdx].label : '—'})` },
+                  ...selectedSchedule.weeks.map((w, i) => ({ value: String(i), label: w.label })),
+                ]}
+              />
+            </div>
           )}
         </div>
         <label className="block">
@@ -316,36 +304,32 @@ function BatchAssign({
   const grow = explicit ?? inferred;
   const schedule = scheduleById(grow?.fertilizerId ?? globalFert, schedules);
   const autoIdx = grow && schedule ? autoWeekIndex(grow, schedule, batch.date) : null;
-  const selCls =
-    'bg-ink-850 border border-ink-700/70 rounded-lg px-2 py-1 text-xs text-ink-300 focus:outline-none focus:border-primary-500/60 max-w-[200px]';
   if (grows.length === 0) return null;
   return (
     <div className="flex flex-wrap gap-2 mt-1.5">
-      <select data-testid="batch-grow" value={explicit ? explicit.id : ''} onChange={(e) => onGrow(e.target.value)} className={selCls} title={t('Diesem Grow zuordnen', 'Assign to grow')}>
-        <option value="">{inferred ? `${t('Automatisch', 'Automatic')}: ${inferred.name}` : t('— kein Grow —', '— no grow —')}</option>
-        {grows.map((g) => (
-          <option key={g.id} value={g.id}>
-            {g.name}
-          </option>
-        ))}
-      </select>
+      <DarkSelect
+        size="sm"
+        testid="batch-grow"
+        title={t('Diesem Grow zuordnen', 'Assign to grow')}
+        value={explicit ? explicit.id : ''}
+        onChange={onGrow}
+        options={[
+          { value: '', label: inferred ? `${t('Automatisch', 'Automatic')}: ${inferred.name}` : t('— kein Grow —', '— no grow —') },
+          ...grows.map((g) => ({ value: g.id, label: g.name })),
+        ]}
+      />
       {schedule && (
-        <select
-          data-testid="batch-week"
-          value={batch.weekIndex !== undefined && batch.weekIndex < schedule.weeks.length ? String(batch.weekIndex) : ''}
-          onChange={(e) => onWeek(e.target.value)}
-          className={selCls}
+        <DarkSelect
+          size="sm"
+          testid="batch-week"
           title={t('Schema-Woche', 'Schedule week')}
-        >
-          <option value="">
-            {t('Woche automatisch', 'Week automatic')} ({autoIdx !== null ? schedule.weeks[autoIdx].label : '—'})
-          </option>
-          {schedule.weeks.map((w, i) => (
-            <option key={i} value={i}>
-              {w.label}
-            </option>
-          ))}
-        </select>
+          value={batch.weekIndex !== undefined && batch.weekIndex < schedule.weeks.length ? String(batch.weekIndex) : ''}
+          onChange={onWeek}
+          options={[
+            { value: '', label: `${t('Woche automatisch', 'Week automatic')} (${autoIdx !== null ? schedule.weeks[autoIdx].label : '—'})` },
+            ...schedule.weeks.map((w, i) => ({ value: String(i), label: w.label })),
+          ]}
+        />
       )}
     </div>
   );

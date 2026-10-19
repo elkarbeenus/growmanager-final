@@ -55,12 +55,13 @@ import {
 } from '@/lib/backupDir';
 import BackupExportCard from '@/components/BackupExportCard';
 import BackupLocationInfo from '@/components/BackupLocationInfo';
+import RestorePreviewDialog from '@/components/RestorePreviewDialog';
 import { saveBackupAs, exportCapability } from '@/lib/backupExport';
 import { t, locale } from '@/lib/i18n';
 
 interface BackupPanelProps {
   data: AppData;
-  onRestore: (data: AppData) => void;
+  onRestore: (data: AppData, kind?: 'import' | 'restore') => void;
 }
 
 export default function BackupPanel({ data, onRestore }: BackupPanelProps) {
@@ -176,7 +177,7 @@ export default function BackupPanel({ data, onRestore }: BackupPanelProps) {
 
   const confirmImportRestore = () => {
     if (!confirmImport) return;
-    onRestore(confirmImport);
+    onRestore(confirmImport, 'import');
     setConfirmImport(null);
     setImportSuccess(t('Daten erfolgreich aus Backup-Datei wiederhergestellt und verifiziert.', 'Data successfully restored from backup file and verified.'));
     setTimeout(() => setImportSuccess(null), 4000);
@@ -201,7 +202,7 @@ export default function BackupPanel({ data, onRestore }: BackupPanelProps) {
   const confirmRestoreBackup = () => {
     if (!confirmRestore) return;
     const restored = restoreAutoBackup(confirmRestore);
-    onRestore(restored);
+    onRestore(restored, 'restore');
     setConfirmRestore(null);
     setImportSuccess(t(`Auto-Backup vom ${formatBackupDate(confirmRestore.date)} wiederhergestellt und verifiziert.`, `Auto backup from ${formatBackupDate(confirmRestore.date)} restored and verified.`));
     setTimeout(() => setImportSuccess(null), 4000);
@@ -736,9 +737,14 @@ export default function BackupPanel({ data, onRestore }: BackupPanelProps) {
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-semibold text-ink-100">
                     {formatBackupDate(b.date)}
-                    {b.manual && (
+                    {b.manual && !b.label && (
                       <span className="ml-2 text-[10px] font-bold uppercase tracking-wide text-primary-400">
                         {t('manuell', 'manual')}
+                      </span>
+                    )}
+                    {b.label && (
+                      <span className="ml-2 text-[10px] font-bold uppercase tracking-wide text-warning-400" data-testid="backup-safety-label">
+                        {{ import: t('vor Import', 'before import'), restore: t('vor Wiederherstellung', 'before restore'), reset: t('vor Zurücksetzen', 'before reset') }[b.label]}
                       </span>
                     )}
                   </div>
@@ -792,6 +798,51 @@ export default function BackupPanel({ data, onRestore }: BackupPanelProps) {
           )}
         </p>
 
+        {backups.length > 0 && (
+          <div className="mb-5 rounded-xl border border-warning-500/25 bg-warning-500/5 p-4" data-testid="quick-rollback">
+            <div className="flex items-center gap-2 text-sm font-semibold text-white">
+              <RotateCcw size={15} className="text-warning-400" />
+              {t('Schnell zurückspringen', 'Quick rollback')}
+              <span className="text-[11px] font-normal text-ink-500">
+                {t('(nur die letzten 2 Backups)', '(last 2 backups only)')}
+              </span>
+            </div>
+            <p className="text-xs text-ink-500 mt-1 mb-3">
+              {t(
+                'Springe auf den Stand eines der zuletzt erstellten Backups zurück. Vorher siehst du, was dabei verloren geht, und musst bestätigen.',
+                'Go back to the state of one of the most recent backups. You will see what would be lost first and have to confirm.'
+              )}
+            </p>
+            <div className="space-y-2">
+              {backups.slice(0, 2).map((b, i) => (
+                <div key={b.id} className="flex items-center gap-3 rounded-lg border border-ink-800 bg-ink-850/60 px-3 py-2.5" data-testid="quick-rollback-row">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-ink-100">
+                      {i === 0 ? t('Zuletzt erstellt', 'Most recent') : t('Davor', 'Before that')} · {formatBackupDate(b.date)} {formatBackupTime(b.timestamp)}
+                      {b.label && (
+                        <span className="ml-2 text-[10px] font-bold uppercase tracking-wide text-warning-400">
+                          {{ import: t('vor Import', 'before import'), restore: t('vor Wiederherstellung', 'before restore'), reset: t('vor Zurücksetzen', 'before reset') }[b.label]}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs text-ink-500">
+                      {b.growCount} Grows · {b.logCount} {t('Einträge', 'entries')}
+                    </div>
+                  </div>
+                  <button
+                    data-testid={`quick-rollback-${i}`}
+                    onClick={() => handleRestore(b)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-warning-200 bg-warning-500/10 hover:bg-warning-500/20 border border-warning-500/30 transition-colors"
+                  >
+                    <RotateCcw size={13} />
+                    {t('Zurückspringen', 'Go back')}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {logEntries.length === 0 ? (
           <div className="rounded-xl border border-dashed border-ink-700/60 bg-ink-900/40 px-4 py-6 text-center">
             <FileText size={18} className="text-ink-600 mx-auto mb-2" />
@@ -810,13 +861,9 @@ export default function BackupPanel({ data, onRestore }: BackupPanelProps) {
 
       {/* Bestätigungs-Dialog: Auto-Backup wiederherstellen */}
       {confirmRestore && (
-        <ConfirmRestoreDialog
-          title={t('Backup wiederherstellen?', 'Restore backup?')}
-          message={t(
-            `Möchtest du das Backup vom ${formatBackupDate(confirmRestore.date)} wirklich wiederherstellen? Alle aktuellen Daten werden damit überschrieben. Das Backup wird vor der Wiederherstellung verifiziert.`,
-            `Do you really want to restore the backup from ${formatBackupDate(confirmRestore.date)}? All current data will be overwritten. The backup is verified before restoring.`
-          )}
-          confirmLabel={t('Wiederherstellen', 'Restore')}
+        <RestorePreviewDialog
+          backup={confirmRestore}
+          current={data}
           onConfirm={confirmRestoreBackup}
           onCancel={() => setConfirmRestore(null)}
         />
@@ -826,7 +873,7 @@ export default function BackupPanel({ data, onRestore }: BackupPanelProps) {
       {confirmImport && (
         <ConfirmRestoreDialog
           title={t('Backup-Datei einlesen?', 'Load backup file?')}
-          message={t('Möchtest du die ausgewählte Backup-Datei einlesen? Alle aktuellen Daten werden damit überschrieben. Die Datei wurde verifiziert und ist gültig.', 'Do you want to load the selected backup file? All current data will be overwritten. The file has been verified and is valid.')}
+          message={t('Möchtest du die ausgewählte Backup-Datei einlesen? Alle aktuellen Daten werden damit überschrieben. Die Datei wurde verifiziert und ist gültig. Deine aktuellen Daten werden vorher automatisch als Backup gesichert.', 'Do you want to load the selected backup file? All current data will be overwritten. The file has been verified and is valid. Your current data is backed up automatically first.')}
           confirmLabel={t('Einlesen & überschreiben', 'Load & overwrite')}
           onConfirm={confirmImportRestore}
           onCancel={() => setConfirmImport(null)}

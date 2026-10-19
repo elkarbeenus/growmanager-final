@@ -3,7 +3,7 @@ import { APP_NAME, APP_VERSION, CHANGELOG, DEVELOPER } from '@/lib/appInfo';
 import { t, isEn } from '@/lib/i18n';
 import { resetHints } from '@/lib/hints';
 
-export default function AboutPanel({ onStartTour }: { onStartTour?: () => void }) {
+export default function AboutPanel({ onStartTour, onReset }: { onStartTour?: () => void; onReset?: () => void }) {
   return (
     <div className="space-y-6">
       <div>
@@ -106,6 +106,28 @@ export default function AboutPanel({ onStartTour }: { onStartTour?: () => void }
               {t('Hinweise wieder einblenden', 'Show hints again')}
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Daten zurücksetzen */}
+      {onReset && (
+        <div className="rounded-2xl border border-error-500/25 bg-error-500/5 p-5 flex flex-wrap items-center justify-between gap-3" data-testid="reset-card">
+          <div className="max-w-xl">
+            <div className="text-sm font-semibold text-white">{t('Alles zurücksetzen', 'Reset everything')}</div>
+            <p className="text-xs text-ink-400 mt-0.5 leading-relaxed">
+              {t(
+                'Löscht alle Grows, Tagebucheinträge, Kosten und Nährlösungs-Ansätze und stellt die App wie frisch installiert wieder her. Vorher wird automatisch ein Backup angelegt, damit du es rückgängig machen kannst.',
+                'Deletes all grows, journal entries, costs and nutrient batches and restores the app to a fresh state. A backup is created automatically first so you can undo it.'
+              )}
+            </p>
+          </div>
+          <button
+            data-testid="reset-open"
+            onClick={onReset}
+            className="px-4 py-2.5 rounded-xl text-sm font-semibold text-error-200 bg-error-500/10 hover:bg-error-500/20 border border-error-500/40 transition-colors"
+          >
+            {t('Alles zurücksetzen …', 'Reset everything …')}
+          </button>
         </div>
       )}
 

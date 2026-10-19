@@ -23,6 +23,10 @@ import {
   exportDataAsJSON,
   importDataFromJSON,
   createAutoBackupIfDue,
+  createSafetyBackup,
+  clearAllBackups,
+  clearBackupLog,
+  emptyData,
 } from '@/lib/storage';
 import { currentPhase, isPlanned, earliestDate } from '@/lib/growLogic';
 import { plantsOf } from '@/lib/growStats';
@@ -38,12 +42,22 @@ import ShotSizeCalculator from '@/components/ShotSizeCalculator';
 import AboutPanel from '@/components/AboutPanel';
 import OverviewPanel from '@/components/OverviewPanel';
 import GuidedTour from '@/components/GuidedTour';
+import ImportSummaryModal from '@/components/ImportSummaryModal';
+import { diffData, type ImportSummary } from '@/lib/importDiff';
+import { saveBackupAs } from '@/lib/backupExport';
+import ResetDialog from '@/components/ResetDialog';
+import { resetHints, setTourSeen } from '@/lib/hints';
+import { resetSelectedFertilizer } from '@/lib/fertilizerSelection';
 import { isTourSeen } from '@/lib/hints';
 import VersionBadge from '@/components/VersionBadge';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { t, useLang } from '@/lib/i18n';
 
 type Tab = 'grows' | 'overview' | 'nutrient' | 'athena' | 'shotsize' | 'backup' | 'about';
+
+const nGrows = (n: number) => `${n} ${n === 1 ? 'Grow' : 'Grows'}`;
+const nBatches = (n: number) => `${n} ${n === 1 ? t('Ansatz', 'batch') : t('Ansätze', 'batches')}`;
+const nEntries = (n: number) => `${n} ${n === 1 ? t('Eintrag', 'entry') : t('Einträge', 'entries')}`;
 
 export default function App() {
   const [data, setData] = useState<AppData>(() => loadData());
@@ -53,6 +67,10 @@ export default function App() {
   const [confirmDelete, setConfirmDelete] = useState<Grow | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('grows');
+  const [importSummary, setImportSummary] = useState<{ summary: ImportSummary; kind: 'import' | 'restore'; safety: boolean } | null>(null);
+  const [pendingImport, setPendingImport] = useState<AppData | null>(null);
+  const [resetOpen, setResetOpen] = useState(false);
+  const [toast, setToast] = useState<{ ok: boolean; message: string } | null>(null);
   const [tourOpen, setTourOpen] = useState<boolean>(() => !isTourSeen());
   const fileInputRef = useRef<HTMLInputElement>(null);
   useLang(); // bei Sprachwechsel die gesamte Oberfläche neu rendern
@@ -137,7 +155,22 @@ export default function App() {
     }));
   };
 
-  const handleExport = () => exportDataAsJSON(data);
+  // Export über "Speichern unter …" (funktioniert auch in der Desktop-App, wo ein normaler Download nicht möglich ist)
+  const handleExport = async () => {
+    const r = await saveBackupAs(data);
+    if (r.ok) {
+      setToast({
+        ok: true,
+        message: r.location
+          ? t(`Backup gespeichert unter: ${r.location}`, `Backup saved to: ${r.location}`)
+          : r.method === 'download'
+            ? t(`Backup „${r.filename}“ heruntergeladen (Download-Ordner).`, `Backup “${r.filename}” downloaded (download folder).`)
+            : t(`Backup „${r.filename}“ gespeichert.`, `Backup “${r.filename}” saved.`),
+      });
+    } else if (!r.cancelled) {
+      setToast({ ok: false, message: r.message });
+    }
+  };
 
   const handleImportClick = () => {
     setImportError(null);
@@ -150,18 +183,49 @@ export default function App() {
     if (!file) return;
     try {
       const imported = await importDataFromJSON(file);
-      setData(imported);
-      setSelectedId(null);
+      // Erst nachfragen: Ein Import überschreibt alle aktuellen Daten
+      setPendingImport(imported);
       setImportError(null);
     } catch (err) {
       setImportError(err instanceof Error ? err.message : t('Backup-Datei konnte nicht gelesen werden.', 'Backup file could not be read.'));
     }
   };
 
-  const handleRestoreFromBackup = (restored: AppData) => {
+  const handleRestoreFromBackup = (restored: AppData, kind: 'import' | 'restore' = 'restore') => {
+    // Vorher die aktuellen Daten sichern, damit nichts verloren geht
+    const safety = createSafetyBackup(data, kind);
+    setImportSummary({ summary: diffData(data, restored), kind, safety });
     setData(restored);
     setSelectedId(null);
     setTab('grows');
+  };
+
+  // Alles zurücksetzen (App wie frisch installiert)
+  const handleReset = ({ deleteBackups }: { deleteBackups: boolean }) => {
+    const counts = {
+      grows: data.grows.length,
+      logs: data.grows.reduce((sum, g) => sum + (g.logs?.length ?? 0), 0),
+      batches: (data.batches ?? []).length,
+    };
+    if (deleteBackups) {
+      clearAllBackups();
+      clearBackupLog();
+    } else {
+      createSafetyBackup(data, 'reset');
+    }
+    setData(emptyData());
+    setSelectedId(null);
+    resetHints();
+    resetSelectedFertilizer();
+    setTourSeen(false);
+    setResetOpen(false);
+    setToast({
+      ok: true,
+      message: t(
+        `Zurückgesetzt: ${nGrows(counts.grows)}, ${nEntries(counts.logs)} und ${nBatches(counts.batches)} gelöscht.${deleteBackups ? '' : ' Ein Backup deiner Daten findest du unter „Backup“.'}`,
+        `Reset: ${nGrows(counts.grows)}, ${nEntries(counts.logs)} and ${nBatches(counts.batches)} deleted.${deleteBackups ? '' : ' A backup of your data is available under “Backup”.'}`
+      ),
+    });
   };
 
   // Athena/Backup-Overlay: Wenn ein anderer Tab aktiv ist, wird dieser im
@@ -207,7 +271,7 @@ export default function App() {
       ) : showBackup ? (
         <BackupPanel data={data} onRestore={handleRestoreFromBackup} />
       ) : showAbout ? (
-        <AboutPanel onStartTour={() => setTourOpen(true)} />
+        <AboutPanel onStartTour={() => setTourOpen(true)} onReset={() => setResetOpen(true)} />
       ) : selectedGrow ? (
         <>
           <GrowDetail
@@ -362,6 +426,52 @@ export default function App() {
             onCancel={() => setConfirmDelete(null)}
           />
         </>
+      )}
+      {importSummary && (
+        <ImportSummaryModal summary={importSummary.summary} kind={importSummary.kind} safetyBackup={importSummary.safety} onClose={() => setImportSummary(null)} />
+      )}
+      <ConfirmDialog
+        open={!!pendingImport}
+        title={t('Daten importieren?', 'Import data?')}
+        message={
+          pendingImport
+            ? t(
+                `Der Import überschreibt alle deine aktuellen Daten. Aktuell: ${nGrows(data.grows.length)} · ${nBatches((data.batches ?? []).length)}. In der Datei: ${nGrows(pendingImport.grows.length)} · ${nBatches((pendingImport.batches ?? []).length)}. Deine aktuellen Daten werden vorher automatisch als Backup gesichert. Fortfahren?`,
+                `The import overwrites all your current data. Currently: ${nGrows(data.grows.length)} · ${nBatches((data.batches ?? []).length)}. In the file: ${nGrows(pendingImport.grows.length)} · ${nBatches((pendingImport.batches ?? []).length)}. Your current data is backed up automatically first. Continue?`
+              )
+            : ''
+        }
+        confirmLabel={t('Importieren & überschreiben', 'Import & overwrite')}
+        cancelLabel={t('Abbrechen', 'Cancel')}
+        destructive
+        onConfirm={() => {
+          if (pendingImport) handleRestoreFromBackup(pendingImport, 'import');
+          setPendingImport(null);
+        }}
+        onCancel={() => setPendingImport(null)}
+      />
+      <ResetDialog
+        open={resetOpen}
+        counts={{
+          grows: data.grows.length,
+          logs: data.grows.reduce((sum, g) => sum + (g.logs?.length ?? 0), 0),
+          batches: (data.batches ?? []).length,
+        }}
+        onConfirm={handleReset}
+        onCancel={() => setResetOpen(false)}
+      />
+      {toast && (
+        <div
+          data-testid="app-toast"
+          className={`fixed bottom-14 left-1/2 -translate-x-1/2 z-50 w-[min(92vw,34rem)] flex items-start gap-2 rounded-xl px-3.5 py-3 shadow-2xl border bg-ink-900 ${
+            toast.ok ? 'border-accent-500/40' : 'border-error-500/40'
+          }`}
+        >
+          <p className={`text-sm break-all flex-1 ${toast.ok ? 'text-accent-300' : 'text-error-300'}`}>{toast.message}</p>
+          <button onClick={() => setToast(null)} className="text-ink-500 hover:text-white shrink-0 text-lg leading-none" aria-label="close">
+            ×
+          </button>
+        </div>
       )}
       {tourOpen && (
         <GuidedTour

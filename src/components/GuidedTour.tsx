@@ -71,13 +71,19 @@ function steps(): Step[] {
       tab: 'backup',
       title: 'Backup',
       intro: t('Sichere deine Daten: automatische Tages-Backups, „Speichern unter …“ mit frei wählbarem Pfad und Import.', 'Back up your data: automatic daily backups, “Save as …” with a freely chosen path, and import.'),
-      bullets: [t('Eine Übersicht zeigt, wo welche Backups gespeichert werden.', 'An overview shows where each backup is stored.')],
+      bullets: [
+        t('Eine Übersicht zeigt, wo welche Backups gespeichert werden.', 'An overview shows where each backup is stored.'),
+        t('Vor jedem Import oder jeder Wiederherstellung wird automatisch ein Sicherungs-Backup angelegt – nichts geht verloren.', 'Before every import or restore a safety backup is created automatically – nothing gets lost.'),
+      ],
     },
     {
       id: 'about',
       tab: 'about',
       title: t('Über', 'About'),
       intro: t('Version, Entwickler und Patchnotes. Hier kannst du diese Tour jederzeit erneut starten.', 'Version, developer and patch notes. You can restart this tour here at any time.'),
+      bullets: [
+        t('„Alles zurücksetzen“: löscht alle Daten und stellt die App wie neu her. Vorher wird automatisch ein Backup angelegt, und du musst „RESET“ eintippen – so geht nichts aus Versehen verloren.', '“Reset everything”: deletes all data and restores the app to a fresh state. A backup is created automatically first and you have to type “RESET” – so nothing is lost by accident.'),
+      ],
     },
   ];
 }

@@ -41,3 +41,13 @@ function subscribe(cb: () => void) {
 export function useSelectedFertilizer(): string {
   return useSyncExternalStore(subscribe, getSelectedFertilizer, getSelectedFertilizer);
 }
+
+/** Auswahl auf den Standard zurücksetzen (beim Zurücksetzen der App). */
+export function resetSelectedFertilizer(): void {
+  try {
+    localStorage.removeItem(FERTILIZER_STORAGE_KEY);
+  } catch {
+    /* ignore */
+  }
+  listeners.forEach((l) => l());
+}

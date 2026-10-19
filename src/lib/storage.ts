@@ -102,7 +102,10 @@ export interface AutoBackup {
   logCount: number;
   data: AppData;
   manual?: boolean;
+  label?: BackupLabel; // Sicherheits-Backup vor einer überschreibenden Aktion
 }
+
+export type BackupLabel = 'import' | 'restore' | 'reset';
 
 // ---- Backup-Log ----
 
@@ -192,6 +195,8 @@ export function getAutoBackups(): AutoBackup[] {
 }
 
 export function createAutoBackupIfDue(data: AppData): boolean {
+  // Nichts zu sichern, solange keine Daten vorhanden sind (z. B. frisch installiert oder zurückgesetzt)
+  if (data.grows.length === 0 && (data.batches ?? []).length === 0) return false;
   const today = new Date().toISOString().slice(0, 10);
   const backups = getAutoBackups();
   if (backups.some((b) => b.date === today)) return false;
@@ -220,6 +225,45 @@ export function createAutoBackupIfDue(data: AppData): boolean {
     console.error('Failed to save auto-backup', e);
     addBackupLog('auto', 'error', t('Auto-Backup fehlgeschlagen: Speicherfehler.', 'Auto backup failed: storage error.'));
     return false;
+  }
+}
+
+/**
+ * Sicherheits-Backup VOR einer Aktion, die alle aktuellen Daten überschreibt (Import, Wiederherstellung,
+ * Zurücksetzen). Ersetzt keine anderen Backups, damit auch mehrere Aktionen am selben Tag rückgängig
+ * gemacht werden können. Gibt true zurück, wenn gesichert wurde (false = es gab nichts zu sichern).
+ */
+export function createSafetyBackup(data: AppData, label: BackupLabel): boolean {
+  if (data.grows.length === 0 && (data.batches ?? []).length === 0) return false;
+  const verification = verifyBackup(data);
+  if (!verification.ok) return false;
+  const now = new Date();
+  const backup: AutoBackup = {
+    id: crypto.randomUUID(),
+    date: now.toISOString().slice(0, 10),
+    timestamp: now.toISOString(),
+    growCount: data.grows.length,
+    logCount: verification.logCount,
+    data,
+    manual: true,
+    label,
+  };
+  try {
+    localStorage.setItem(BACKUP_KEY, JSON.stringify([backup, ...getAutoBackups()].slice(0, MAX_BACKUPS)));
+    const what = { import: t('Import', 'import'), restore: t('Wiederherstellung', 'restore'), reset: t('Zurücksetzen', 'reset') }[label];
+    addBackupLog('manual', 'success', t(`Sicherheits-Backup vor ${what} erstellt: ${verification.growCount} Grows, ${verification.logCount} Einträge.`, `Safety backup before ${what} created: ${verification.growCount} grows, ${verification.logCount} entries.`));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Löscht alle gespeicherten Backups (Reset). */
+export function clearAllBackups(): void {
+  try {
+    localStorage.removeItem(BACKUP_KEY);
+  } catch {
+    /* ignore */
   }
 }
 
@@ -270,16 +314,21 @@ export function deleteAutoBackup(id: string): void {
   }
 }
 
+/** Bereinigt Daten eines Backups/Imports (ältere Backups haben neue Felder nicht). */
+export function normalizeAppData(d: AppData): AppData {
+  return {
+    version: CURRENT_VERSION,
+    grows: d.grows.map((g: Partial<Grow>) => normalizeGrow(g)),
+    batches: normalizeBatches(d.batches),
+  };
+}
+
 export function restoreAutoBackup(backup: AutoBackup): AppData {
   const verification = verifyBackup(backup.data);
   if (!verification.ok) {
     addBackupLog('restore', 'error', `${t('Wiederherstellung fehlgeschlagen', 'Restore failed')}: ${verification.errors.join('; ')}`);
   }
-  const normalized: AppData = {
-    version: CURRENT_VERSION,
-    grows: backup.data.grows.map((g: Partial<Grow>) => normalizeGrow(g)),
-    batches: normalizeBatches(backup.data.batches),
-  };
+  const normalized = normalizeAppData(backup.data);
   saveData(normalized);
   if (verification.ok) {
     addBackupLog('restore', 'success', `${t(`Backup vom ${backup.date} wiederhergestellt & verifiziert`, `Backup from ${backup.date} restored & verified`)}: ${verification.growCount} Grows, ${verification.logCount} ${t('Einträge', 'entries')}.`);

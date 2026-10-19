@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Scale, Leaf, Plus, Trash2, Sprout } from 'lucide-react';
 import type { CostCategory, CostEntry, Grow } from '@/types';
 import DateField from './DateField';
+import DarkSelect from './DarkSelect';
 import { formatDate } from '@/lib/growLogic';
 import {
   COST_CATEGORIES,
@@ -109,21 +110,15 @@ export default function CostsPanel({ grow, onChange }: Props) {
       {/* Neuer Eintrag */}
       <div className="rounded-2xl border border-ink-800 bg-ink-850/40 p-4">
         <div className="grid sm:grid-cols-2 gap-3">
-          <label className="block">
+          <div className="block">
             <span className="text-sm font-medium text-ink-200 mb-1.5 block">{t('Kategorie', 'Category')}</span>
-            <select
-              data-testid="cost-category"
+            <DarkSelect
+              testid="cost-category"
               value={category}
-              onChange={(e) => setCategory(e.target.value as CostCategory)}
-              className={inputCls}
-            >
-              {COST_CATEGORIES.map((c) => (
-                <option key={c.key} value={c.key}>
-                  {categoryLabel(c.key)}
-                </option>
-              ))}
-            </select>
-          </label>
+              onChange={(v) => setCategory(v as CostCategory)}
+              options={COST_CATEGORIES.map((c) => ({ value: c.key, label: categoryLabel(c.key) }))}
+            />
+          </div>
           <label className="block">
             <span className="text-sm font-medium text-ink-200 mb-1.5 block">
               {t('Betrag', 'Amount')} (€)

@@ -4,6 +4,7 @@
 
 @layer base {
   html {
+    color-scheme: dark; /* native Elemente (Scrollbars, Eingabefelder) dunkel darstellen */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }

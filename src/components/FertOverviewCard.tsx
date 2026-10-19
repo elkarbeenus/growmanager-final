@@ -2,13 +2,11 @@ import { FlaskConical, Info, Droplets } from 'lucide-react';
 import { useState } from 'react';
 import type { Grow, NutrientBatch } from '@/types';
 import FertPhaseTable from './FertPhaseTable';
+import DarkSelect from './DarkSelect';
 import { getFertilizers } from '@/lib/fertilizerData';
 import { setSelectedFertilizer, useSelectedFertilizer } from '@/lib/fertilizerSelection';
 import { computeUsage, formatMl } from '@/lib/fertUsage';
 import { fmtNum, litersToDisplay, t, volumeUnit } from '@/lib/i18n';
-
-const selCls =
-  'w-full bg-ink-850 border border-ink-700/70 rounded-xl px-3 py-2.5 text-sm text-ink-100 focus:outline-none focus:border-primary-500/60 focus:ring-2 focus:ring-primary-500/20 transition-all';
 
 /** Übersicht im Reiter "Nährlösung": Liter angemischt und mL Dünger je Produkt und Phase. */
 export default function FertOverviewCard({ batches, grows }: { batches: NutrientBatch[]; grows: Grow[] }) {
@@ -35,28 +33,25 @@ export default function FertOverviewCard({ batches, grows }: { batches: Nutrient
       </div>
 
       <div className="grid sm:grid-cols-2 gap-3">
-        <label className="block">
+        <div className="block">
           <span className="text-sm font-medium text-ink-200 mb-1.5 block">{t('Dünger (aus Reiter „Dünger“)', 'Fertilizer (from “Nutrients” tab)')}</span>
-          <select data-testid="fert-overview-select" value={globalFert} onChange={(e) => setSelectedFertilizer(e.target.value)} className={selCls}>
-            {schedules.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.brand} · {s.line}
-              </option>
-            ))}
-          </select>
-        </label>
+          <DarkSelect
+            testid="fert-overview-select"
+            value={globalFert}
+            onChange={setSelectedFertilizer}
+            options={schedules.map((s) => ({ value: s.id, label: `${s.brand} · ${s.line}` }))}
+          />
+        </div>
         {grows.length > 0 && (
-          <label className="block">
+          <div className="block">
             <span className="text-sm font-medium text-ink-200 mb-1.5 block">{t('Anzeigen für', 'Show for')}</span>
-            <select data-testid="fert-overview-grow" value={growFilter} onChange={(e) => setGrowFilter(e.target.value)} className={selCls}>
-              <option value="">{t('Alle Grows', 'All grows')}</option>
-              {grows.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.name}
-                </option>
-              ))}
-            </select>
-          </label>
+            <DarkSelect
+              testid="fert-overview-grow"
+              value={growFilter}
+              onChange={setGrowFilter}
+              options={[{ value: '', label: t('Alle Grows', 'All grows') }, ...grows.map((g) => ({ value: g.id, label: g.name }))]}
+            />
+          </div>
         )}
       </div>
 

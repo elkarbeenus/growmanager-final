@@ -1,13 +1,17 @@
-
 # growmanager
-<img width="1600" height="1662" alt="screenshot-1-grows" src="https://github.com/user-attachments/assets/a1e46151-e528-47df-bcda-bbe7e2721c53" />
 
 **A personal grow manager for tracking your plants, nutrients, costs and yield. It runs offline as a desktop app and keeps all data on your device.**
 
 growmanager helps you plan and document every grow from the first clone to the final harvest. It combines a grow journal, nutrient solution tracking, fertilizer schedules, cost and yield analysis and PDF reports in one app. It is available in English and German.
 
+## Screenshots
+
+![Grows overview with active, planned and past grows](docs/screenshot-1-grows.png)
+
+![Fertilizer usage by phase, calculated from the nutrient solution you mixed](docs/screenshot-2-fertilizer-usage.png)
+
 ## What it does
-<img width="1600" height="1125" alt="screenshot-2-fertilizer-usage" src="https://github.com/user-attachments/assets/cfa41dec-bc8c-433f-85fc-8647173f0def" />
+
 ### Grows & journal
 - Create grows with name, strain and **1–10 plants**. Start date and milestones apply equally to all plants of a grow.
 - Track milestones (clone start, veg, flower, end of stretch, expected and actual harvest) with an automatic phase timeline and progress.
@@ -37,6 +41,8 @@ growmanager helps you plan and document every grow from the first clone to the f
 - Everything is stored **locally**. No account and no cloud.
 - Automatic daily backups (14 days kept), manual backups, JSON export/import and "Save as…" to a folder of your choice.
 - A built-in overview shows where each backup is stored.
+- Imports ask for confirmation and show a short summary of what was added, changed or removed. A safety backup is created automatically before every import, restore or reset.
+- A **Reset everything** button in the About tab brings the app back to a fresh state (confirmed by typing `RESET`).
 
 ### Convenience
 - A short guided tour explains where to find what. It runs once and can be switched off or restarted at any time.
@@ -66,10 +72,12 @@ npx tauri dev      # desktop app (requires Rust)
 npx tauri build    # installer for your current system
 ```
 
+When the version is raised, update `package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` and the `tagName` / `releaseName` in `.github/workflows/main.yml`.
+
 ## Disclaimer
 
 Fertilizer values (except the official Athena values) are simplified guideline values. Please always compare them with the manufacturer's current feeding chart before using them.
 
 See `CHANGELOG.md` for patch notes.
 
-created with KI because my english is not that good :)
+Created with Bolt.new and Git.

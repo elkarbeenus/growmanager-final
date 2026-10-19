@@ -1,6 +1,7 @@
 import { FlaskConical, Droplets, Info } from 'lucide-react';
 import type { Grow, NutrientBatch } from '@/types';
 import FertPhaseTable from './FertPhaseTable';
+import DarkSelect from './DarkSelect';
 import { getFertilizers } from '@/lib/fertilizerData';
 import { useSelectedFertilizer } from '@/lib/fertilizerSelection';
 import { computeUsage, formatMl, scheduleById } from '@/lib/fertUsage';
@@ -14,9 +15,6 @@ interface Props {
   batches: NutrientBatch[];
   onFertilizerChange: (id: string | undefined) => void;
 }
-
-const inputCls =
-  'w-full bg-ink-850 border border-ink-700/70 rounded-xl px-3 py-2.5 text-sm text-ink-100 focus:outline-none focus:border-primary-500/60 focus:ring-2 focus:ring-primary-500/20 transition-all';
 
 /** Düngerverbrauch & angemischte Nährlösung eines einzelnen Grows (Ende des Runs). */
 export default function FertUsagePanel({ grow, allGrows, batches, onFertilizerChange }: Props) {
@@ -42,17 +40,18 @@ export default function FertUsagePanel({ grow, allGrows, batches, onFertilizerCh
         </p>
       </div>
 
-      <label className="block max-w-md mb-5">
+      <div className="block max-w-md mb-5">
         <span className="text-sm font-medium text-ink-200 mb-1.5 block">{t('Dünger für diesen Grow', 'Fertilizer for this grow')}</span>
-        <select data-testid="fert-select" value={grow.fertilizerId ?? ''} onChange={(e) => onFertilizerChange(e.target.value || undefined)} className={inputCls}>
-          <option value="">{t(`Standard (${globalName} – aus Reiter „Dünger“)`, `Default (${globalName} – from “Nutrients” tab)`)}</option>
-          {schedules.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.brand} · {s.line}
-            </option>
-          ))}
-        </select>
-      </label>
+        <DarkSelect
+          testid="fert-select"
+          value={grow.fertilizerId ?? ''}
+          onChange={(v) => onFertilizerChange(v || undefined)}
+          options={[
+            { value: '', label: t(`Standard (${globalName} – aus Reiter „Dünger“)`, `Default (${globalName} – from “Nutrients” tab)`) },
+            ...schedules.map((s) => ({ value: s.id, label: `${s.brand} · ${s.line}` })),
+          ]}
+        />
+      </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">
         <Tile label={t('Nährlösung gesamt', 'Solution total')} value={`${fmtNum(litersToDisplay(usage.liters) ?? 0, 1)} ${volumeUnit()}`} testid="fert-liters" icon={<Droplets size={13} />} />

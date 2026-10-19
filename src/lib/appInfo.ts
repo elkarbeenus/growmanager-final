@@ -3,7 +3,7 @@
 // Die Version wird beim Build aus package.json übernommen (siehe vite.config.ts).
 import { t } from '@/lib/i18n';
 
-export const APP_VERSION: string = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.1.1';
+export const APP_VERSION: string = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.2.1';
 
 export const APP_NAME = 'growmanager';
 
@@ -20,6 +20,34 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '1.2.1',
+    items: [
+      { de: 'Backup-Verlauf: „Schnell zurückspringen“ auf eines der letzten 2 Backups', en: 'Backup history: “Quick rollback” to one of the last 2 backups' },
+      { de: 'Zurückspringen und Wiederherstellen fragen nach und zeigen vorher, was verloren geht, zurückkommt oder geändert wird', en: 'Rolling back and restoring ask for confirmation and first show what will be lost, come back or change' },
+    ],
+  },
+  {
+    version: '1.2.0',
+    items: [
+      { de: 'Import oben rechts fragt jetzt nach, bevor alle aktuellen Daten überschrieben werden (mit Anzahl aktuell vs. Datei)', en: 'Import at the top right now asks before all current data is overwritten (showing current vs. file counts)' },
+      { de: 'Vor Import, Wiederherstellung und Zurücksetzen wird automatisch ein Sicherungs-Backup angelegt', en: 'A safety backup is created automatically before import, restore and reset' },
+      { de: 'Neu im Reiter „Über“: „Alles zurücksetzen“ (mit Bestätigung durch Eintippen von RESET); in der Einführungstour erklärt', en: 'New in the “About” tab: “Reset everything” (confirmed by typing RESET); explained in the tour' },
+    ],
+  },
+  {
+    version: '1.1.3',
+    items: [
+      { de: 'Fix: Der Export-Button oben rechts funktioniert jetzt auch in der Desktop-App (Speichern unter … mit Pfadanzeige)', en: 'Fix: the Export button at the top right now also works in the desktop app (Save as … with path shown)' },
+      { de: 'Neu: Nach Import oder Wiederherstellung zeigt ein kurzes Pop-up, was hinzugefügt, geändert oder entfernt wurde – oder dass die Daten gleich geblieben sind', en: 'New: after an import or restore, a short pop-up shows what was added, changed or removed – or that your data stayed the same' },
+    ],
+  },
+  {
+    version: '1.1.2',
+    items: [
+      { de: 'Auswahlfelder (z. B. in „Nährlösung“, Kosten, Dünger-Verbrauch) sind jetzt dunkel und funktionieren auf allen Systemen gleich', en: 'Dropdowns (e.g. in “Nutrient mix”, costs, fertilizer usage) are now dark and work the same on every system' },
+    ],
+  },
   {
     version: '1.1.1',
     items: [

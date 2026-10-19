@@ -1,5 +1,23 @@
 # Patchnotes – growmanager
 
+## v1.2.1
+- **Schnell zurückspringen:** Im „Backup-Verlauf“ lässt sich auf eines der letzten 2 Backups zurückspringen (inkl. der automatischen Sicherungs-Backups „vor Import“ usw.).
+- **Bestätigung mit Vorschau:** Zurückspringen und Wiederherstellen fragen nach und zeigen vorher, welche Grows/Ansätze verloren gehen, zurückkommen oder auf den Stand des Backups geändert werden. Vorher wird automatisch ein Sicherungs-Backup angelegt.
+
+## v1.2.0
+- **Import mit Rückfrage:** Der Import oben rechts fragt jetzt nach, bevor alle aktuellen Daten überschrieben werden, und zeigt dabei die Anzahl aktuell vs. in der Datei.
+- **Sicherheits-Backup:** Vor Import, Wiederherstellung und Zurücksetzen wird automatisch ein Backup deiner aktuellen Daten angelegt (Reiter „Backup“ → „Gespeicherte Backups“, markiert mit „vor Import“ usw.). Es ersetzt keine anderen Backups.
+- **Alles zurücksetzen:** Neuer Bereich im Reiter „Über“. Löscht alle Grows, Tagebucheinträge, Kosten und Ansätze und stellt die App wie frisch installiert wieder her. Bestätigung durch Eintippen von „RESET“; optional lassen sich auch alle gespeicherten Backups löschen. In der Einführungstour erklärt.
+- Auto-Backups werden nur noch angelegt, wenn es Daten zu sichern gibt.
+
+## v1.1.3
+- **Fix Export:** Der Export-Button oben rechts nutzt jetzt „Speichern unter …“ und funktioniert damit auch im AppImage bzw. in der Desktop-App. Nach dem Speichern wird der Pfad angezeigt.
+- **Import-Zusammenfassung:** Nach Import (oben rechts oder im Backup-Reiter) und nach einer Wiederherstellung zeigt ein kurzes Pop-up, was neu hinzugefügt, geändert oder entfernt wurde – oder dass die Daten gleich geblieben sind. Dazu die aktuelle Anzahl von Grows, Tagebucheinträgen und Ansätzen.
+
+## v1.1.2
+- **Auswahlfelder dunkel:** Die bisherigen weißen Systemlisten (z. B. in „Nährlösung“, Kosten, Dünger-Verbrauch) wurden durch eigene dunkle Auswahlfelder ersetzt. Sie lassen sich mit Maus und Tastatur (Pfeiltasten, Enter, Esc) bedienen und sehen auf Windows und Linux gleich aus.
+- Native Elemente (Scrollbalken, Eingabefelder) nutzen jetzt ebenfalls das dunkle Farbschema.
+
 ## v1.1.1
 - **Reiter „Dünger“:** Dosierungen werden jetzt in **mL pro 10 Liter** angezeigt (Englisch: **mL pro Gallone**), in den Wochenkarten und in den Schema-Tabellen. Die Verbrauchsrechnung ist davon nicht betroffen.
 

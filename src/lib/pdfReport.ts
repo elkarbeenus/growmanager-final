@@ -25,6 +25,7 @@ import {
   statsOf,
 } from '@/lib/growStats';
 import { computeUsage, formatMl, phaseLabel } from '@/lib/fertUsage';
+import { withAutoCosts } from '@/lib/fertPrices';
 import { t, locale, litersToDisplay, volumeUnit, fmtNum } from '@/lib/i18n';
 
 type PdfLib = typeof import('pdf-lib');
@@ -438,14 +439,17 @@ export async function buildGrowReport(
   grow: Grow,
   batches: NutrientBatch[] = [],
   allGrows: Grow[] = [grow],
-  globalFertId?: string
+  globalFertId?: string,
+  fertPrices?: Record<string, number>
 ): Promise<ReportResult> {
   const lib = await import('pdf-lib');
   const title = `${t('Grow-Bericht', 'Grow report')}: ${grow.name}`;
   const r = new Report(lib, title, grow.color);
   await r.init();
 
-  const stats = statsOf(grow);
+  // Dünger-Kosten automatisch aus Nährlösung × Preis einrechnen
+  const effGrow = withAutoCosts([grow], allGrows, batches, globalFertId, fertPrices)[0];
+  const stats = statsOf(effGrow);
   const phase = currentPhase(grow);
   const progress = phaseProgress(grow);
   const m = grow.milestones;
@@ -501,12 +505,12 @@ export async function buildGrowReport(
   }
 
   // Kosten
-  const costs = costsOf(grow);
+  const costs = costsOf(effGrow);
   r.h2(t('Kosten', 'Costs'));
   if (!costs.length) {
     r.text(t('Keine Kosten erfasst.', 'No costs recorded.'), { size: 9, color: r.lib.rgb(0.45, 0.5, 0.56), gap: 4 });
   } else {
-    r.bars(costByCategory([grow]).map((b) => ({ label: categoryLabel(b.key), value: b.amount, color: categoryColor(b.key), text: formatMoney(b.amount) })));
+    r.bars(costByCategory([effGrow]).map((b) => ({ label: categoryLabel(b.key), value: b.amount, color: categoryColor(b.key), text: formatMoney(b.amount) })));
     const sorted = [...costs].sort((a, b) => ((a.date ?? '') < (b.date ?? '') ? -1 : 1));
     r.table(
       [t('Datum', 'Date'), t('Kategorie', 'Category'), t('Beschreibung', 'Description'), t('Betrag', 'Amount')],

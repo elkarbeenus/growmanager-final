@@ -43,6 +43,17 @@ export function normalizeCosts(input: unknown): CostEntry[] | undefined {
   return list.length ? list : undefined;
 }
 
+/** Eigene Düngerpreise bereinigen (nur endliche Zahlen >= 0). */
+export function normalizeFertPrices(input: unknown): Record<string, number> | undefined {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return undefined;
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(input as Record<string, unknown>)) {
+    const n = Number(v);
+    if (typeof k === 'string' && k.includes(':') && Number.isFinite(n) && n >= 0) out[k] = n;
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
 export function normalizePlantCount(v: unknown): number | undefined {
   const n = Number(v);
   if (!Number.isFinite(n)) return undefined;
@@ -59,6 +70,7 @@ export function normalizeGrow(g: Partial<Grow>): Grow {
     milestones: g.milestones ?? {},
     logs: Array.isArray(g.logs) ? g.logs : [],
     drying: g.drying,
+    fertCostAuto: g.fertCostAuto === false ? false : undefined,
     fertilizerId: typeof g.fertilizerId === 'string' && g.fertilizerId ? g.fertilizerId : undefined,
     plantCount: normalizePlantCount(g.plantCount),
     costs: normalizeCosts(g.costs),
@@ -77,7 +89,7 @@ export function loadData(): AppData {
       milestones: g.milestones ?? {},
       logs: Array.isArray(g.logs) ? g.logs : [],
     }));
-    return { ...parsed, batches: normalizeBatches(parsed.batches), version: CURRENT_VERSION };
+    return { ...parsed, batches: normalizeBatches(parsed.batches), fertPrices: normalizeFertPrices(parsed.fertPrices), version: CURRENT_VERSION };
   } catch (e) {
     console.error('Failed to load GrowHub data', e);
     return emptyData();
@@ -320,6 +332,7 @@ export function normalizeAppData(d: AppData): AppData {
     version: CURRENT_VERSION,
     grows: d.grows.map((g: Partial<Grow>) => normalizeGrow(g)),
     batches: normalizeBatches(d.batches),
+    fertPrices: normalizeFertPrices(d.fertPrices),
   };
 }
 
@@ -374,6 +387,7 @@ export function importDataFromJSON(file: File): Promise<AppData> {
           version: CURRENT_VERSION,
           grows: parsed.grows.map((g: Partial<Grow>) => normalizeGrow(g)),
           batches: normalizeBatches(parsed.batches),
+          fertPrices: normalizeFertPrices(parsed.fertPrices),
         };
         addBackupLog('import', 'success', `${t('Import aus Datei', 'Import from file')}: ${verification.growCount} Grows, ${verification.logCount} ${t('Einträge', 'entries')}. ${t('Verifiziert.', 'Verified.')}`);
         resolve(normalized);

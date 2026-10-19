@@ -3,7 +3,7 @@
 // Die Version wird beim Build aus package.json übernommen (siehe vite.config.ts).
 import { t } from '@/lib/i18n';
 
-export const APP_VERSION: string = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.2.1';
+export const APP_VERSION: string = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.3.0';
 
 export const APP_NAME = 'growmanager';
 
@@ -20,6 +20,14 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '1.3.0',
+    items: [
+      { de: 'Dünger-Kosten werden jetzt automatisch aus der angemischten Nährlösung berechnet (Verbrauch × Preis) – kein manuelles Eintragen mehr nötig', en: 'Fertilizer costs are now calculated automatically from the mixed nutrient solution (usage × price) – no manual entry needed' },
+      { de: 'Durchschnittspreise (€ pro Liter) für alle Produkte hinterlegt; im Reiter „Dünger“ und im Grow an die eigenen Preise anpassbar', en: 'Average prices (€ per liter) stored for all products; adjustable to your own prices in the “Nutrients” tab and in the grow' },
+      { de: 'Die automatischen Kosten fließen in Kosten pro Pflanze/Gramm, Übersicht und PDF-Bericht ein; pro Grow abschaltbar', en: 'The automatic costs feed into cost per plant/gram, the overview and the PDF report; can be switched off per grow' },
+    ],
+  },
   {
     version: '1.2.1',
     items: [

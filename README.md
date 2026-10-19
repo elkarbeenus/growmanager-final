@@ -26,6 +26,7 @@ growmanager helps you plan and document every grow from the first clone to the f
 
 ### Costs & yield
 - Record costs per grow (nutrients, electricity, equipment, substrate, seeds/clones, other).
+- Fertilizer costs are **calculated automatically** from the nutrient solution you mixed (usage × price per liter). Average prices are preset and can be adjusted to your own.
 - Get cost per plant, yield per plant and **cost per gram** for every grow.
 - The **Overview** tab compares all grows with a year filter and charts.
 

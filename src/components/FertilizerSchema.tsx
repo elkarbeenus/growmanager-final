@@ -4,6 +4,7 @@ import { getFertilizers, stageLabel, type FertSchedule, type StageKind } from '@
 import { useSelectedFertilizer, setSelectedFertilizer } from '@/lib/fertilizerSelection';
 import { t, doseFromPerLiterDisplay, doseUnitShort, AS_NEEDED } from '@/lib/i18n';
 import AthenaSchema from '@/components/AthenaSchema';
+import FertPriceEditor from '@/components/FertPriceEditor';
 
 const STAGE_BADGE: Record<StageKind, string> = {
   start: 'text-ink-300 bg-ink-800 border-ink-700',
@@ -12,7 +13,13 @@ const STAGE_BADGE: Record<StageKind, string> = {
   flush: 'text-primary-300 bg-primary-500/10 border-primary-500/30',
 };
 
-export default function FertilizerSchema() {
+export default function FertilizerSchema({
+  prices,
+  onPricesChange,
+}: {
+  prices?: Record<string, number>;
+  onPricesChange?: (prices: Record<string, number> | undefined) => void;
+}) {
   const selectedId = useSelectedFertilizer(); // gilt auch als aktiver Dünger für die Verbrauchsrechnung
   const [activeWeek, setActiveWeek] = useState<number | null>(null);
   const [athenaDetail, setAthenaDetail] = useState(false);
@@ -86,6 +93,19 @@ export default function FertilizerSchema() {
           activeWeek={activeWeek}
           setActiveWeek={setActiveWeek}
         />
+      )}
+
+      {onPricesChange && (
+        <div className="rounded-2xl border border-ink-800 bg-ink-900/60 p-5" data-testid="fert-prices-card">
+          <h3 className="text-sm font-semibold text-white mb-1">{t('Preise für die Kostenrechnung', 'Prices for the cost calculation')}</h3>
+          <p className="text-xs text-ink-500 mb-4 leading-relaxed">
+            {t(
+              'Aus deinem Dünger-Verbrauch werden die Dünger-Kosten im Grow automatisch berechnet. Als Grundlage dienen diese Preise pro Liter – passe sie an deine echten Preise an.',
+              'The fertilizer costs in a grow are calculated automatically from your usage. These prices per liter are the basis – adjust them to your real prices.'
+            )}
+          </p>
+          <FertPriceEditor schedule={schedule} prices={prices} onChange={onPricesChange} />
+        </div>
       )}
     </div>
   );

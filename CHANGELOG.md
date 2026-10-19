@@ -1,5 +1,10 @@
 # Patchnotes – growmanager
 
+## v1.3.0
+- **Dünger-Kosten automatisch:** Im Bereich „Kosten & Ertrag“ eines Grows werden die Dünger-Kosten aus dem Dünger-Verbrauch (angemischte Nährlösung) × Preis pro Liter berechnet. Eine Aufstellung zeigt Verbrauch, Preis und Kosten je Produkt.
+- **Durchschnittspreise:** Für alle Produkte der Düngeschemata sind Richtwerte in € pro Liter hinterlegt. Eigene Preise lassen sich im Reiter „Dünger“ („Preise für die Kostenrechnung“) und direkt im Grow („Preise anpassen“) eintragen. Sie sind Teil des Backups.
+- Die automatischen Kosten fließen in Gesamtkosten, Kosten pro Pflanze und pro Gramm, die Übersicht und den PDF-Bericht ein. Pro Grow lässt sich „einrechnen“ abschalten; ein Hinweis warnt vor doppelter Erfassung mit manuellen Dünger-Einträgen.
+
 ## v1.2.1
 - **Schnell zurückspringen:** Im „Backup-Verlauf“ lässt sich auf eines der letzten 2 Backups zurückspringen (inkl. der automatischen Sicherungs-Backups „vor Import“ usw.).
 - **Bestätigung mit Vorschau:** Zurückspringen und Wiederherstellen fragen nach und zeigen vorher, welche Grows/Ansätze verloren gehen, zurückkommen oder auf den Stand des Backups geändert werden. Vorher wird automatisch ein Sicherungs-Backup angelegt.

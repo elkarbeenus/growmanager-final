@@ -4,6 +4,8 @@ import type { AppData, Grow } from '@/types';
 import PdfExportButton from './PdfExportButton';
 import { buildOverviewReport } from '@/lib/pdfReport';
 import { currentPhase } from '@/lib/growLogic';
+import { withAutoCosts } from '@/lib/fertPrices';
+import { useSelectedFertilizer } from '@/lib/fertilizerSelection';
 import {
   aggregate,
   categoryColor,
@@ -29,13 +31,14 @@ export default function OverviewPanel({ data, onOpenGrow }: Props) {
     () => Array.from(new Set(data.grows.map(growYear))).sort((a, b) => b - a),
     [data.grows]
   );
-  const grows: Grow[] = useMemo(
-    () =>
-      data.grows
-        .filter((g) => year === 'all' || growYear(g) === year)
-        .sort((a, b) => ((a.milestones.cloneStart ?? a.createdAt) < (b.milestones.cloneStart ?? b.createdAt) ? 1 : -1)),
-    [data.grows, year]
-  );
+  const globalFert = useSelectedFertilizer();
+  // Grows inkl. automatisch berechneter Dünger-Kosten (aus Nährlösung × Preis)
+  const grows: Grow[] = useMemo(() => {
+    const filtered = data.grows
+      .filter((g) => year === 'all' || growYear(g) === year)
+      .sort((a, b) => ((a.milestones.cloneStart ?? a.createdAt) < (b.milestones.cloneStart ?? b.createdAt) ? 1 : -1));
+    return withAutoCosts(filtered, data.grows, data.batches ?? [], globalFert, data.fertPrices);
+  }, [data.grows, data.batches, data.fertPrices, globalFert, year]);
 
   const agg = aggregate(grows);
   const cats = costByCategory(grows);

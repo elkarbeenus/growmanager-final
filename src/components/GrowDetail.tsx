@@ -35,6 +35,8 @@ import { plantsOf, plantsLabel } from '@/lib/growStats';
 interface GrowDetailProps {
   grow: Grow;
   allGrows: Grow[];
+  fertPrices: Record<string, number> | undefined;
+  onFertPricesChange: (prices: Record<string, number> | undefined) => void;
   batches: NutrientBatch[];
   onBack: () => void;
   onUpdateGrow: (grow: Grow) => void;
@@ -45,6 +47,8 @@ interface GrowDetailProps {
 export default function GrowDetail({
   grow,
   allGrows,
+  fertPrices,
+  onFertPricesChange,
   batches,
   onBack,
   onUpdateGrow,
@@ -130,7 +134,7 @@ export default function GrowDetail({
               testid="grow-pdf"
               label={t('PDF-Bericht', 'PDF report')}
               title={t('Bericht dieses Grows als PDF speichern', 'Save a report of this grow as PDF')}
-              build={() => buildGrowReport(grow, batches, allGrows, getSelectedFertilizer())}
+              build={() => buildGrowReport(grow, batches, allGrows, getSelectedFertilizer(), fertPrices)}
             />
             <button
               onClick={onEditGrow}
@@ -316,7 +320,15 @@ export default function GrowDetail({
 
       {/* Kosten & Ertrag */}
       <div id="sec-costs" className="scroll-mt-36 rounded-3xl border border-ink-800 bg-ink-900/60 p-5 sm:p-6">
-        <CostsPanel grow={grow} onChange={saveCosts} />
+        <CostsPanel
+          grow={grow}
+          allGrows={allGrows}
+          batches={batches}
+          fertPrices={fertPrices}
+          onFertPricesChange={onFertPricesChange}
+          onToggleAuto={(enabled) => onUpdateGrow({ ...grow, fertCostAuto: enabled ? undefined : false })}
+          onChange={saveCosts}
+        />
       </div>
 
       <LogEntryModal

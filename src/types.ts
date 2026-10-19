@@ -37,6 +37,7 @@ export interface CostEntry {
   label?: string;
   amount: number; // in EUR
   date?: string; // YYYY-MM-DD (optional)
+  auto?: boolean; // nur zur Laufzeit: automatisch aus der Nährlösung berechnet (wird nicht gespeichert)
 }
 
 export interface Grow {
@@ -47,6 +48,7 @@ export interface Grow {
   milestones: Milestones;
   logs: LogEntry[];
   drying?: DryingData;
+  fertCostAuto?: boolean; // false = Dünger-Kosten NICHT automatisch aus der Nährlösung berechnen (Standard: an)
   fertilizerId?: string; // gewähltes Düngeschema (z. B. 'athena') für die Verbrauchsauswertung
   plantCount?: number; // 1–10 Pflanzen pro Grow (Daten wie Start etc. gelten für alle gleich)
   costs?: CostEntry[]; // Kosten dieses Grows
@@ -67,6 +69,7 @@ export interface AppData {
   version: number;
   grows: Grow[];
   batches?: NutrientBatch[]; // Nährlösungs-Ansätze
+  fertPrices?: Record<string, number>; // eigene Düngerpreise (€ pro Liter), Schlüssel "schemaId:produktKey"
 }
 
 export type PhaseKey =

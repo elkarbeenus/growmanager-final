@@ -265,7 +265,7 @@ export default function App() {
           onChange={(batches: NutrientBatch[]) => setData((d) => ({ ...d, batches }))}
         />
       ) : showAthena ? (
-        <FertilizerSchema />
+        <FertilizerSchema prices={data.fertPrices} onPricesChange={(prices) => setData((d) => ({ ...d, fertPrices: prices }))} />
       ) : showShotSize ? (
         <ShotSizeCalculator />
       ) : showBackup ? (
@@ -277,6 +277,8 @@ export default function App() {
           <GrowDetail
             grow={selectedGrow}
             allGrows={data.grows}
+            fertPrices={data.fertPrices}
+            onFertPricesChange={(prices) => setData((d) => ({ ...d, fertPrices: prices }))}
             batches={data.batches ?? []}
             onBack={() => setSelectedId(null)}
             onUpdateGrow={updateGrow}

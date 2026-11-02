@@ -1,51 +1,67 @@
-name: 'Build Linux AppImage & Windows EXE'
-
+name: Build AppImage
+ 
+# Läuft NICHT bei jedem Push (spart Minuten), sondern:
+#  - per Knopfdruck (Actions-Tab -> "Run workflow")
+#  - wenn du einen Versions-Tag pushst, z.B. v1.2.0
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
-
+  push:
+    tags:
+      - "v*"
+ 
+# Wenn ein neuer Build startet, wird ein noch laufender alter abgebrochen
+concurrency:
+  group: build-appimage
+  cancel-in-progress: true
+ 
 jobs:
-  build-tauri:
-    permissions:
-      contents: write
-    strategy:
-      fail-fast: false
-      max-parallel: 1 # nacheinander bauen, damit beide Builds sauber an dasselbe Release angehängt werden
-      matrix:
-        include:
-          - platform: ubuntu-22.04
-            args: ''
-          - platform: windows-latest
-            args: '--bundles nsis' # Windows: Setup-.exe (NSIS)
-    runs-on: ${{ matrix.platform }}
+  build-linux:
+    # Ubuntu 22.04 = ältere glibc -> AppImage läuft auch auf SteamOS
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+ 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-
-      - name: Install Rust (required for Tauri)
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install Linux dependencies
-        if: matrix.platform == 'ubuntu-22.04'
+      - name: Code auschecken
+        uses: actions/checkout@v4
+ 
+      - name: System-Abhängigkeiten für Tauri installieren
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.0-dev build-essential curl wget file libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev patchelf
-
-      - name: Install frontend dependencies
-        run: npm install
-
-      - name: Tauri Build
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          sudo apt-get install -y \
+            libwebkit2gtk-4.0-dev \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libssl-dev \
+            libgtk-3-dev \
+            file
+ 
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
         with:
-          tagName: v1.6.0
-          releaseName: 'Grow Manager v1.6.0'
-          releaseBody: 'Automatisierter Build: Linux AppImage und Windows Setup (.exe).'
-          tauriScript: 'npx tauri'
-          args: ${{ matrix.args }}
+          node-version: 20
+ 
+      - name: Rust einrichten
+        uses: dtolnay/rust-toolchain@stable
+ 
+      - name: Rust-Build-Cache (macht spätere Builds viel schneller)
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "./src-tauri -> target"
+ 
+      - name: Node-Pakete installieren
+        run: npm install
+ 
+      - name: AppImage bauen
+        run: npx tauri build --bundles appimage
+ 
+      - name: AppImage hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: grow-app-appimage
+          path: src-tauri/target/release/bundle/appimage/*.AppImage
+          # Nach 7 Tagen automatisch löschen -> Speicher läuft nicht wieder voll
+          retention-days: 7
+          if-no-files-found: error
+ 

@@ -1,5 +1,5 @@
 # growmanager
-
+Now Version 1.8.0
 **Your personal grow manager – plan every grow, track nutrients, costs and yield, and keep everything on your own device.**
 
 growmanager is an offline desktop app (Linux AppImage and Windows installer) for home growers. It combines a grow journal, nutrient solution tracking, fertilizer schedules, automatic cost calculation (fertilizer and electricity), yield analysis, PDF reports and safe backups in one place. It is available in **English and German**, and no account or cloud is needed – all data stays on your computer.

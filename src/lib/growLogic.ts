@@ -143,13 +143,14 @@ export function currentPhase(grow: Grow): PhaseInfo {
   if (isPlanned(grow)) return PHASES.planning;
   if (m.expectedHarvest && today > m.expectedHarvest) return PHASES.ready;
   if (m.expectedHarvest && today === m.expectedHarvest) return PHASES.ready;
-  if (m.stretchEnd && today >= m.stretchEnd) return PHASES.bloom;
-  if (m.flowerStart && today < (m.stretchEnd ?? today)) return PHASES.stretch;
-  if (m.flowerStart && today >= m.flowerStart) return PHASES.stretch;
-  if (m.vegStart && today < (m.flowerStart ?? today)) return PHASES.veg;
+  // Blüte (Stretch/Blüte) beginnt erst ab dem Blütezeitpunkt – davor ist es Wachstum bzw. Steckling.
+  if (m.flowerStart && today >= m.flowerStart) {
+    return m.stretchEnd && today >= m.stretchEnd ? PHASES.bloom : PHASES.stretch;
+  }
   if (m.vegStart && today >= m.vegStart) return PHASES.veg;
-  if (start && today < (m.vegStart ?? today)) return PHASES.germination;
   if (start && today >= start) return PHASES.germination;
+  // Kein Steckling-Datum, aber spätere Daten in der Vergangenheit/Zukunft: bis zur Blüte = Wachstum
+  if (!start && !m.vegStart && m.flowerStart && today < m.flowerStart) return PHASES.veg;
 
   return PHASES.planning;
 }

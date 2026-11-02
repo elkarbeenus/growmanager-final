@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "growmanager",
-    "version": "1.6.0"
+    "version": "1.8.0"
   },
   "tauri": {
     "allowlist": {
@@ -23,28 +23,43 @@
       "fs": {
         "all": false,
         "writeFile": true,
-        "scope": ["$DOWNLOAD/**", "$DOCUMENT/**", "$DESKTOP/**", "$HOME/**"]
+        "scope": [
+          "$DOWNLOAD/**",
+          "$DOCUMENT/**",
+          "$DESKTOP/**",
+          "$HOME/**"
+        ]
+      },
+      "window": {
+        "all": false,
+        "close": true,
+        "setSize": true,
+        "setPosition": true,
+        "maximize": true
       }
     },
     "bundle": {
-  "active": true,
-  "targets": "all",
-  "identifier": "com.growmanager.app",
-  "icon": [
-    "icons/icon.png",
-    "icons/icon.ico"
-  ]
-},
+      "active": true,
+      "targets": "all",
+      "identifier": "com.growmanager.app",
+      "icon": [
+        "icons/icon.png",
+        "icons/icon.ico"
+      ]
+    },
     "security": {
       "csp": null
     },
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
+        "height": 820,
         "resizable": true,
-        "title": "Grow Kalender",
-        "width": 800
+        "title": "Grow Manager",
+        "width": 1200,
+        "minWidth": 420,
+        "minHeight": 480,
+        "center": true
       }
     ]
   }

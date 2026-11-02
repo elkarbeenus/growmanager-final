@@ -1,10 +1,10 @@
 [package]
 name = "growmanager"
-version = "1.6.0"
+version = "1.8.0"
 edition = "2021"
 
 [dependencies]
-tauri = { version = "1", features = ["shell-open", "dialog-save", "fs-write-file"] }
+tauri = { version = "1", features = ["shell-open", "dialog-save", "fs-write-file", "window-close", "window-set-size", "window-set-position", "window-maximize"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 

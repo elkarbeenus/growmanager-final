@@ -44,10 +44,18 @@ export interface Lamp {
   id: string;
   name: string; // Modell / Bezeichnung
   watts: number; // Leistungsaufnahme in Watt bei 100 %
-  dimVeg?: number; // Helligkeit im Wachstum in % (Standard 60)
+  dimVeg?: number; // Helligkeit im Wachstum in % (Standard 40)
   dimFlowerStart?: number; // Helligkeit zu Beginn der Blüte in % (Standard 60)
   dimFlowerEnd?: number; // Helligkeit nach der Rampe in % (Standard 100)
   rampWeeks?: number; // Wochen, in denen von Start- auf Endwert gesteigert wird (Standard 3)
+}
+
+/** Dimm-Profil (Helligkeit der LED in %) – pro Lampe als Vorgabe, pro Grow überschreibbar. */
+export interface DimProfile {
+  veg: number;
+  flowerStart: number;
+  flowerEnd: number;
+  rampWeeks: number;
 }
 
 export type DeviceType = 'exhaust' | 'clipfan' | 'controller' | 'dehumidifier' | 'humidifier' | 'other';
@@ -80,6 +88,9 @@ export interface Grow {
   drying?: DryingData;
   lampId?: string; // genutzte LED-Lampe (aus den Einstellungen)
   lampCount?: number; // Anzahl dieser Lampen (1–4)
+  dim?: DimProfile; // eigenes Dimm-Profil dieses Grows (überschreibt die Vorgabe der Lampe)
+  deviceUsage?: Record<string, DeviceUsage>; // Laufzeit je Gerät in diesem Grow (z. B. Ent-/Befeuchter)
+  images?: GrowImage[]; // angehängte Bilder (Daten in IndexedDB)
   deviceIds?: string[]; // genutzte weitere Geräte (aus den Einstellungen)
   powerCostAuto?: boolean; // false = Stromkosten NICHT automatisch berechnen (Standard: an)
   fertCostAuto?: boolean; // false = Dünger-Kosten NICHT automatisch aus der Nährlösung berechnen (Standard: an)
@@ -96,7 +107,28 @@ export interface NutrientBatch {
   note?: string;
   growId?: string; // für welchen Grow wurde angemischt (optional)
   weekIndex?: number; // manuell gewählte Schema-Woche (Index in den Wochen des Düngeschemas); sonst automatisch
+  purpose?: BatchPurpose; // 'soak' = Tränken (zählt nicht für den Countdown); Standard: 'use' = Gebrauch
   createdAt: string;
+}
+
+export type BatchPurpose = 'use' | 'soak';
+
+/** Bild an einem Grow. Die Bilddaten liegen lokal in IndexedDB und werden in Datei-Backups mitgespeichert. */
+export interface GrowImage {
+  id: string;
+  name: string; // ursprünglicher Dateiname
+  addedAt: string; // ISO
+  date?: string; // YYYY-MM-DD (Aufnahme-/Zuordnungsdatum)
+  caption?: string;
+  width?: number;
+  height?: number;
+  bytes?: number; // Größe nach dem Verkleinern
+}
+
+/** Laufzeit eines Geräts in einem bestimmten Grow (überschreibt die Vorgabe aus den Einstellungen). */
+export interface DeviceUsage {
+  hours?: number; // Stunden pro Tag
+  weeks?: number; // Anzahl Wochen, die das Gerät läuft (leer = gesamte Phase)
 }
 
 export interface AppData {
@@ -105,6 +137,7 @@ export interface AppData {
   batches?: NutrientBatch[]; // Nährlösungs-Ansätze
   settings?: AppSettings; // Strompreis, Lichtstunden, LED-Lampen
   fertPrices?: Record<string, number>; // eigene Düngerpreise (€ pro Liter), Schlüssel "schemaId:produktKey"
+  images?: Record<string, string>; // NUR in Backup-Dateien: Bilddaten (data-URL) je Bild-ID
 }
 
 export type PhaseKey =

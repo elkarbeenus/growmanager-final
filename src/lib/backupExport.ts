@@ -6,6 +6,8 @@
 import type { AppData } from '@/types';
 import { addBackupLog, exportDataAsJSON, verifyBackup } from '@/lib/storage';
 import { t } from '@/lib/i18n';
+import { withImages } from '@/lib/imageStore';
+import { getLastSave, joinPath, markSaved, setLastSave } from '@/lib/saveState';
 
 interface TauriGlobal {
   dialog?: {
@@ -51,21 +53,28 @@ export async function saveBackupAs(data: AppData): Promise<SaveResult> {
     addBackupLog('export', 'error', message);
     return { ok: false, message };
   }
-  const json = JSON.stringify(data, null, 2);
+  const payload = await withImages(data);
+  const json = JSON.stringify(payload, null, 2);
   const filename = backupFilename();
-  const summary = `${verification.growCount} Grows, ${verification.logCount} ${t('Einträge', 'entries')}`;
+  const imgCount = payload.images ? Object.keys(payload.images).length : 0;
+  const summary = `${verification.growCount} Grows, ${verification.logCount} ${t('Einträge', 'entries')}${imgCount ? `, ${imgCount} ${t('Bilder', 'images')}` : ''}`;
 
   try {
     const tg = tauri();
     if (tg?.dialog?.save && tg.fs?.writeTextFile) {
+      // Dialog öffnet im zuletzt gewählten Ordner
+      const last = getLastSave();
       const path = await tg.dialog.save({
-        defaultPath: filename,
+        defaultPath: last?.folder ? joinPath(last.folder, filename) : filename,
         filters: [{ name: 'JSON', extensions: ['json'] }],
       });
       if (!path) return { ok: false, cancelled: true, message: t('Speichern abgebrochen.', 'Saving cancelled.') };
       await tg.fs.writeTextFile(path, json);
+      const name = path.split(/[\\/]/).pop() ?? filename;
+      setLastSave({ location: path, filename: name, method: 'tauri' });
+      markSaved(data);
       addBackupLog('export', 'success', t(`Backup gespeichert unter ${path} (${summary}). Verifiziert.`, `Backup saved to ${path} (${summary}). Verified.`));
-      return { ok: true, method: 'tauri', filename: path.split(/[\\/]/).pop() ?? filename, location: path };
+      return { ok: true, method: 'tauri', filename: name, location: path };
     }
 
     const picker = savePicker();
@@ -77,11 +86,15 @@ export async function saveBackupAs(data: AppData): Promise<SaveResult> {
       const w = await handle.createWritable();
       await w.write(json);
       await w.close();
+      setLastSave({ filename: handle.name, method: 'picker' });
+      markSaved(data);
       addBackupLog('export', 'success', t(`Backup gespeichert als ${handle.name} (${summary}). Verifiziert.`, `Backup saved as ${handle.name} (${summary}). Verified.`));
       return { ok: true, method: 'picker', filename: handle.name };
     }
 
-    exportDataAsJSON(data); // protokolliert selbst
+    exportDataAsJSON(payload); // protokolliert selbst und markiert als gesichert
+    markSaved(data);
+    setLastSave({ filename, method: 'download' });
     return { ok: true, method: 'download', filename };
   } catch (e) {
     if (e instanceof DOMException && e.name === 'AbortError') {
@@ -147,3 +160,31 @@ export async function saveBinaryAs(
     return { ok: false, message: e instanceof Error ? e.message : t('Fehler beim Speichern.', 'Error while saving.') };
   }
 }
+
+/**
+ * Desktop-App: Backup ohne Dialog direkt in den zuletzt gewählten Ordner schreiben
+ * (z. B. beim Schließen der App). Gibt null zurück, wenn kein Ordner bekannt ist.
+ */
+export async function saveBackupToLastFolder(data: AppData): Promise<SaveResult | null> {
+  const tg = tauri();
+  const last = getLastSave();
+  if (!tg?.fs?.writeTextFile || !last?.folder) return null;
+  const verification = verifyBackup(data);
+  if (!verification.ok) return { ok: false, message: verification.errors.join('; ') };
+  try {
+    const payload = await withImages(data);
+    const filename = backupFilename();
+    const path = joinPath(last.folder, filename);
+    await tg.fs.writeTextFile(path, JSON.stringify(payload, null, 2));
+    setLastSave({ location: path, filename, method: 'tauri' });
+    markSaved(data);
+    addBackupLog('export', 'success', t(`Backup gespeichert unter ${path}. Verifiziert.`, `Backup saved to ${path}. Verified.`));
+    return { ok: true, method: 'tauri', filename, location: path };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    addBackupLog('export', 'error', `${t('Speichern fehlgeschlagen', 'Saving failed')}: ${message}`);
+    return { ok: false, message };
+  }
+}
+
+export const canSaveToLastFolder = () => !!tauri()?.fs?.writeTextFile && !!getLastSave()?.folder;

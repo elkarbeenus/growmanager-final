@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Sprout,
   Plus,
@@ -16,8 +16,9 @@ import {
   Info,
   Archive,
   Settings,
+  ShoppingCart,
 } from 'lucide-react';
-import type { AppData, Grow, NutrientBatch } from '@/types';
+import type { AppData, DeviceUsage, DimProfile, Grow, NutrientBatch } from '@/types';
 import {
   loadData,
   saveData,
@@ -28,7 +29,15 @@ import {
   clearAllBackups,
   clearBackupLog,
   emptyData,
+  createManualBackup,
 } from '@/lib/storage';
+import { storeImportedImages, clearImages } from '@/lib/imageStore';
+import { ensureSavedBaseline, hasUnsavedChanges, getLastSave } from '@/lib/saveState';
+import { usePersistentState, useScrollMemory, flushUi } from '@/lib/uiState';
+import { guardClose, closeWindowNow, isDesktop, restoreWindowState, trackWindowState, confirmRenderMode } from '@/lib/desktop';
+import { saveBackupToLastFolder, canSaveToLastFolder } from '@/lib/backupExport';
+import OrderClonesPanel from '@/components/OrderClonesPanel';
+import CloseDialog from '@/components/CloseDialog';
 import { currentPhase, isPlanned, earliestDate } from '@/lib/growLogic';
 import { plantsOf } from '@/lib/growStats';
 import GrowCard from '@/components/GrowCard';
@@ -55,7 +64,10 @@ import VersionBadge from '@/components/VersionBadge';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { t, useLang } from '@/lib/i18n';
 
-type Tab = 'grows' | 'overview' | 'nutrient' | 'athena' | 'shotsize' | 'backup' | 'settings' | 'about';
+type Tab = 'grows' | 'overview' | 'nutrient' | 'athena' | 'shotsize' | 'order' | 'backup' | 'settings' | 'about';
+const TABS: Tab[] = ['grows', 'overview', 'nutrient', 'athena', 'shotsize', 'order', 'backup', 'settings', 'about'];
+const isTab = (v: unknown): v is Tab => typeof v === 'string' && (TABS as string[]).includes(v);
+const isStrOrNull = (v: unknown): v is string | null => v === null || typeof v === 'string';
 
 const nGrows = (n: number) => `${n} ${n === 1 ? 'Grow' : 'Grows'}`;
 const nBatches = (n: number) => `${n} ${n === 1 ? t('Ansatz', 'batch') : t('Ansätze', 'batches')}`;
@@ -63,12 +75,15 @@ const nEntries = (n: number) => `${n} ${n === 1 ? t('Eintrag', 'entry') : t('Ein
 
 export default function App() {
   const [data, setData] = useState<AppData>(() => loadData());
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = usePersistentState<string | null>('selectedGrow', null, isStrOrNull);
   const [formOpen, setFormOpen] = useState(false);
   const [editingGrow, setEditingGrow] = useState<Grow | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Grow | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
-  const [tab, setTab] = useState<Tab>('grows');
+  const [tab, setTab] = usePersistentState<Tab>('tab', 'grows', isTab);
+  const [activeCollapsed, setActiveCollapsed] = usePersistentState<boolean>('sec:active', false);
+  const [plannedCollapsed, setPlannedCollapsed] = usePersistentState<boolean>('sec:planned', false);
+  const [closeAsk, setCloseAsk] = useState(false);
   const [importSummary, setImportSummary] = useState<{ summary: ImportSummary; kind: 'import' | 'restore'; safety: boolean } | null>(null);
   const [pendingImport, setPendingImport] = useState<AppData | null>(null);
   const [resetOpen, setResetOpen] = useState(false);
@@ -80,6 +95,52 @@ export default function App() {
   useEffect(() => {
     saveData(data);
   }, [data]);
+
+  // Beim ersten Start dieser Version: aktuellen Stand als „gesichert“ übernehmen
+  useEffect(() => {
+    ensureSavedBaseline(data);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Desktop-App: Fenstergröße/-position wiederherstellen und merken; Darstellungsmodus bestätigen
+  useEffect(() => {
+    if (!isDesktop()) return;
+    void restoreWindowState();
+    const off = trackWindowState();
+    const timer = setTimeout(confirmRenderMode, 1500);
+    return () => {
+      off();
+      clearTimeout(timer);
+    };
+  }, []);
+
+  // Beim Schließen fragen, wenn es Änderungen seit dem letzten Backup gibt
+  const dataRef = useRef(data);
+  dataRef.current = data;
+  const closeNow = useCallback(async () => {
+    flushUi();
+    saveData(dataRef.current);
+    await closeWindowNow();
+  }, []);
+  useEffect(() => {
+    if (isDesktop()) {
+      return guardClose(() => {
+        flushUi();
+        saveData(dataRef.current);
+        if (hasUnsavedChanges(dataRef.current)) setCloseAsk(true);
+        else void closeNow();
+      });
+    }
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      flushUi();
+      if (hasUnsavedChanges(dataRef.current)) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [closeNow]);
 
   // Täglicher Auto-Backup beim Laden / beim Datenwechsel prüfen
   useEffect(() => {
@@ -108,13 +169,13 @@ export default function App() {
     setFormOpen(true);
   };
 
-  const submitForm = (input: { name: string; strain: string; color: string; plantCount: number; lampId?: string; lampCount?: number; deviceIds?: string[] }) => {
+  const submitForm = (input: { name: string; strain: string; color: string; plantCount: number; lampId?: string; lampCount?: number; deviceIds?: string[]; dim?: DimProfile; deviceUsage?: Record<string, DeviceUsage> }) => {
     if (editingGrow) {
       setData((d) => ({
         ...d,
         grows: d.grows.map((g) =>
           g.id === editingGrow.id
-            ? { ...g, name: input.name, strain: input.strain, color: input.color, plantCount: input.plantCount, lampId: input.lampId, lampCount: input.lampCount, deviceIds: input.deviceIds }
+            ? { ...g, name: input.name, strain: input.strain, color: input.color, plantCount: input.plantCount, lampId: input.lampId, lampCount: input.lampCount, deviceIds: input.deviceIds, dim: input.dim, deviceUsage: input.deviceUsage }
             : g
         ),
       }));
@@ -128,6 +189,8 @@ export default function App() {
         lampId: input.lampId,
         lampCount: input.lampCount,
         deviceIds: input.deviceIds,
+        dim: input.dim,
+        deviceUsage: input.deviceUsage,
         milestones: {},
         logs: [],
         createdAt: new Date().toISOString(),
@@ -197,6 +260,15 @@ export default function App() {
   };
 
   const handleRestoreFromBackup = (restored: AppData, kind: 'import' | 'restore' = 'restore') => {
+    // Bilder aus einer Backup-Datei zuerst lokal speichern (die Bilddaten gehören nicht in den App-Speicher)
+    if (restored.images) {
+      void storeImportedImages(restored).then((clean) => applyRestore(clean, kind));
+      return;
+    }
+    applyRestore(restored, kind);
+  };
+
+  const applyRestore = (restored: AppData, kind: 'import' | 'restore') => {
     // Vorher die aktuellen Daten sichern, damit nichts verloren geht
     const safety = createSafetyBackup(data, kind);
     setImportSummary({ summary: diffData(data, restored), kind, safety });
@@ -220,6 +292,7 @@ export default function App() {
     }
     setData(emptyData());
     setSelectedId(null);
+    if (deleteBackups) void clearImages().catch(() => {});
     resetHints();
     resetSelectedFertilizer();
     setTourSeen(false);
@@ -243,6 +316,10 @@ export default function App() {
   const showBackup = tab === 'backup';
   const showSettings = tab === 'settings';
   const showAbout = tab === 'about';
+  const showOrder = tab === 'order';
+
+  // Scroll-Position je Ansicht merken (auch über Neustarts)
+  useScrollMemory(tab === 'grows' ? (selectedGrow ? `grow:${selectedGrow.id}` : 'grows') : tab);
 
   return (
     <Shell
@@ -255,6 +332,7 @@ export default function App() {
       fileInputRef={fileInputRef}
       importError={importError}
       batches={data.batches}
+      grows={data.grows}
     >
       {showOverview ? (
         <OverviewPanel
@@ -274,6 +352,8 @@ export default function App() {
         <FertilizerSchema prices={data.fertPrices} onPricesChange={(prices) => setData((d) => ({ ...d, fertPrices: prices }))} />
       ) : showShotSize ? (
         <ShotSizeCalculator />
+      ) : showOrder ? (
+        <OrderClonesPanel />
       ) : showBackup ? (
         <BackupPanel data={data} onRestore={handleRestoreFromBackup} />
       ) : showSettings ? (
@@ -290,10 +370,14 @@ export default function App() {
                 settings,
                 grows: d.grows.map((g) => {
                   let next = g;
-                  if (g.lampId && !ids.has(g.lampId)) next = { ...next, lampId: undefined, lampCount: undefined };
+                  if (g.lampId && !ids.has(g.lampId)) next = { ...next, lampId: undefined, lampCount: undefined, dim: undefined };
                   if (g.deviceIds?.some((x) => !devIds.has(x))) {
                     const keep = g.deviceIds.filter((x) => devIds.has(x));
                     next = { ...next, deviceIds: keep.length ? keep : undefined };
+                  }
+                  if (g.deviceUsage && Object.keys(g.deviceUsage).some((x) => !devIds.has(x))) {
+                    const u = Object.fromEntries(Object.entries(g.deviceUsage).filter(([x]) => devIds.has(x)));
+                    next = { ...next, deviceUsage: Object.keys(u).length ? u : undefined };
                   }
                   return next;
                 }),
@@ -322,7 +406,7 @@ export default function App() {
             open={formOpen}
             onClose={() => setFormOpen(false)}
             onSubmit={submitForm}
-            initial={editingGrow ? { name: editingGrow.name, strain: editingGrow.strain ?? '', color: editingGrow.color, plantCount: plantsOf(editingGrow), lampId: editingGrow.lampId, lampCount: editingGrow.lampCount, deviceIds: editingGrow.deviceIds } : undefined}
+            initial={editingGrow ? { name: editingGrow.name, strain: editingGrow.strain ?? '', color: editingGrow.color, plantCount: plantsOf(editingGrow), lampId: editingGrow.lampId, lampCount: editingGrow.lampCount, deviceIds: editingGrow.deviceIds, dim: editingGrow.dim, deviceUsage: editingGrow.deviceUsage } : undefined}
             lamps={data.settings?.lamps ?? []}
             devices={data.settings?.devices ?? []}
             mode="edit"
@@ -393,9 +477,11 @@ export default function App() {
           ) : (
             <>
               {activeGrows.length > 0 && (
-                <section className="mb-8">
-                  <SectionLabel>{t('Aktiv', 'Active')}</SectionLabel>
-                  <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                <section className="mb-8" data-testid="section-active">
+                  <CollapsibleLabel collapsed={activeCollapsed} onToggle={() => setActiveCollapsed((v) => !v)} count={activeGrows.length} testid="toggle-active">
+                    {t('Aktiv', 'Active')}
+                  </CollapsibleLabel>
+                  {!activeCollapsed && <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
                     {activeGrows.map((grow) => (
                       <GrowCard
                         key={grow.id}
@@ -405,19 +491,19 @@ export default function App() {
                         onDelete={() => requestDelete(grow)}
                       />
                     ))}
-                  </div>
+                  </div>}
                 </section>
               )}
 
               {plannedGrows.length > 0 && (
-                <section className="mb-8">
-                  <SectionLabel>
+                <section className="mb-8" data-testid="section-planned">
+                  <CollapsibleLabel collapsed={plannedCollapsed} onToggle={() => setPlannedCollapsed((v) => !v)} count={plannedGrows.length} testid="toggle-planned">
                     <span className="flex items-center gap-2">
                       <Hourglass size={14} className="text-ink-400" />
                       {t('Geplant', 'Planned')}
                     </span>
-                  </SectionLabel>
-                  <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                  </CollapsibleLabel>
+                  {!plannedCollapsed && <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
                     {plannedGrows.map((grow) => (
                       <GrowCard
                         key={grow.id}
@@ -427,7 +513,7 @@ export default function App() {
                         onDelete={() => requestDelete(grow)}
                       />
                     ))}
-                  </div>
+                  </div>}
                 </section>
               )}
 
@@ -446,7 +532,7 @@ export default function App() {
             open={formOpen}
             onClose={() => setFormOpen(false)}
             onSubmit={submitForm}
-            initial={editingGrow ? { name: editingGrow.name, strain: editingGrow.strain ?? '', color: editingGrow.color, plantCount: plantsOf(editingGrow), lampId: editingGrow.lampId, lampCount: editingGrow.lampCount, deviceIds: editingGrow.deviceIds } : undefined}
+            initial={editingGrow ? { name: editingGrow.name, strain: editingGrow.strain ?? '', color: editingGrow.color, plantCount: plantsOf(editingGrow), lampId: editingGrow.lampId, lampCount: editingGrow.lampCount, deviceIds: editingGrow.deviceIds, dim: editingGrow.dim, deviceUsage: editingGrow.deviceUsage } : undefined}
             lamps={data.settings?.lamps ?? []}
             devices={data.settings?.devices ?? []}
             mode={editingGrow ? 'edit' : 'create'}
@@ -512,6 +598,30 @@ export default function App() {
           </button>
         </div>
       )}
+      <CloseDialog
+        open={closeAsk}
+        folder={canSaveToLastFolder() ? getLastSave()?.folder : undefined}
+        onCancel={() => setCloseAsk(false)}
+        onCloseWithoutSaving={() => void closeNow()}
+        onSaveAndClose={async () => {
+          const current = dataRef.current;
+          const r = createManualBackup(current);
+          if (canSaveToLastFolder()) {
+            const f = await saveBackupToLastFolder(current);
+            if (f && !f.ok) {
+              setToast({ ok: false, message: t(`Datei-Backup fehlgeschlagen: ${f.message}`, `File backup failed: ${f.message}`) });
+              setCloseAsk(false);
+              return;
+            }
+          }
+          if (!r.ok) {
+            setToast({ ok: false, message: r.errors.join('; ') });
+            setCloseAsk(false);
+            return;
+          }
+          await closeNow();
+        }}
+      />
       {tourOpen && (
         <GuidedTour
           startTab={tab}
@@ -536,8 +646,10 @@ function Shell({
   fileInputRef,
   importError,
   batches,
+  grows,
 }: {
   batches: NutrientBatch[] | undefined;
+  grows: Grow[];
   children: React.ReactNode;
   tab: Tab;
   onTabChange: (t: Tab) => void;
@@ -550,7 +662,7 @@ function Shell({
 }) {
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-30 backdrop-blur-xl bg-ink-950/70 border-b border-ink-800/80">
+      <header className="sticky top-0 z-30 bg-ink-950/95 border-b border-ink-800/80">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center shadow-glow">
@@ -644,6 +756,13 @@ function Shell({
               label={t('Shot Size', 'Shot size')}
             />
             <TabButton
+              tour="order"
+              active={tab === 'order'}
+              onClick={() => onTabChange('order')}
+              icon={<ShoppingCart size={15} />}
+              label={t('Steckling bestellen', 'Order clones')}
+            />
+            <TabButton
               tour="backup"
               active={tab === 'backup'}
               onClick={() => onTabChange('backup')}
@@ -667,7 +786,7 @@ function Shell({
           </nav>
         </div>
 
-        <NutrientBanner batches={batches} onClick={() => onTabChange('nutrient')} />
+        <NutrientBanner batches={batches} grows={grows} onClick={() => onTabChange('nutrient')} />
 
         {importError && (
           <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-2 mt-1">
@@ -756,6 +875,37 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+function CollapsibleLabel({
+  children,
+  collapsed,
+  onToggle,
+  count,
+  testid,
+}: {
+  children: React.ReactNode;
+  collapsed: boolean;
+  onToggle: () => void;
+  count: number;
+  testid?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      data-testid={testid}
+      aria-expanded={!collapsed}
+      className="w-full flex items-center justify-between gap-3 mb-3 group"
+    >
+      <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-ink-500 group-hover:text-ink-300 transition-colors">
+        {collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+        {children}
+        <span className="normal-case tracking-normal font-medium text-ink-600">({count})</span>
+      </span>
+      <span className="text-xs text-ink-600 group-hover:text-ink-400">{collapsed ? t('aufklappen', 'expand') : t('einklappen', 'collapse')}</span>
+    </button>
+  );
+}
+
 function EmptyState({ onCreate }: { onCreate: () => void }) {
   return (
     <div className="rounded-3xl border border-dashed border-ink-700/60 bg-ink-900/40 px-6 py-16 text-center">
@@ -810,29 +960,28 @@ function HarvestedByYear({
     return Array.from(groups.entries()).sort((a, b) => b[0] - a[0]);
   }, [harvestedGrows]);
 
-  const [openYears, setOpenYears] = useState<Set<number>>(() => {
-    // Neuestes Jahr standardmäßig aufgeklappt
-    return new Set(yearGroups.length > 0 ? [yearGroups[0][0]] : []);
-  });
+  // Neuestes Jahr standardmäßig aufgeklappt; Auswahl wird gemerkt
+  const [openYearList, setOpenYearList] = usePersistentState<number[]>(
+    'sec:years',
+    yearGroups.length > 0 ? [yearGroups[0][0]] : [],
+    (v): v is number[] => Array.isArray(v) && v.every((x) => typeof x === 'number')
+  );
+  const openYears = new Set(openYearList);
+  const [pastCollapsed, setPastCollapsed] = usePersistentState<boolean>('sec:past', false);
 
   const toggleYear = (year: number) => {
-    setOpenYears((prev) => {
-      const next = new Set(prev);
-      if (next.has(year)) next.delete(year);
-      else next.add(year);
-      return next;
-    });
+    setOpenYearList((prev) => (prev.includes(year) ? prev.filter((y) => y !== year) : [...prev, year]));
   };
 
   return (
     <section>
-      <SectionLabel>
+      <CollapsibleLabel collapsed={pastCollapsed} onToggle={() => setPastCollapsed((v) => !v)} count={harvestedGrows.length} testid="toggle-past">
         <span className="flex items-center gap-2">
           <Flower2 size={14} className="text-error-400" />
           {t('Bisherige Grows', 'Past grows')}
         </span>
-      </SectionLabel>
-      <div className="space-y-3">
+      </CollapsibleLabel>
+      {!pastCollapsed && <div className="space-y-3">
         {yearGroups.map(([year, grows]) => {
           const isOpen = openYears.has(year);
           return (
@@ -877,7 +1026,7 @@ function HarvestedByYear({
             </div>
           );
         })}
-      </div>
+      </div>}
     </section>
   );
 }

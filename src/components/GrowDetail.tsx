@@ -25,6 +25,7 @@ import Journal from './Journal';
 import DryingPanel from './DryingPanel';
 import LogEntryModal from './LogEntryModal';
 import CostsPanel from './CostsPanel';
+import GrowImages from './GrowImages';
 import FertUsagePanel from './FertUsagePanel';
 import PdfExportButton from './PdfExportButton';
 import { buildGrowReport } from '@/lib/pdfReport';
@@ -259,6 +260,7 @@ export default function GrowDetail({
           {[
             ['sec-milestones', t('Meilensteine & Pflanzen', 'Milestones & plants')],
             ['sec-journal', t('Tagebuch', 'Journal')],
+            ['sec-images', t('Bilder', 'Photos')],
             ['sec-drying', t('Trocknung & Ernte', 'Drying & harvest')],
             ['sec-fert', t('Dünger-Verbrauch', 'Fertilizer usage')],
             ['sec-costs', t('Kosten & Ertrag', 'Costs & yield')],
@@ -307,6 +309,11 @@ export default function GrowDetail({
         />
       </div>
 
+      {/* Bilder */}
+      <div id="sec-images" className="scroll-mt-36 rounded-3xl border border-ink-800 bg-ink-900/60 p-5 sm:p-6 mb-5">
+        <GrowImages grow={grow} onChange={(images) => onUpdateGrow({ ...grow, images })} />
+      </div>
+
       {/* Trocknung */}
       <div id="sec-drying" className="scroll-mt-36 rounded-3xl border border-ink-800 bg-ink-900/60 p-5 sm:p-6 mb-5">
         <DryingPanel grow={grow} onChange={saveDrying} />
@@ -334,7 +341,9 @@ export default function GrowDetail({
           settings={settings}
           onOpenSettings={onOpenSettings}
           onToggleAutoPower={(enabled) => onUpdateGrow({ ...grow, powerCostAuto: enabled ? undefined : false })}
-          onLampChange={(lampId, count) => onUpdateGrow({ ...grow, lampId, lampCount: lampId ? count : undefined })}
+          onLampChange={(lampId, count) => onUpdateGrow({ ...grow, lampId, lampCount: lampId ? count : undefined, dim: lampId && lampId === grow.lampId ? grow.dim : undefined })}
+          onDimChange={(dim) => onUpdateGrow({ ...grow, dim })}
+          onDeviceUsageChange={(deviceUsage) => onUpdateGrow({ ...grow, deviceUsage })}
           onDevicesChange={(ids) => onUpdateGrow({ ...grow, deviceIds: ids.length ? ids : undefined })}
           onChange={saveCosts}
         />

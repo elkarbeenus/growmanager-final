@@ -56,7 +56,9 @@ import {
 import BackupExportCard from '@/components/BackupExportCard';
 import BackupLocationInfo from '@/components/BackupLocationInfo';
 import RestorePreviewDialog from '@/components/RestorePreviewDialog';
-import { saveBackupAs, exportCapability } from '@/lib/backupExport';
+import { saveBackupAs, exportCapability, saveBackupToLastFolder } from '@/lib/backupExport';
+import { withImages } from '@/lib/imageStore';
+import { markSaved, setLastSave, useLastSave } from '@/lib/saveState';
 import { t, locale } from '@/lib/i18n';
 
 interface BackupPanelProps {
@@ -283,7 +285,9 @@ export default function BackupPanel({ data, onRestore }: BackupPanelProps) {
       }
       const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
       const filename = `growhub-backup-${stamp}.json`;
-      await writeToBackupDir(dirHandle, filename, JSON.stringify(data, null, 2));
+      await writeToBackupDir(dirHandle, filename, JSON.stringify(await withImages(data), null, 2));
+      markSaved(data);
+      setLastSave({ filename: `${dirHandle.name}/${filename}`, method: 'folder' });
       setDirStatus({ ok: true, message: t(`Backup in „${dirHandle.name}/${filename}" gespeichert & verifiziert.`, `Backup saved to "${dirHandle.name}/${filename}" & verified.`) });
       addBackupLog('export', 'success', t(`Backup in Speicherort gespeichert: ${filename} (${verification.growCount} Grows, ${verification.logCount} Einträge). Verifiziert.`, `Backup saved to location: ${filename} (${verification.growCount} grows, ${verification.logCount} entries). Verified.`));
       refreshDirFiles(dirHandle);
@@ -486,16 +490,8 @@ export default function BackupPanel({ data, onRestore }: BackupPanelProps) {
           )}
         </p>
 
-        {!supportsFileSystemAccess() ? (
-          <div className="rounded-xl bg-ink-850/60 border border-ink-800 px-4 py-3.5 flex items-start gap-2.5">
-            <Info size={15} className="text-ink-500 mt-0.5 shrink-0" />
-            <p className="text-sm text-ink-400 leading-relaxed">
-              {t(
-                'Dein Browser unterstützt die direkte Ordner-Auswahl nicht. Verwende stattdessen „Alle Daten als Datei exportieren“ oben, um die Backup-Datei manuell in deinen Wunschordner zu speichern.',
-                'Your browser does not support direct folder selection. Use “Export all data as file” above instead to save the backup file manually to your preferred folder.'
-              )}
-            </p>
-          </div>
+        {!supportsFileSystemAccess() || exportCapability() === 'tauri' ? (
+          <LastFolderBox data={data} onDone={refresh} />
         ) : !dirHandle ? (
           <button
             onClick={handlePickDir}
@@ -1008,4 +1004,61 @@ function formatBackupTime(iso: string): string {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+/** Speicherort ohne Ordner-Auswahl-API (z. B. Desktop-App): zuletzt bei „Speichern unter …“ gewählter Ordner. */
+function LastFolderBox({ data, onDone }: { data: AppData; onDone?: () => void }) {
+  const last = useLastSave();
+  const desktop = exportCapability() === 'tauri';
+  const [status, setStatus] = useState<{ ok: boolean; message: string } | null>(null);
+  const folder = last?.folder;
+  return (
+    <div className="space-y-3" data-testid="last-folder-box">
+      {folder ? (
+        <div className="rounded-xl bg-ink-850/60 border border-ink-800 p-4 flex items-start gap-3">
+          <div className="h-9 w-9 rounded-lg bg-primary-500/10 border border-primary-500/20 flex items-center justify-center shrink-0">
+            <FolderCheck size={16} className="text-primary-400" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-semibold text-ink-100 break-all" data-testid="last-folder">{folder}</div>
+            <div className="text-xs text-ink-500 mt-1">
+              {t('Zuletzt bei „Speichern unter …“ gewählt. Der Dialog öffnet beim nächsten Mal in diesem Ordner.', 'Last chosen with “Save as …”. The dialog opens in this folder next time.')}
+            </div>
+            {last?.location && (
+              <div className="text-[11px] text-ink-500 mt-1 break-all">
+                {t('Letzte Datei', 'Last file')}: {last.location} · {new Date(last.at).toLocaleString()}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-xl bg-ink-850/60 border border-ink-800 px-4 py-3.5 flex items-start gap-2.5">
+          <Info size={15} className="text-ink-500 mt-0.5 shrink-0" />
+          <p className="text-sm text-ink-400 leading-relaxed">
+            {desktop
+              ? t('Noch kein Ordner gewählt. Speichere ein Backup mit „Speichern unter …“ oben – der gewählte Ordner wird hier angezeigt und für die nächsten Backups vorgeschlagen.', 'No folder chosen yet. Save a backup with “Save as …” above – the chosen folder is shown here and suggested for the next backups.')
+              : last
+                ? t(`Zuletzt gespeichert: „${last.filename}“ (${new Date(last.at).toLocaleString()}). Der Browser verrät den Ordner nicht – es ist der, den du im Dialog gewählt hast.`, `Last saved: “${last.filename}” (${new Date(last.at).toLocaleString()}). The browser does not reveal the folder – it is the one you chose in the dialog.`)
+                : t('Dein Browser unterstützt die direkte Ordner-Auswahl nicht. Verwende „Speichern unter …“ oben, um die Backup-Datei in deinen Wunschordner zu speichern.', 'Your browser does not support direct folder selection. Use “Save as …” above to save the backup file to your preferred folder.')}
+          </p>
+        </div>
+      )}
+      {desktop && folder && (
+        <button
+          type="button"
+          data-testid="save-to-last-folder"
+          onClick={async () => {
+            const r = await saveBackupToLastFolder(data);
+            if (r) setStatus(r.ok ? { ok: true, message: t(`Gespeichert: ${r.location}`, `Saved: ${r.location}`) } : { ok: false, message: r.message });
+            onDone?.();
+          }}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-ink-950 bg-primary-500 hover:bg-primary-400 transition-colors shadow-glow"
+        >
+          <FileJson size={16} />
+          {t('Backup in diesen Ordner speichern', 'Save backup to this folder')}
+        </button>
+      )}
+      {status && <p className={`text-xs break-all ${status.ok ? 'text-accent-300' : 'text-error-300'}`}>{status.message}</p>}
+    </div>
+  );
 }

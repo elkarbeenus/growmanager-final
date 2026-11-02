@@ -18,22 +18,23 @@ growmanager is an offline desktop app (Linux AppImage and Windows installer) for
 - Keep a daily journal: pH, EC, temperature, humidity, watering amount, nutrient flag and notes.
 - Grows are sorted into **Active**, **Planned** and **Past grows** (by year); a "Pending" counter shows planned grows without distorting your active numbers.
 - Record drying data and the harvest amount.
+- Attach **photos** to every grow – they are stored as a copy inside the app and included in backup files, so they stay visible even if the original file is moved or deleted.
 
 ### Nutrient solution & fertilizer
-- Log every batch of nutrient solution (date and liters); a timer reminds you when to mix a fresh batch.
+- Log every batch of nutrient solution (date and liters) and mark it as **use** or **soaking**. A timer reminds you when to mix a fresh batch – **separately for every grow** the batch is assigned to; soaking batches do not count for the countdown.
 - Choose your fertilizer: Athena (Blended Line, manufacturer values), Hesi, Plagron, Biobizz and Advanced Nutrients (guideline values). Doses are shown in **mL per gallon** (English) or **mL per 10 L** (German).
 - See your **fertilizer usage in mL per product, split by phase** (veg / flower), plus the liters of solution mixed – per grow or for all grows. Batches are matched to the right grow and schedule week automatically, or you can set them by hand.
 
 ### Costs & yield – calculated automatically
 - **Fertilizer costs** are calculated from your usage (mL per product × price per liter). Average prices are preset and can be adjusted to your own.
-- **Electricity costs** are calculated from your LED lamp, light hours, electricity price and the other devices in the tent (exhaust fan, clip fan, grow controller, dehumidifier, humidifier) – each with its own power and run time.
+- **Electricity costs** are calculated from your LED lamp, light hours, electricity price and the other devices in the tent (exhaust fan, clip fan, grow controller, dehumidifier, humidifier) – each with its own power and run time. For dehumidifiers and humidifiers you can set the **hours per day and number of weeks per grow**.
 - Add manual costs for everything else (equipment, substrate, seeds/clones, other).
 - Get total cost, cost per plant, yield per plant and **cost per gram** for every grow.
 - The **Overview** tab compares all grows with a year filter and charts.
 
 ### Settings
 - Enter your **electricity price (€/kWh)** and light hours (default 18 h veg / 12 h flower) once.
-- Add your **LED lamps** (with a **dimming profile**: e.g. 60 % in veg, 60 → 100 % during the first weeks of flower) and **other devices** with model and watts; choose per grow which ones are used.
+- Add your **LED lamps** (with a **dimming profile**: by default 40 % in veg, 60 % at the start of the stretch rising to 100 % by the end of the stretch (flower) – adjustable per lamp and with **sliders for every grow**) and **other devices** with model and watts; choose per grow which ones are used.
 
 ### PDF reports
 - Create a PDF report for a single grow or an overview of all grows.
@@ -51,6 +52,9 @@ growmanager is an offline desktop app (Linux AppImage and Windows installer) for
 - **Reset everything** in the About tab brings the app back to a fresh state (confirmed by typing `RESET`).
 
 ### Convenience
+- **Order clones** tab with links to clone shops that open in your default browser.
+- The app **remembers your layout** (tab, open grow, collapsed sections, scroll position, window size) and asks to make a backup when you close it with unsaved changes.
+- Optional **hardware acceleration** on Linux for smooth scrolling, with automatic fallback to safe mode.
 - A short **guided tour** explains where to find what. It runs once and can be switched off or restarted at any time. Hint cards can be dismissed.
 - English and German, liters and gallons.
 - Dark interface for use in low light.

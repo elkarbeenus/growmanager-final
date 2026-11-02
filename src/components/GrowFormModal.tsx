@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react';
 import { Sprout, Check } from 'lucide-react';
 import Modal from './Modal';
 import DarkSelect from './DarkSelect';
-import type { Device, Lamp } from '@/types';
+import type { Device, DeviceUsage, DimProfile, Lamp } from '@/types';
+import DeviceUsageFields from './DeviceUsageFields';
+import DimSliders from './DimSliders';
+import { lampDim } from '@/lib/power';
 import { GROW_COLOR_PRESETS } from '@/lib/storage';
 import { t } from '@/lib/i18n';
 
@@ -10,8 +13,8 @@ import { t } from '@/lib/i18n';
 interface GrowFormModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: { name: string; strain: string; color: string; plantCount: number; lampId?: string; lampCount?: number; deviceIds?: string[] }) => void;
-  initial?: { name: string; strain: string; color: string; plantCount?: number; lampId?: string; lampCount?: number; deviceIds?: string[] };
+  onSubmit: (data: { name: string; strain: string; color: string; plantCount: number; lampId?: string; lampCount?: number; deviceIds?: string[]; dim?: DimProfile; deviceUsage?: Record<string, DeviceUsage> }) => void;
+  initial?: { name: string; strain: string; color: string; plantCount?: number; lampId?: string; lampCount?: number; deviceIds?: string[]; dim?: DimProfile; deviceUsage?: Record<string, DeviceUsage> };
   lamps?: Lamp[];
   devices?: Device[];
   mode?: 'create' | 'edit';
@@ -33,6 +36,8 @@ export default function GrowFormModal({
   const [lampId, setLampId] = useState('');
   const [lampCount, setLampCount] = useState(1);
   const [deviceIds, setDeviceIds] = useState<string[]>([]);
+  const [dim, setDim] = useState<DimProfile | undefined>(undefined);
+  const [deviceUsage, setDeviceUsage] = useState<Record<string, DeviceUsage> | undefined>(undefined);
 
   useEffect(() => {
     if (open) {
@@ -43,14 +48,17 @@ export default function GrowFormModal({
       setLampId(initial?.lampId ?? '');
       setLampCount(initial?.lampCount ?? 1);
       setDeviceIds(initial?.deviceIds ?? []);
+      setDim(initial?.dim);
+      setDeviceUsage(initial?.deviceUsage);
     }
   }, [open, initial]);
 
+  const selectedLamp = lamps.find((l) => l.id === lampId);
   const canSubmit = name.trim().length > 0;
 
   const submit = () => {
     if (!canSubmit) return;
-    onSubmit({ name: name.trim(), strain: strain.trim(), color, plantCount, lampId: lampId || undefined, lampCount: lampId ? lampCount : undefined, deviceIds: deviceIds.length ? deviceIds : undefined });
+    onSubmit({ name: name.trim(), strain: strain.trim(), color, plantCount, lampId: lampId || undefined, lampCount: lampId ? lampCount : undefined, deviceIds: deviceIds.length ? deviceIds : undefined, dim: lampId ? dim : undefined, deviceUsage: pruneUsage(deviceUsage, deviceIds) });
   };
 
   return (
@@ -133,7 +141,7 @@ export default function GrowFormModal({
               <DarkSelect
                 testid="grow-lamp"
                 value={lampId}
-                onChange={setLampId}
+                onChange={(v) => { if (v !== lampId) setDim(undefined); setLampId(v); }}
                 options={[{ value: '', label: t('Keine – Strom nicht berechnen', 'None – do not calculate electricity') }, ...lamps.map((l) => ({ value: l.id, label: `${l.name} (${l.watts} W)` }))]}
               />
               {lampId && (
@@ -152,6 +160,11 @@ export default function GrowFormModal({
                       {n}
                     </button>
                   ))}
+                </div>
+              )}
+              {lampId && selectedLamp && (
+                <div className="mt-3">
+                  <DimSliders testid="form-dim" value={lampDim(selectedLamp, dim)} base={lampDim(selectedLamp)} custom={!!dim} onChange={setDim} onReset={() => setDim(undefined)} />
                 </div>
               )}
             </>
@@ -181,6 +194,9 @@ export default function GrowFormModal({
                   </button>
                 );
               })}
+            </div>
+            <div className="mt-2.5">
+              <DeviceUsageFields testid="form-usage" devices={devices} selectedIds={deviceIds} usage={deviceUsage} onChange={setDeviceUsage} />
             </div>
           </div>
         )}
@@ -227,4 +243,11 @@ export default function GrowFormModal({
       </div>
     </Modal>
   );
+}
+
+/** Laufzeiten nur für gewählte Geräte behalten. */
+function pruneUsage(u: Record<string, DeviceUsage> | undefined, ids: string[]): Record<string, DeviceUsage> | undefined {
+  if (!u) return undefined;
+  const out = Object.fromEntries(Object.entries(u).filter(([id]) => ids.includes(id)));
+  return Object.keys(out).length ? out : undefined;
 }

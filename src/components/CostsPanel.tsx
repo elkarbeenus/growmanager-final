@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Scale, Leaf, Plus, Trash2, Sprout, FlaskConical, ChevronDown, Zap } from 'lucide-react';
-import type { AppSettings, CostCategory, CostEntry, Grow, NutrientBatch } from '@/types';
+import type { AppSettings, CostCategory, CostEntry, DeviceUsage, DimProfile, Grow, NutrientBatch } from '@/types';
 import DateField from './DateField';
 import DarkSelect from './DarkSelect';
+import DimSliders from './DimSliders';
+import DeviceUsageFields from './DeviceUsageFields';
 import FertPriceEditor from './FertPriceEditor';
 import { autoFertCost, withAutoCosts } from '@/lib/fertPrices';
 import { useSelectedFertilizer } from '@/lib/fertilizerSelection';
 import { formatMl } from '@/lib/fertUsage';
-import { autoPowerCost, MAX_LAMPS_PER_GROW } from '@/lib/power';
+import { autoPowerCost, lampDim, MAX_LAMPS_PER_GROW } from '@/lib/power';
 import { formatDate } from '@/lib/growLogic';
 import {
   COST_CATEGORIES,
@@ -33,14 +35,16 @@ interface Props {
   onOpenSettings?: () => void;
   onToggleAutoPower: (enabled: boolean) => void;
   onLampChange: (lampId: string | undefined, count: number) => void;
+  onDimChange: (dim: DimProfile | undefined) => void;
   onDevicesChange: (ids: string[]) => void;
+  onDeviceUsageChange?: (usage: Record<string, DeviceUsage> | undefined) => void;
   onChange: (costs: CostEntry[] | undefined) => void;
 }
 
 const inputCls =
   'w-full bg-ink-850 border border-ink-700/70 rounded-xl px-3 py-2.5 text-sm text-ink-100 placeholder-ink-600 focus:outline-none focus:border-primary-500/60 focus:ring-2 focus:ring-primary-500/20 transition-all';
 
-export default function CostsPanel({ grow, allGrows, batches, fertPrices, onFertPricesChange, onToggleAuto, settings, onOpenSettings, onToggleAutoPower, onLampChange, onDevicesChange, onChange }: Props) {
+export default function CostsPanel({ grow, allGrows, batches, fertPrices, onFertPricesChange, onToggleAuto, settings, onOpenSettings, onToggleAutoPower, onLampChange, onDimChange, onDevicesChange, onDeviceUsageChange, onChange }: Props) {
   const [category, setCategory] = useState<CostCategory>('nutrients');
   const [label, setLabel] = useState('');
   const [amount, setAmount] = useState('');
@@ -312,6 +316,19 @@ export default function CostsPanel({ grow, allGrows, batches, fertPrices, onFert
           )}
         </div>
 
+        {grow.lampId && lamps.find((l) => l.id === grow.lampId) && (
+          <div className="mt-3">
+            <DimSliders
+              testid="inline-dim"
+              value={lampDim(lamps.find((l) => l.id === grow.lampId)!, grow.dim)}
+              base={lampDim(lamps.find((l) => l.id === grow.lampId)!)}
+              custom={!!grow.dim}
+              onChange={onDimChange}
+              onReset={() => onDimChange(undefined)}
+            />
+          </div>
+        )}
+
         {devices.length > 0 && (
           <div className="mt-3" data-testid="device-chips">
             <div className="text-[11px] uppercase tracking-wide text-ink-500 mb-1.5">{t('Weitere Geräte in diesem Grow', 'Other devices in this grow')}</div>
@@ -334,6 +351,11 @@ export default function CostsPanel({ grow, allGrows, batches, fertPrices, onFert
                 );
               })}
             </div>
+            {onDeviceUsageChange && (
+              <div className="mt-3">
+                <DeviceUsageFields testid="inline-usage" devices={devices} selectedIds={grow.deviceIds ?? []} usage={grow.deviceUsage} onChange={onDeviceUsageChange} />
+              </div>
+            )}
           </div>
         )}
 

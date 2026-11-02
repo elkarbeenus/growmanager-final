@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 import { setTourSeen } from '@/lib/hints';
 import { t } from '@/lib/i18n';
 
-export type TourTab = 'grows' | 'overview' | 'nutrient' | 'athena' | 'shotsize' | 'backup' | 'settings' | 'about';
+export type TourTab = 'grows' | 'overview' | 'nutrient' | 'athena' | 'shotsize' | 'order' | 'backup' | 'settings' | 'about';
 
 interface Step {
   id: string;
@@ -31,7 +31,8 @@ function steps(): Step[] {
       bullets: [
         t('Neuer Grow: Name, Sorte und Anzahl Pflanzen (1–10).', 'New grow: name, strain and number of plants (1–10).'),
         t('Im Grow ganz oben bei „Meilensteine“: Pflanzenanzahl und Daten (Start, Wachstum, Blüte, Ernte).', 'In the grow, at the top under “Milestones”: number of plants and dates (start, veg, flower, harvest).'),
-        t('Weiter unten: Tagebuch, Trocknung & Ernte, Dünger-Verbrauch, Kosten & Ertrag.', 'Further down: journal, drying & harvest, fertilizer usage, costs & yield.'),
+        t('Weiter unten: Tagebuch, Bilder, Trocknung & Ernte, Dünger-Verbrauch, Kosten & Ertrag.', 'Further down: journal, photos, drying & harvest, fertilizer usage, costs & yield.'),
+        t('„Aktiv“ und „Geplant“ lassen sich einklappen – die App merkt sich dein Layout für den nächsten Start.', '“Active” and “Planned” can be collapsed – the app remembers your layout for the next start.'),
         t('Die Chips unter dem Titel springen direkt zu jedem Bereich.', 'The chips below the title jump straight to each section.'),
         t('„PDF-Bericht“ oben rechts zeigt den Bericht erst in einer Vorschau.', '“PDF report” at the top right shows the report in a preview first.'),
       ],
@@ -48,8 +49,9 @@ function steps(): Step[] {
       title: t('Nährlösung', 'Nutrient mix'),
       intro: t('Trage hier jeden angemischten Ansatz ein (Datum und Liter).', 'Log every batch you mix here (date and liters).'),
       bullets: [
-        t('Der Timer erinnert dich ans Erneuern der Nährlösung.', 'The timer reminds you to renew the solution.'),
-        t('Der Ansatz wird automatisch dem Grow zugeordnet, der an diesem Datum lief.', 'The batch is assigned automatically to the grow that was running on that date.'),
+        t('Der Timer erinnert dich ans Erneuern der Nährlösung – ordnest du einen Ansatz einem Grow zu, bekommt dieser Grow seinen eigenen Countdown.', 'The timer reminds you to renew the solution – if you assign a batch to a grow, that grow gets its own countdown.'),
+        t('„Tränken“ (zum Durchtränken des Substrats) zählt nicht für den Countdown, „Gebrauch“ schon.', '“Soaking” (for soaking the substrate) does not count for the countdown, “Use” does.'),
+        t('Ohne Zuordnung wird der Ansatz für den Verbrauch automatisch dem Grow zugeordnet, der an diesem Datum lief.', 'Without an assignment the batch is matched to the grow that was running on that date for the usage.'),
         t('Oben siehst du den Verbrauch je Phase (Wachstum / Blüte) in mL.', 'At the top you see the usage per phase (veg / flower) in mL.'),
       ],
     },
@@ -65,6 +67,12 @@ function steps(): Step[] {
       tab: 'shotsize',
       title: 'Shot Size',
       intro: t('Crop-Steering-Rechner: Mediumgröße eingeben, Shotgröße für vegetativ und generativ in % und mL.', 'Crop steering calculator: enter the medium size to get the shot size for vegetative and generative in % and mL.'),
+    },
+    {
+      id: 'order',
+      tab: 'order',
+      title: t('Steckling bestellen', 'Order clones'),
+      intro: t('Direkte Links zu Steckling-Shops – sie öffnen sich in deinem Standardbrowser.', 'Direct links to clone shops – they open in your default browser.'),
     },
     {
       id: 'backup',

@@ -1,5 +1,7 @@
-import type { AppData, AppSettings, CostEntry, Device, Grow, NutrientBatch } from '@/types';
+import type { AppData, AppSettings, CostEntry, Device, DeviceUsage, DimProfile, Grow, GrowImage, NutrientBatch } from '@/types';
 import { t } from '@/lib/i18n';
+import { markSaved } from '@/lib/saveState';
+import { normalizeImageMap } from '@/lib/imageStore';
 
 const STORAGE_KEY = 'growhub:data:v1';
 const BACKUP_KEY = 'growhub:backups:v1';
@@ -22,6 +24,7 @@ export function normalizeBatches(input: unknown): NutrientBatch[] {
       note: b.note,
       growId: typeof b.growId === 'string' && b.growId ? b.growId : undefined,
       weekIndex: typeof b.weekIndex === 'number' && Number.isInteger(b.weekIndex) && b.weekIndex >= 0 ? b.weekIndex : undefined,
+      purpose: b.purpose === 'soak' ? ('soak' as const) : undefined,
       createdAt: b.createdAt ?? new Date().toISOString(),
     }));
 }
@@ -58,6 +61,50 @@ const num = (v: unknown, min: number, max: number): number | undefined => {
   const n = Number(v);
   return v !== undefined && v !== null && v !== '' && Number.isFinite(n) && n >= min && n <= max ? n : undefined;
 };
+
+function normalizeDeviceUsage(input: unknown): Record<string, DeviceUsage> | undefined {
+  if (!input || typeof input !== 'object') return undefined;
+  const out: Record<string, DeviceUsage> = {};
+  for (const [id, v] of Object.entries(input as Record<string, unknown>)) {
+    if (!v || typeof v !== 'object') continue;
+    const o = v as Record<string, unknown>;
+    const hours = num(o.hours, 0, 24);
+    const weeks = num(o.weeks, 0, 52);
+    if (hours !== undefined || weeks !== undefined) out[id] = { hours, weeks };
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
+function normalizeImages(input: unknown): GrowImage[] | undefined {
+  if (!Array.isArray(input)) return undefined;
+  const list = input
+    .filter((x) => !!x && typeof (x as { id?: unknown }).id === 'string')
+    .map((x) => {
+      const o = x as Record<string, unknown>;
+      return {
+        id: String(o.id),
+        name: typeof o.name === 'string' ? o.name : 'Bild',
+        addedAt: typeof o.addedAt === 'string' ? o.addedAt : new Date().toISOString(),
+        date: typeof o.date === 'string' ? o.date : undefined,
+        caption: typeof o.caption === 'string' && o.caption ? o.caption : undefined,
+        width: num(o.width, 0, 100000),
+        height: num(o.height, 0, 100000),
+        bytes: num(o.bytes, 0, 1e9),
+      };
+    });
+  return list.length ? list : undefined;
+}
+
+function normalizeDim(input: unknown): DimProfile | undefined {
+  if (!input || typeof input !== 'object') return undefined;
+  const o = input as Record<string, unknown>;
+  const veg = num(o.veg, 0, 100);
+  const fs = num(o.flowerStart, 0, 100);
+  const fe = num(o.flowerEnd, 0, 100);
+  const rw = num(o.rampWeeks, 0, 12);
+  if (veg === undefined || fs === undefined || fe === undefined || rw === undefined) return undefined;
+  return { veg, flowerStart: fs, flowerEnd: fe, rampWeeks: rw };
+}
 
 /** Einstellungen bereinigen (Strompreis, Lichtstunden, LED-Lampen). */
 export function normalizeSettings(input: unknown): AppSettings | undefined {
@@ -124,6 +171,9 @@ export function normalizeGrow(g: Partial<Grow>): Grow {
     lampId: typeof g.lampId === 'string' && g.lampId ? g.lampId : undefined,
     deviceIds: Array.isArray(g.deviceIds) && g.deviceIds.some((x) => typeof x === 'string') ? g.deviceIds.filter((x): x is string => typeof x === 'string') : undefined,
     lampCount: g.lampId ? Math.min(4, Math.max(1, Math.round(Number(g.lampCount ?? 1)) || 1)) : undefined,
+    dim: g.lampId ? normalizeDim(g.dim) : undefined,
+    deviceUsage: normalizeDeviceUsage(g.deviceUsage),
+    images: normalizeImages(g.images),
     powerCostAuto: g.powerCostAuto === false ? false : undefined,
     fertCostAuto: g.fertCostAuto === false ? false : undefined,
     fertilizerId: typeof g.fertilizerId === 'string' && g.fertilizerId ? g.fertilizerId : undefined,
@@ -286,6 +336,7 @@ export function createAutoBackupIfDue(data: AppData): boolean {
   const updated = [backup, ...backups].slice(0, MAX_BACKUPS);
   try {
     localStorage.setItem(BACKUP_KEY, JSON.stringify(updated));
+    markSaved(data);
     addBackupLog('auto', 'success', `${t('Auto-Backup erstellt', 'Auto backup created')}: ${verification.growCount} Grows, ${verification.logCount} ${t('Einträge', 'entries')}. ${t('Verifiziert.', 'Verified.')}`);
     return true;
   } catch (e) {
@@ -358,6 +409,7 @@ export function createManualBackup(data: AppData): { ok: boolean; backup?: AutoB
   const updated = [backup, ...filtered].slice(0, MAX_BACKUPS);
   try {
     localStorage.setItem(BACKUP_KEY, JSON.stringify(updated));
+    markSaved(data);
     addBackupLog('manual', 'success', `${t('Manuelles Backup erstellt & verifiziert', 'Manual backup created & verified')}: ${verification.growCount} Grows, ${verification.logCount} ${t('Einträge', 'entries')}.`);
     return { ok: true, backup, errors: [] };
   } catch (e) {
@@ -425,6 +477,7 @@ export function exportDataAsJSON(data: AppData): void {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  markSaved(data);
   addBackupLog('export', 'success', `${t('Export als Datei', 'Export as file')}: ${verification.growCount} Grows, ${verification.logCount} ${t('Einträge', 'entries')}. ${t('Verifiziert.', 'Verified.')}`);
 }
 
@@ -445,6 +498,7 @@ export function importDataFromJSON(file: File): Promise<AppData> {
           batches: normalizeBatches(parsed.batches),
           fertPrices: normalizeFertPrices(parsed.fertPrices),
           settings: normalizeSettings(parsed.settings),
+          images: normalizeImageMap(parsed.images),
         };
         addBackupLog('import', 'success', `${t('Import aus Datei', 'Import from file')}: ${verification.growCount} Grows, ${verification.logCount} ${t('Einträge', 'entries')}. ${t('Verifiziert.', 'Verified.')}`);
         resolve(normalized);

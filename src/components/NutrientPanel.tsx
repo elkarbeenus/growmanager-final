@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { FlaskConical, Plus, Trash2, Droplets, StickyNote } from 'lucide-react';
-import type { Grow, NutrientBatch } from '@/types';
+import type { BatchPurpose, Grow, NutrientBatch } from '@/types';
 import DateField from './DateField';
 import ConfirmDialog from './ConfirmDialog';
-import { batchState, daysBetweenLocal, localToday, RENEW_AFTER_DAYS, MAX_AGE_DAYS } from '@/lib/nutrientLogic';
+import { countsForTimer, daysBetweenLocal, localToday, timerGroups, RENEW_AFTER_DAYS, MAX_AGE_DAYS, type TimerGroup } from '@/lib/nutrientLogic';
 import { formatDate } from '@/lib/growLogic';
 import { getFertilizers } from '@/lib/fertilizerData';
 import { useSelectedFertilizer } from '@/lib/fertilizerSelection';
@@ -27,6 +27,7 @@ export default function NutrientPanel({ batches, grows = [], onChange }: Props) 
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [toDelete, setToDelete] = useState<NutrientBatch | null>(null);
+  const [purpose, setPurpose] = useState<BatchPurpose>('use');
 
   // Zuordnung zu einem Grow (optional – sonst automatisch über das Datum) und Schema-Woche
   const globalFert = useSelectedFertilizer();
@@ -37,7 +38,11 @@ export default function NutrientPanel({ batches, grows = [], onChange }: Props) 
   const selectedSchedule = scheduleById(selectedGrow?.fertilizerId ?? globalFert, schedules);
   const autoIdx = selectedGrow && selectedSchedule && date ? autoWeekIndex(selectedGrow, selectedSchedule, date) : null;
 
-  const state = batchState(batches);
+  const groups = timerGroups(batches, grows);
+  // „aktuell“ = jüngster Gebrauchs-Ansatz je Countdown-Gruppe (Grow bzw. allgemein)
+  const currentIds = new Set(
+    groups.map((g) => g.state.batch?.id).filter((x): x is string => !!x)
+  );
   const sorted = [...batches].sort((a, b) =>
     a.date === b.date ? b.createdAt.localeCompare(a.createdAt) : b.date.localeCompare(a.date)
   );
@@ -55,13 +60,19 @@ export default function NutrientPanel({ batches, grows = [], onChange }: Props) 
       note: note.trim() || undefined,
       growId: growId || undefined,
       weekIndex: selectedSchedule && weekChoice !== 'auto' ? Number(weekChoice) : undefined,
+      purpose: purpose === 'soak' ? 'soak' : undefined,
       createdAt: new Date().toISOString(),
     };
     onChange([entry, ...batches]);
     setAmount('');
     setNote('');
     setWeekChoice('auto');
+    setPurpose('use');
     setDate(localToday());
+  };
+
+  const setBatchPurpose = (id: string, p: BatchPurpose) => {
+    onChange(batches.map((b): NutrientBatch => (b.id === id ? { ...b, purpose: p === 'soak' ? ('soak' as const) : undefined } : b)));
   };
 
   const assignGrow = (id: string, newGrowId: string) => {
@@ -72,9 +83,6 @@ export default function NutrientPanel({ batches, grows = [], onChange }: Props) 
     onChange(batches.map((b) => (b.id === id ? { ...b, weekIndex: value === '' ? undefined : Number(value) } : b)));
   };
 
-  const pct = state.batch ? Math.min(100, ((state.day - 1) / RENEW_AFTER_DAYS) * 100) : 0;
-  const needsRenew = state.status === 'renew' || state.status === 'expired';
-  const barColor = needsRenew ? 'bg-error-500' : state.status === 'soon' ? 'bg-warning-500' : 'bg-primary-500';
 
   return (
     <div className="space-y-6">
@@ -91,33 +99,25 @@ export default function NutrientPanel({ batches, grows = [], onChange }: Props) 
         </p>
       </div>
 
-      {/* Status */}
-      <div className="rounded-2xl border border-ink-800 bg-ink-900/60 p-5">
-        {state.batch ? (
-          <>
-            <div className="flex items-end justify-between gap-3 flex-wrap">
-              <div>
-                <div className="text-xs uppercase tracking-widest text-ink-500">{t('Aktueller Ansatz', 'Current batch')}</div>
-                <div className={`text-2xl font-bold mt-1 ${needsRenew ? 'text-error-300' : 'text-white'}`} data-testid="nutrient-status">
-                  {needsRenew
-                    ? t('Nährlösung erneuern!', 'Renew nutrient solution!')
-                    : t(`Tag ${state.day} von ${RENEW_AFTER_DAYS}`, `Day ${state.day} of ${RENEW_AFTER_DAYS}`)}
-                </div>
-                <div className="text-sm text-ink-400 mt-1">
-                  {formatDate(state.batch.date)} · {fmtNum(litersToDisplay(state.batch.liters) ?? 0, 2)} {volumeUnit()}
-                  {!needsRenew && (
-                    <> · {t(`noch ${state.daysLeft} ${state.daysLeft === 1 ? 'Tag' : 'Tage'} bis neu anmischen`, `${state.daysLeft} ${state.daysLeft === 1 ? 'day' : 'days'} until remix`)}</>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="mt-4 h-2 rounded-full bg-ink-800 overflow-hidden">
-              <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${needsRenew ? 100 : pct}%` }} />
-            </div>
-          </>
+      {/* Status – ein Countdown je Grow (bzw. allgemein für Ansätze ohne Grow) */}
+      <div className="rounded-2xl border border-ink-800 bg-ink-900/60 p-5" data-testid="nutrient-status-card">
+        {groups.length > 0 ? (
+          <div className="space-y-5">
+            {groups.map((g) => (
+              <TimerStatus key={g.key} group={g} showName={groups.length > 1 || !!g.name} />
+            ))}
+            <p className="text-[11px] text-ink-500 leading-relaxed">
+              {t(
+                'Ansätze, die du einem Grow zuordnest, haben einen eigenen Countdown. Ansätze zum Tränken zählen nicht für den Countdown.',
+                'Batches assigned to a grow have their own countdown. Soaking batches do not count for the countdown.'
+              )}
+            </p>
+          </div>
         ) : (
           <p className="text-sm text-ink-400">
-            {t('Noch kein Ansatz eingetragen. Lege unten deinen ersten an – dann startet der Timer.', 'No batch logged yet. Add your first one below – the timer starts then.')}
+            {batches.length > 0
+              ? t('Nur Tränk-Ansätze eingetragen – der Countdown startet mit dem ersten Ansatz zum Gebrauch.', 'Only soaking batches logged – the countdown starts with the first batch for use.')
+              : t('Noch kein Ansatz eingetragen. Lege unten deinen ersten an – dann startet der Timer.', 'No batch logged yet. Add your first one below – the timer starts then.')}
           </p>
         )}
       </div>
@@ -192,6 +192,31 @@ export default function NutrientPanel({ batches, grows = [], onChange }: Props) 
             </div>
           )}
         </div>
+        <div>
+          <span className="text-sm font-medium text-ink-200 mb-1.5 block">{t('Verwendung', 'Purpose')}</span>
+          <div className="grid sm:grid-cols-2 gap-2" data-testid="nutrient-purpose">
+            {(['use', 'soak'] as const).map((p) => (
+              <button
+                key={p}
+                type="button"
+                data-testid={`purpose-${p}`}
+                onClick={() => setPurpose(p)}
+                className={`text-left rounded-xl border px-3 py-2.5 transition-colors ${
+                  purpose === p ? 'border-primary-500/60 bg-primary-500/10' : 'border-ink-700/70 bg-ink-850 hover:bg-ink-800'
+                }`}
+              >
+                <div className={`text-sm font-semibold ${purpose === p ? 'text-primary-300' : 'text-ink-200'}`}>
+                  {p === 'use' ? t('Gebrauch', 'Use') : t('Tränken', 'Soaking')}
+                </div>
+                <div className="text-[11px] text-ink-500 mt-0.5">
+                  {p === 'use'
+                    ? t('Zum Gießen/Düngen – startet den Countdown bis neu anmischen', 'For watering/feeding – starts the countdown until remix')
+                    : t('Zum Durchtränken des Substrats – zählt nicht für den Countdown', 'For soaking the substrate – does not count for the countdown')}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
         <label className="block">
           <span className="text-xs font-medium text-ink-400 mb-1.5 flex items-center gap-1.5">
             <StickyNote size={14} className="text-primary-400" />
@@ -229,9 +254,14 @@ export default function NutrientPanel({ batches, grows = [], onChange }: Props) 
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-ink-100">
                     {formatDate(b.date)} · {fmtNum(litersToDisplay(b.liters) ?? 0, 2)} {volumeUnit()}
-                    {i === 0 && (
+                    {currentIds.has(b.id) && (
                       <span className="ml-2 text-[10px] uppercase tracking-wide text-primary-300 bg-primary-500/10 border border-primary-500/20 rounded px-1.5 py-0.5">
                         {t('aktuell', 'current')}
+                      </span>
+                    )}
+                    {!countsForTimer(b) && (
+                      <span data-testid="badge-soak" className="ml-2 text-[10px] uppercase tracking-wide text-accent-300 bg-accent-500/10 border border-accent-500/20 rounded px-1.5 py-0.5">
+                        {t('Tränken', 'Soaking')}
                       </span>
                     )}
                   </div>
@@ -243,6 +273,7 @@ export default function NutrientPanel({ batches, grows = [], onChange }: Props) 
                     schedules={schedules}
                     onGrow={(v) => assignGrow(b.id, v)}
                     onWeek={(v) => assignWeek(b.id, v)}
+                    onPurpose={(v) => setBatchPurpose(b.id, v)}
                   />
                   {i > 0 && sorted[i - 1] && (
                     <div className="text-[11px] text-ink-600 mt-0.5">
@@ -291,6 +322,7 @@ function BatchAssign({
   schedules,
   onGrow,
   onWeek,
+  onPurpose,
 }: {
   batch: NutrientBatch;
   grows: Grow[];
@@ -298,15 +330,30 @@ function BatchAssign({
   schedules: ReturnType<typeof getFertilizers>;
   onGrow: (v: string) => void;
   onWeek: (v: string) => void;
+  onPurpose: (v: BatchPurpose) => void;
 }) {
   const explicit = grows.find((g) => g.id === batch.growId) ?? null;
   const inferred = explicit ? null : inferGrowForDate(batch.date, grows);
   const grow = explicit ?? inferred;
   const schedule = scheduleById(grow?.fertilizerId ?? globalFert, schedules);
   const autoIdx = grow && schedule ? autoWeekIndex(grow, schedule, batch.date) : null;
-  if (grows.length === 0) return null;
+  const purposeSelect = (
+    <DarkSelect
+      size="sm"
+      testid="batch-purpose"
+      title={t('Verwendung', 'Purpose')}
+      value={batch.purpose === 'soak' ? 'soak' : 'use'}
+      onChange={(v) => onPurpose(v === 'soak' ? 'soak' : 'use')}
+      options={[
+        { value: 'use', label: t('Gebrauch (Countdown)', 'Use (countdown)') },
+        { value: 'soak', label: t('Tränken (kein Countdown)', 'Soaking (no countdown)') },
+      ]}
+    />
+  );
+  if (grows.length === 0) return <div className="flex flex-wrap gap-2 mt-1.5">{purposeSelect}</div>;
   return (
     <div className="flex flex-wrap gap-2 mt-1.5">
+      {purposeSelect}
       <DarkSelect
         size="sm"
         testid="batch-grow"
@@ -331,6 +378,44 @@ function BatchAssign({
           ]}
         />
       )}
+    </div>
+  );
+}
+
+function TimerStatus({ group, showName }: { group: TimerGroup; showName: boolean }) {
+  const state = group.state;
+  if (!state.batch) return null;
+  const needsRenew = state.status === 'renew' || state.status === 'expired';
+  const pct = Math.min(100, ((state.day - 1) / RENEW_AFTER_DAYS) * 100);
+  const barColor = needsRenew ? 'bg-error-500' : state.status === 'soon' ? 'bg-warning-500' : 'bg-primary-500';
+  return (
+    <div data-testid="timer-status" data-group={group.key}>
+      <div className="flex items-end justify-between gap-3 flex-wrap">
+        <div>
+          <div className="text-xs uppercase tracking-widest text-ink-500 flex items-center gap-2">
+            {showName ? (
+              <>
+                {group.color && <span className="h-2 w-2 rounded-full" style={{ backgroundColor: group.color }} />}
+                <span className="text-ink-300 normal-case tracking-normal font-semibold text-sm">{group.name ?? t('Allgemein (ohne Grow)', 'General (no grow)')}</span>
+              </>
+            ) : (
+              t('Aktueller Ansatz', 'Current batch')
+            )}
+          </div>
+          <div className={`text-2xl font-bold mt-1 ${needsRenew ? 'text-error-300' : 'text-white'}`} data-testid="nutrient-status">
+            {needsRenew ? t('Nährlösung erneuern!', 'Renew nutrient solution!') : t(`Tag ${state.day} von ${RENEW_AFTER_DAYS}`, `Day ${state.day} of ${RENEW_AFTER_DAYS}`)}
+          </div>
+          <div className="text-sm text-ink-400 mt-1">
+            {formatDate(state.batch.date)} · {fmtNum(litersToDisplay(state.batch.liters) ?? 0, 2)} {volumeUnit()}
+            {!needsRenew && (
+              <> · {t(`noch ${state.daysLeft} ${state.daysLeft === 1 ? 'Tag' : 'Tage'} bis neu anmischen`, `${state.daysLeft} ${state.daysLeft === 1 ? 'day' : 'days'} until remix`)}</>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="mt-3 h-2 rounded-full bg-ink-800 overflow-hidden">
+        <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${needsRenew ? 100 : pct}%` }} />
+      </div>
     </div>
   );
 }

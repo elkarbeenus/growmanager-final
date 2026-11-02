@@ -3,6 +3,7 @@ import { Settings, Plus, Trash2, Zap, Info } from 'lucide-react';
 import DarkSelect from './DarkSelect';
 import type { AppSettings, Device, DevicePhase, DeviceType, Grow, Lamp } from '@/types';
 import ConfirmDialog from './ConfirmDialog';
+import RenderModeCard from './RenderModeCard';
 import { DEFAULT_DEVICE_HOURS, DEFAULT_DIM, DEFAULT_HOURS_FLOWER, DEFAULT_HOURS_VEG, DEVICE_TYPES, devicePhaseLabel, deviceTypeLabel, kwhPerDay, lampDim } from '@/lib/power';
 import { formatMoney } from '@/lib/growStats';
 import { t, fmtNum } from '@/lib/i18n';
@@ -200,15 +201,15 @@ export default function SettingsPanel({ settings, grows, onChange }: Props) {
                       <NumField testid="lamp-dim-veg" value={l.dimVeg} onCommit={(v) => setLamps(lamps.map((x) => (x.id === l.id ? { ...x, dimVeg: v } : x)))} placeholder={String(DEFAULT_DIM.veg)} suffix="%" max={100} />
                     </label>
                     <label className="block">
-                      <span className="text-[11px] text-ink-500 mb-1 block">{t('Blüte Start', 'Flower start')}</span>
+                      <span className="text-[11px] text-ink-500 mb-1 block">{t('Stretch-Start', 'Stretch start')}</span>
                       <NumField testid="lamp-dim-fs" value={l.dimFlowerStart} onCommit={(v) => setLamps(lamps.map((x) => (x.id === l.id ? { ...x, dimFlowerStart: v } : x)))} placeholder={String(DEFAULT_DIM.flowerStart)} suffix="%" max={100} />
                     </label>
                     <label className="block">
-                      <span className="text-[11px] text-ink-500 mb-1 block">{t('Blüte danach', 'Flower after')}</span>
+                      <span className="text-[11px] text-ink-500 mb-1 block">{t('Blüte (nach Stretch)', 'Flower (after stretch)')}</span>
                       <NumField testid="lamp-dim-fe" value={l.dimFlowerEnd} onCommit={(v) => setLamps(lamps.map((x) => (x.id === l.id ? { ...x, dimFlowerEnd: v } : x)))} placeholder={String(DEFAULT_DIM.flowerEnd)} suffix="%" max={100} />
                     </label>
                     <label className="block">
-                      <span className="text-[11px] text-ink-500 mb-1 block">{t('Rampe', 'Ramp')}</span>
+                      <span className="text-[11px] text-ink-500 mb-1 block">{t('Stretch ohne Ende (Wo.)', 'Stretch w/o end (wk)')}</span>
                       <NumField testid="lamp-ramp" value={l.rampWeeks} onCommit={(v) => setLamps(lamps.map((x) => (x.id === l.id ? { ...x, rampWeeks: v } : x)))} placeholder={String(DEFAULT_DIM.rampWeeks)} suffix={t('Wo.', 'wk')} max={12} />
                     </label>
                   </div>
@@ -265,8 +266,8 @@ export default function SettingsPanel({ settings, grows, onChange }: Props) {
           <Info size={13} className="shrink-0 mt-0.5" />
           <span>
             {t(
-              'Trage die Leistungsaufnahme bei 100 % Helligkeit in Watt ein (Steckdosen-Messgerät oder Herstellerangabe) – nicht die Angabe „entspricht x Watt HPS“. Das Dimm-Profil bestimmt, wie viel davon wirklich gezogen wird: Voreinstellung 60 % im Wachstum, in der Blüte 60 % zu Beginn und nach 3 Wochen 100 % (linear gesteigert). Setze alle Werte auf 100 %, wenn deine Lampe nicht gedimmt läuft.',
-              'Enter the power draw at 100 % brightness in watts (plug meter or manufacturer value) – not the “equals x W HPS” figure. The dimming profile defines how much is actually drawn: default 60 % in veg, in flower 60 % at the start and 100 % after 3 weeks (increased linearly). Set all values to 100 % if your lamp runs undimmed.'
+              'Trage die Leistungsaufnahme bei 100 % Helligkeit in Watt ein (Steckdosen-Messgerät oder Herstellerangabe) – nicht die Angabe „entspricht x Watt HPS“. Das Dimm-Profil bestimmt, wie viel davon wirklich gezogen wird: Voreinstellung 40 % im Wachstum, im Stretch 60 % zu Beginn, bis zum Ende des Stretch linear gesteigert auf 100 % (Blüte); ohne „Ende Stretch“ im Grow gilt die hier eingestellte Dauer, Standard 3 Wochen. Setze alle Werte auf 100 %, wenn deine Lampe nicht gedimmt läuft.',
+              'Enter the power draw at 100 % brightness in watts (plug meter or manufacturer value) – not the “equals x W HPS” figure. The dimming profile defines how much is actually drawn: default 40 % in veg, 60 % at the start of the stretch, increased linearly to 100 % (flower) by the end of the stretch; without an “End of stretch” in the grow, the duration set here is used (default 3 weeks). Set all values to 100 % if your lamp runs undimmed.'
             )}
           </span>
         </div>
@@ -363,6 +364,8 @@ export default function SettingsPanel({ settings, grows, onChange }: Props) {
           </span>
         </div>
       </div>
+
+      <RenderModeCard />
 
       <ConfirmDialog
         open={!!toDelete}

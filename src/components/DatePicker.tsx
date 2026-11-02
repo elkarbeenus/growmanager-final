@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { t, isEn, locale, useLang } from '@/lib/i18n';
 
@@ -49,6 +50,32 @@ export default function DatePicker({
     return new Date();
   });
   const wrapRef = useRef<HTMLDivElement>(null);
+  const popRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ left: number; top: number; up: boolean } | null>(null);
+
+  // Position des Popups (fixed, per Portal an <body>) – so kann es weder abgeschnitten
+  // noch von nachfolgenden Bereichen überdeckt werden (wichtig für WebKitGTK/AppImage).
+  const place = () => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const W = 288; // w-72
+    const H = 400;
+    const left = Math.max(8, Math.min(r.left, window.innerWidth - W - 8));
+    const up = r.bottom + H > window.innerHeight && r.top > H;
+    setPos({ left, top: up ? r.top - 8 : r.bottom + 8, up });
+  };
+  useLayoutEffect(() => {
+    if (!open) return;
+    place();
+    const onMove = () => place();
+    window.addEventListener('resize', onMove);
+    window.addEventListener('scroll', onMove, true);
+    return () => {
+      window.removeEventListener('resize', onMove);
+      window.removeEventListener('scroll', onMove, true);
+    };
+  }, [open]);
   const lang = useLang();
   const WEEKDAY_LABELS = isEn() ? WEEKDAY_LABELS_EN : WEEKDAY_LABELS_DE;
 
@@ -58,13 +85,24 @@ export default function DatePicker({
 
   useEffect(() => {
     if (!open) return;
-    const onDown = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+    const onDown = (e: Event) => {
+      const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
+      const inside = (el: HTMLElement | null) => !!el && (path.includes(el) || el.contains(e.target as Node));
+      if (!inside(wrapRef.current) && !inside(popRef.current)) setOpen(false);
+    };
+    // Esc schließt nur den Kalender (nicht zusätzlich einen umgebenden Dialog)
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
         setOpen(false);
       }
     };
     window.addEventListener('mousedown', onDown);
-    return () => window.removeEventListener('mousedown', onDown);
+    window.addEventListener('keydown', onKey, true);
+    return () => {
+      window.removeEventListener('mousedown', onDown);
+      window.removeEventListener('keydown', onKey, true);
+    };
   }, [open]);
 
   const { days, monthLabel, yearLabel } = useMemo(() => {
@@ -117,13 +155,24 @@ export default function DatePicker({
         <input
           type="date"
           value={value ?? ''}
-          onChange={(e) => onChange(e.target.value || undefined)}
+          onChange={(e) => {
+            const v = e.target.value;
+            // Halb getippte Eingabe (badInput) nicht als "leer" übernehmen
+            if (!v && e.target.validity.badInput) return;
+            onChange(v || undefined);
+          }}
           className="w-full bg-ink-850 border border-ink-700/70 rounded-xl pl-9 pr-3 py-2.5 text-sm text-ink-100 placeholder-ink-500 focus:outline-none focus:border-primary-500/60 focus:ring-2 focus:ring-primary-500/20 transition-all"
         />
       </div>
 
-      {open && (
-        <div className="absolute z-40 mt-2 w-72 rounded-2xl border border-ink-700 bg-ink-900 shadow-2xl p-3 animate-slide-up">
+      {open && pos && createPortal(
+        <div
+          ref={popRef}
+          data-testid="datepicker-popup"
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          style={{ position: 'fixed', left: pos.left, top: pos.top, transform: pos.up ? 'translateY(-100%)' : undefined, zIndex: 1000 }}
+          className="w-72 rounded-2xl border border-ink-700 bg-ink-900 shadow-2xl p-3 ">
           {/* Header: month + year nav */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-1">
@@ -192,7 +241,17 @@ export default function DatePicker({
                 <button
                   key={i}
                   type="button"
-                  onClick={() => selectDay(d)}
+                  data-day={ymd}
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    selectDay(d);
+                  }}
+                  onClick={(e) => {
+                    // Fallback (z. B. Tastatur): pointerdown hat bereits ausgewählt und geschlossen
+                    e.stopPropagation();
+                    selectDay(d);
+                  }}
                   className={`h-9 w-9 rounded-lg text-sm font-medium tabular-nums transition-all ${
                     isSelected
                       ? 'text-ink-950 font-bold'
@@ -248,7 +307,8 @@ export default function DatePicker({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

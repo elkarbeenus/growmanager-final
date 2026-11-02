@@ -3,7 +3,7 @@
 // Die Version wird beim Build aus package.json übernommen (siehe vite.config.ts).
 import { t } from '@/lib/i18n';
 
-export const APP_VERSION: string = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.6.0';
+export const APP_VERSION: string = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.8.0';
 
 export const APP_NAME = 'growmanager';
 
@@ -20,6 +20,44 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '1.8.0',
+    items: [
+      { de: 'Nährlösung: Verwendung wählbar – „Gebrauch“ (startet den Countdown) oder „Tränken“ (zählt nicht für den Countdown); auch nachträglich im Verlauf änderbar', en: 'Nutrient solution: choose the purpose – “Use” (starts the countdown) or “Soaking” (does not count for the countdown); can also be changed later in the history' },
+      { de: 'Countdown je Grow: Ansätze, die einem Grow zugeordnet sind, haben einen eigenen Countdown – oben und im Reiter „Nährlösung“ wird jeder Grow getrennt erinnert', en: 'Countdown per grow: batches assigned to a grow have their own countdown – each grow is reminded separately at the top and in the “Nutrient mix” tab' },
+      { de: 'Ent-/Befeuchter: pro Grow Stunden pro Tag und Anzahl Wochen einstellbar – die Stromkosten rechnen nur diese Laufzeit', en: 'Dehumidifier/humidifier: hours per day and number of weeks can be set per grow – electricity costs only count this run time' },
+      { de: 'Bilder am Grow: Fotos hinzufügen, beschriften und groß ansehen; sie werden als Kopie in der App gespeichert und in Backup-Dateien mitgesichert', en: 'Photos on a grow: add, caption and view photos; they are stored as a copy in the app and included in backup files' },
+      { de: 'Neuer Reiter „Steckling bestellen“: Links zu Flowery Field und Growroom21 öffnen im Standardbrowser', en: 'New “Order clones” tab: links to Flowery Field and Growroom21 open in the default browser' },
+      { de: 'Beim Schließen der App: Abfrage, ob ein Backup erstellt werden soll, wenn es Änderungen seit dem letzten Backup gibt', en: 'When closing the app: asks whether to create a backup if there are changes since the last backup' },
+      { de: 'Layout wird gemerkt: Reiter, geöffneter Grow, eingeklappte Bereiche, Scroll-Position und Fenstergröße sind beim nächsten Start wieder da; „Aktiv“, „Geplant“ und „Bisherige Grows“ sind einklappbar', en: 'Layout is remembered: tab, open grow, collapsed sections, scroll position and window size are restored on the next start; “Active”, “Planned” and “Past grows” can be collapsed' },
+      { de: 'Flüssigeres Scrollen: teure Unschärfe-Effekte entfernt; neue Einstellung „Grafikbeschleunigung“ (Linux) mit automatischer Rückkehr in den sicheren Modus, falls das Fenster grau bleibt', en: 'Smoother scrolling: expensive blur effects removed; new “Hardware acceleration” setting (Linux) that switches back to safe mode automatically if the window stays grey' },
+      { de: 'Fix: Die Phase vor dem Blütebeginn wird als „Wachstum“ angezeigt (vorher fälschlich „Stretch“, sobald ein Stretch-Ende eingetragen war)', en: 'Fix: the phase before flower start is shown as “Veg” (before it was wrongly “Stretch” as soon as an end of stretch was set)' },
+      { de: 'Fix: Kalender über das Symbol links übernimmt das Datum zuverlässig (Popup liegt jetzt über allen Bereichen; Esc schließt nur den Kalender)', en: 'Fix: the calendar opened via the icon on the left reliably accepts the date (popup now lies above all sections; Esc only closes the calendar)' },
+      { de: 'Fix: Der bei „Speichern unter …“ gewählte Speicherort wird angezeigt, der nächste Dialog öffnet dort, und Backups lassen sich direkt in diesen Ordner speichern', en: 'Fix: the location chosen with “Save as …” is shown, the next dialog opens there, and backups can be saved straight to that folder' },
+    ],
+  },
+  {
+    version: '1.7.1',
+    items: [
+      { de: 'Dimm-Profil nach Phasen: Wachstum, Stretch-Start und Blüte (nach dem Stretch) statt „Rampe“. Die Helligkeit steigt vom Stretch-Start bis zum Ende des Stretch (Meilenstein „Ende Stretch“) auf den Blüte-Wert', en: 'Dimming profile by phase: veg, stretch start and flower (after the stretch) instead of “ramp”. Brightness rises from stretch start to the end of the stretch (milestone “End of stretch”) up to the flower value' },
+      { de: 'Ohne „Ende Stretch“ im Grow gilt die Ersatzdauer der Lampe (Standard 3 Wochen)', en: 'Without an “End of stretch” in the grow, the lamp’s fallback duration is used (default 3 weeks)' },
+    ],
+  },
+  {
+    version: '1.7.0',
+    items: [
+      { de: 'Neues Standard-Dimmprofil: Wachstum 40 %, Blüte 60 % → 100 % in den ersten 3 Wochen (in den Einstellungen je Lampe änderbar)', en: 'New default dimming profile: veg 40 %, flower 60 % → 100 % over the first 3 weeks (adjustable per lamp in Settings)' },
+      { de: 'Schieberegler pro Grow: Helligkeit in Wachstum, Blüte-Start, Blüte danach und Rampenlänge lassen sich beim Anlegen/Bearbeiten und im Bereich „Kosten & Ertrag“ einstellen; „Zurücksetzen“ übernimmt wieder die Lampen-Vorgabe', en: 'Sliders per grow: brightness in veg, flower start, flower after and ramp length can be set when creating/editing and in “Costs & yield”; “Reset” goes back to the lamp default' },
+      { de: 'Die Stromkosten nutzen das Profil des Grows; Lampen ohne eigene Werte verwenden jetzt 40 % im Wachstum (vorher 60 %)', en: 'Electricity costs use the grow’s own profile; lamps without custom values now use 40 % in veg (before: 60 %)' },
+    ],
+  },
+  {
+    version: '1.7.0',
+    items: [
+      { de: 'Fix: Die Datumsauswahl (Kalender-Symbol) übernimmt das gewählte Datum jetzt zuverlässig, auch in den Meilensteinen', en: 'Fix: the date picker (calendar icon) now reliably accepts the selected date, including in the milestones' },
+      { de: 'Fix: Halb getippte Datumseingaben löschen das Datum nicht mehr; Esc schließt den Kalender', en: 'Fix: partially typed dates no longer clear the date; Esc closes the calendar' },
+    ],
+  },
   {
     version: '1.6.0',
     items: [

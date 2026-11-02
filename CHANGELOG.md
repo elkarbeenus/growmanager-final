@@ -1,5 +1,31 @@
 # Patchnotes – growmanager
 
+## v1.8.0
+- Nährlösung: Verwendung wählbar – „Gebrauch“ (startet den Countdown) oder „Tränken“ (zählt nicht für den Countdown); auch nachträglich im Verlauf änderbar.
+- Countdown je Grow: Ansätze, die einem Grow zugeordnet sind, haben einen eigenen Countdown – oben und im Reiter „Nährlösung“ wird jeder Grow getrennt erinnert.
+- Ent-/Befeuchter: pro Grow Stunden pro Tag und Anzahl Wochen einstellbar – die Stromkosten rechnen nur diese Laufzeit.
+- Bilder am Grow: Fotos hinzufügen, beschriften und groß ansehen; sie werden als Kopie in der App gespeichert und in Backup-Dateien mitgesichert.
+- Neuer Reiter „Steckling bestellen“: Links zu Flowery Field und Growroom21 öffnen im Standardbrowser.
+- Beim Schließen der App: Abfrage, ob ein Backup erstellt werden soll, wenn es Änderungen seit dem letzten Backup gibt.
+- Layout wird gemerkt: Reiter, geöffneter Grow, eingeklappte Bereiche, Scroll-Position und Fenstergröße sind beim nächsten Start wieder da; „Aktiv“, „Geplant“ und „Bisherige Grows“ sind einklappbar.
+- Flüssigeres Scrollen: teure Unschärfe-Effekte entfernt; neue Einstellung „Grafikbeschleunigung“ (Linux) mit automatischer Rückkehr in den sicheren Modus, falls das Fenster grau bleibt.
+- Fix: Die Phase vor dem Blütebeginn wird als „Wachstum“ angezeigt (vorher fälschlich „Stretch“, sobald ein Stretch-Ende eingetragen war).
+- Fix: Kalender über das Symbol links übernimmt das Datum zuverlässig (Popup liegt jetzt über allen Bereichen; Esc schließt nur den Kalender).
+- Fix: Der bei „Speichern unter …“ gewählte Speicherort wird angezeigt, der nächste Dialog öffnet dort, und Backups lassen sich direkt in diesen Ordner speichern.
+
+## v1.7.1
+- **Dimm-Profil nach Phasen:** statt „Rampe“ gibt es jetzt **Wachstum**, **Stretch-Start** und **Blüte (nach dem Stretch)** (Standard 40 % / 60 % / 100 %). Die Helligkeit steigt vom Stretch-Start bis zum Ende des Stretch (Meilenstein „Ende Stretch“) auf den Blüte-Wert und bleibt dann dort.
+- Ist im Grow kein „Ende Stretch“ gesetzt, gilt die Ersatzdauer der Lampe (Einstellungen, Standard 3 Wochen). Die Schieberegler im Grow zeigen das an.
+
+## v1.7.0
+- **Neues Standard-Dimmprofil:** Wachstum 40 %, Blüte 60 % → 100 % in den ersten 3 Wochen (je Lampe in den Einstellungen änderbar). Lampen ohne eigene Werte nutzen jetzt 40 % im Wachstum (vorher 60 %).
+- **Schieberegler pro Grow:** Helligkeit in Wachstum, Blüte-Start, Blüte danach und Rampenlänge beim Anlegen/Bearbeiten eines Grows und im Bereich „Kosten & Ertrag“ einstellbar. „Auf Lampen-Vorgabe zurücksetzen“ nimmt die eigenen Werte wieder zurück.
+- Die automatischen Stromkosten, die Übersicht und der PDF-Bericht nutzen das Profil des jeweiligen Grows.
+
+## v1.6.1
+- **Fix:** Die Datumsauswahl (Kalender-Symbol) übernimmt das gewählte Datum jetzt zuverlässig, auch in den Meilensteinen.
+- **Fix:** Halb getippte Datumseingaben löschen das Datum nicht mehr; Esc schließt den Kalender.
+
 ## v1.6.0
 - **Dimm-Profil für LED-Lampen:** Pro Lampe lassen sich die Helligkeit im Wachstum (Standard 60 %), zu Beginn der Blüte (Standard 60 %), nach der Rampe (Standard 100 %) und die Länge der Rampe in Wochen (Standard 3) einstellen. In der Blüte wird die Helligkeit linear vom Start- auf den Endwert gesteigert, danach bleibt sie beim Endwert. Wer nicht dimmt, setzt alle Werte auf 100 %.
 - **Stromkosten tagesgenau:** Die Berechnung berücksichtigt die Helligkeit jedes Tages. In der Aufstellung steht je Lampe z. B. „18 h @ 60 % · 12 h @ 60→100 %“.

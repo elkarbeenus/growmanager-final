@@ -18,9 +18,9 @@ export default function DateField({
   accentColor = '#10b981',
 }: DateFieldProps) {
   return (
-    <label className="block">
+    <div className="block">
       <span className="flex items-center justify-between gap-2 mb-1.5">
-        <span className="text-sm font-medium text-ink-200">{label}</span>
+        <span className="text-sm font-medium text-ink-200 select-none">{label}</span>
         {value && (
           <button
             type="button"
@@ -33,6 +33,6 @@ export default function DateField({
       </span>
       <DatePicker value={value} onChange={onChange} accentColor={accentColor} />
       {hint && <span className="block text-xs text-ink-500 mt-1">{hint}</span>}
-    </label>
+    </div>
   );
 }

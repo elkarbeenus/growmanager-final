@@ -1,7 +1,7 @@
 // Stromkosten eines Grows: LED-Lampe (Lichtstunden) plus weitere Geräte (Abluft, Clip-Fan, Controller,
 // Ent-/Befeuchter) jeweils Leistung × Laufzeit × Tage × Strompreis.
 // Wachstum/Steckling: Standard 18 h Licht pro Tag, Blüte: 12 h (in den Einstellungen änderbar).
-import type { AppSettings, Device, DevicePhase, DeviceType, Grow, Lamp } from '@/types';
+import type { AppSettings, Device, DevicePhase, DeviceType, DeviceUsage, DimProfile, Grow, Lamp } from '@/types';
 import { daysBetweenLocal, localToday } from '@/lib/nutrientLogic';
 import { t } from '@/lib/i18n';
 
@@ -12,10 +12,12 @@ export const MAX_LAMPS_PER_GROW = 4;
 export const hoursVeg = (s?: AppSettings) => s?.hoursVeg ?? DEFAULT_HOURS_VEG;
 export const hoursFlower = (s?: AppSettings) => s?.hoursFlower ?? DEFAULT_HOURS_FLOWER;
 
-/** Standard-Dimmprofil einer LED-Lampe: Wachstum 60 %, Blüte 60 % → 100 % innerhalb von 3 Wochen, danach 100 %. */
-export const DEFAULT_DIM = { veg: 60, flowerStart: 60, flowerEnd: 100, rampWeeks: 3 };
+/** Standard-Dimmprofil einer LED-Lampe: Wachstum 40 %, Blüte 60 % → 100 % innerhalb von 3 Wochen, danach 100 %. */
+export const DEFAULT_DIM: DimProfile = { veg: 40, flowerStart: 60, flowerEnd: 100, rampWeeks: 3 };
 
-export function lampDim(l: Lamp) {
+/** Dimm-Profil der Lampe (Vorgabe); `override` = eigenes Profil des Grows, falls gesetzt. */
+export function lampDim(l: Lamp, override?: DimProfile): DimProfile {
+  if (override) return { ...override };
   return {
     veg: l.dimVeg ?? DEFAULT_DIM.veg,
     flowerStart: l.dimFlowerStart ?? DEFAULT_DIM.flowerStart,
@@ -24,25 +26,29 @@ export function lampDim(l: Lamp) {
   };
 }
 
-/** Helligkeit in % am n-ten Blütetag (0 = erster Tag): linear von Start- auf Endwert, danach Endwert. */
-export function flowerDimAt(l: Lamp, day: number): number {
-  const d = lampDim(l);
-  const rampDays = d.rampWeeks * 7;
+/**
+ * Helligkeit in % am n-ten Blütetag (0 = erster Tag = Stretch-Start): linear vom Stretch-Wert auf den Wert
+ * „Blüte nach dem Stretch“, danach dieser Wert. Die Stretch-Dauer kommt aus den Meilensteinen (Blüte → Ende Stretch);
+ * ist kein Ende gesetzt, gilt die Ersatzdauer der Lampe/des Grows (Standard 3 Wochen).
+ */
+export function flowerDimAt(l: Lamp, day: number, override?: DimProfile, stretchDays?: number): number {
+  const d = lampDim(l, override);
+  const rampDays = stretchDays ?? d.rampWeeks * 7;
   if (rampDays <= 0 || day >= rampDays) return d.flowerEnd;
   return d.flowerStart + ((d.flowerEnd - d.flowerStart) * day) / rampDays;
 }
 
 /** Summe der Helligkeit (als Anteil, 1 = 100 %) über die ersten n Blütetage. */
-export function flowerDimDays(l: Lamp, n: number): number {
+export function flowerDimDays(l: Lamp, n: number, override?: DimProfile, stretchDays?: number): number {
   let sum = 0;
-  for (let i = 0; i < n; i++) sum += flowerDimAt(l, i) / 100;
+  for (let i = 0; i < n; i++) sum += flowerDimAt(l, i, override, stretchDays) / 100;
   return sum;
 }
 
 /** kWh einer LED-Lampe für gegebene Tage (berücksichtigt das Dimmprofil). */
-export function ledKwh(l: Lamp, count: number, vegDays: number, flowerDays: number, hv: number, hf: number): number {
-  const d = lampDim(l);
-  return ((vegDays * hv * (d.veg / 100) + hf * flowerDimDays(l, flowerDays)) * l.watts * count) / 1000;
+export function ledKwh(l: Lamp, count: number, vegDays: number, flowerDays: number, hv: number, hf: number, override?: DimProfile, stretchDays?: number): number {
+  const d = lampDim(l, override);
+  return ((vegDays * hv * (d.veg / 100) + hf * flowerDimDays(l, flowerDays, override, stretchDays)) * l.watts * count) / 1000;
 }
 
 export const DEVICE_TYPES: DeviceType[] = ['exhaust', 'clipfan', 'controller', 'dehumidifier', 'humidifier', 'other'];
@@ -120,10 +126,32 @@ function lightDays(grow: Grow, cap: string) {
   return { vegDays, flowerDays, hasStart: true };
 }
 
-/** kWh eines Geräts für gegebene Tage (berücksichtigt die Phase, in der es läuft). */
-function deviceKwh(d: Device, vegDays: number, flowerDays: number): number {
-  const days = (d.phase !== 'flower' ? vegDays : 0) + (d.phase !== 'veg' ? flowerDays : 0);
-  return (days * d.hours * d.watts) / 1000;
+/** Dauer des Stretch in Tagen aus den Meilensteinen (Blütebeginn → Ende Stretch), sonst undefined. */
+export function stretchDaysOf(grow: Grow): number | undefined {
+  const m = grow.milestones;
+  if (!m.flowerStart || !m.stretchEnd || m.stretchEnd <= m.flowerStart) return undefined;
+  return diff(m.flowerStart, m.stretchEnd);
+}
+
+/** Gerätetypen, deren Laufzeit (Stunden/Tag und Wochen) pro Grow eingestellt werden kann. */
+export const USAGE_DEVICE_TYPES: DeviceType[] = ['dehumidifier', 'humidifier'];
+export const hasGrowUsage = (d: Device) => USAGE_DEVICE_TYPES.includes(d.type);
+
+/** Wirksame Laufzeit eines Geräts in einem Grow (Grow-Einstellung vor Vorgabe aus den Einstellungen). */
+export function effectiveUsage(d: Device, usage?: DeviceUsage): { hours: number; weeks?: number } {
+  const u = hasGrowUsage(d) ? usage : undefined;
+  return { hours: u?.hours ?? d.hours, weeks: u?.weeks !== undefined && u.weeks > 0 ? u.weeks : undefined };
+}
+
+/**
+ * kWh eines Geräts für gegebene Tage (berücksichtigt die Phase, in der es läuft).
+ * Mit `weeks` läuft das Gerät insgesamt nur so viele Wochen (ab dem ersten Lauftag), nicht den ganzen Grow.
+ */
+export function deviceKwh(d: Device, vegDays: number, flowerDays: number, usage?: DeviceUsage): number {
+  const u = effectiveUsage(d, usage);
+  let days = (d.phase !== 'flower' ? vegDays : 0) + (d.phase !== 'veg' ? flowerDays : 0);
+  if (u.weeks !== undefined) days = Math.min(days, u.weeks * 7);
+  return (days * u.hours * d.watts) / 1000;
 }
 
 /** Stromkosten bis heute (bzw. bis zur Ernte) und – falls ein Erntedatum feststeht – bis zur geplanten Ernte. */
@@ -162,9 +190,10 @@ export function autoPowerCost(grow: Grow, settings: AppSettings | undefined, tod
   const lines: PowerLine[] = [];
   if (lamp) {
     const w = lamp.watts * count;
-    const dim = lampDim(lamp);
-    const kwh = ledKwh(lamp, count, d.vegDays, d.flowerDays, hv, hf);
-    const pk = planned ? ledKwh(lamp, count, planned.vegDays, planned.flowerDays, hv, hf) : undefined;
+    const dim = lampDim(lamp, grow.dim);
+    const sd = stretchDaysOf(grow);
+    const kwh = ledKwh(lamp, count, d.vegDays, d.flowerDays, hv, hf, grow.dim, sd);
+    const pk = planned ? ledKwh(lamp, count, planned.vegDays, planned.flowerDays, hv, hf, grow.dim, sd) : undefined;
     lines.push({
       id: lamp.id,
       kind: 'led',
@@ -179,15 +208,17 @@ export function autoPowerCost(grow: Grow, settings: AppSettings | undefined, tod
     });
   }
   for (const dev of devices) {
-    const kwh = deviceKwh(dev, d.vegDays, d.flowerDays);
-    const pk = planned ? deviceKwh(dev, planned.vegDays, planned.flowerDays) : undefined;
+    const usage = grow.deviceUsage?.[dev.id];
+    const eu = effectiveUsage(dev, usage);
+    const kwh = deviceKwh(dev, d.vegDays, d.flowerDays, usage);
+    const pk = planned ? deviceKwh(dev, planned.vegDays, planned.flowerDays, usage) : undefined;
     lines.push({
       id: dev.id,
       kind: dev.type,
       name: dev.name,
       count: 1,
       watts: dev.watts,
-      hoursLabel: `${dev.hours} h`,
+      hoursLabel: eu.weeks !== undefined ? `${eu.hours} h · ${eu.weeks} ${t('Wo.', 'wk')}` : `${eu.hours} h`,
       kwh,
       cost: kwh * price,
       plannedKwh: pk,

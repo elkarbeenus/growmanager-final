@@ -1,4 +1,4 @@
-import type { NutrientBatch } from '@/types';
+import type { Grow, NutrientBatch } from '@/types';
 
 // Mineralische Nährlösung: spätestens nach 12 Tagen erneuern (max. 14 Tage haltbar)
 export const RENEW_AFTER_DAYS = 12;
@@ -47,4 +47,46 @@ export function batchState(batches: NutrientBatch[] | undefined, today = localTo
   else if (age >= RENEW_AFTER_DAYS) status = 'renew';
   else if (RENEW_AFTER_DAYS - age <= 2) status = 'soon';
   return { status, day, daysLeft, batch };
+}
+
+/** Zählt dieser Ansatz für den Countdown? Tränk-Ansätze (zum Durchtränken des Substrats) nicht. */
+export const countsForTimer = (b: NutrientBatch) => b.purpose !== 'soak';
+
+export interface TimerGroup {
+  key: string; // Grow-ID oder 'general'
+  growId?: string;
+  name?: string; // Name des Grows (undefined = allgemein, keinem Grow zugeordnet)
+  color?: string;
+  state: BatchState;
+}
+
+/**
+ * Countdown je Grow: Ansätze, die ausdrücklich für einen Grow angelegt wurden, laufen getrennt.
+ * Ansätze ohne Grow-Zuordnung bilden den allgemeinen Countdown. Tränk-Ansätze zählen nicht.
+ * Geerntete oder gelöschte Grows erzeugen keine Erinnerung mehr.
+ */
+export function timerGroups(batches: NutrientBatch[] | undefined, grows: Grow[] = [], today = localToday()): TimerGroup[] {
+  const use = (batches ?? []).filter(countsForTimer);
+  const byGrow = new Map<string, NutrientBatch[]>();
+  const general: NutrientBatch[] = [];
+  for (const b of use) {
+    const g = b.growId ? grows.find((x) => x.id === b.growId) : undefined;
+    if (b.growId && g) {
+      if (g.milestones.actualHarvest && g.milestones.actualHarvest <= today) continue; // geerntet → keine Erinnerung
+      const arr = byGrow.get(g.id) ?? [];
+      arr.push(b);
+      byGrow.set(g.id, arr);
+    } else {
+      general.push(b);
+    }
+  }
+  const out: TimerGroup[] = [];
+  for (const g of grows) {
+    const list = byGrow.get(g.id);
+    if (list) out.push({ key: g.id, growId: g.id, name: g.name, color: g.color, state: batchState(list, today) });
+  }
+  if (general.length) out.push({ key: 'general', state: batchState(general, today) });
+  // dringendste zuerst
+  const rank: Record<BatchStatus, number> = { expired: 0, renew: 1, soon: 2, fresh: 3, none: 4 };
+  return out.sort((a, b) => rank[a.state.status] - rank[b.state.status] || a.state.daysLeft - b.state.daysLeft);
 }

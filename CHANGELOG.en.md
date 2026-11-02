@@ -1,5 +1,31 @@
 # Patch notes – growmanager
 
+## v1.8.0
+- Nutrient solution: choose the purpose – “Use” (starts the countdown) or “Soaking” (does not count for the countdown); can also be changed later in the history.
+- Countdown per grow: batches assigned to a grow have their own countdown – each grow is reminded separately at the top and in the “Nutrient mix” tab.
+- Dehumidifier/humidifier: hours per day and number of weeks can be set per grow – electricity costs only count this run time.
+- Photos on a grow: add, caption and view photos; they are stored as a copy in the app and included in backup files.
+- New “Order clones” tab: links to Flowery Field and Growroom21 open in the default browser.
+- When closing the app: asks whether to create a backup if there are changes since the last backup.
+- Layout is remembered: tab, open grow, collapsed sections, scroll position and window size are restored on the next start; “Active”, “Planned” and “Past grows” can be collapsed.
+- Smoother scrolling: expensive blur effects removed; new “Hardware acceleration” setting (Linux) that switches back to safe mode automatically if the window stays grey.
+- Fix: the phase before flower start is shown as “Veg” (before it was wrongly “Stretch” as soon as an end of stretch was set).
+- Fix: the calendar opened via the icon on the left reliably accepts the date (popup now lies above all sections; Esc only closes the calendar).
+- Fix: the location chosen with “Save as …” is shown, the next dialog opens there, and backups can be saved straight to that folder.
+
+## v1.7.1
+- **Dimming profile by phase:** instead of “ramp” there is now **veg**, **stretch start** and **flower (after the stretch)** (default 40 % / 60 % / 100 %). Brightness rises from stretch start to the end of the stretch (milestone “End of stretch”) up to the flower value and then stays there.
+- If the grow has no “End of stretch”, the lamp’s fallback duration is used (Settings, default 3 weeks). The sliders in the grow explain this.
+
+## v1.7.0
+- **New default dimming profile:** veg 40 %, flower 60 % → 100 % over the first 3 weeks (adjustable per lamp in Settings). Lamps without custom values now use 40 % in veg (before: 60 %).
+- **Sliders per grow:** brightness in veg, flower start, flower after and ramp length can be set when creating/editing a grow and in the “Costs & yield” section. “Reset to lamp default” removes the custom values.
+- Automatic electricity costs, the overview and the PDF report use the profile of the respective grow.
+
+## v1.6.1
+- **Fix:** the date picker (calendar icon) now reliably accepts the selected date, including in the milestones.
+- **Fix:** partially typed dates no longer clear the date; Esc closes the calendar.
+
 ## v1.6.0
 - **Dimming profile for LED lamps:** per lamp you can set the brightness in veg (default 60 %), at the start of flower (default 60 %), after the ramp (default 100 %) and the ramp length in weeks (default 3). In flower the brightness is increased linearly from the start to the end value and then stays there. If you do not dim, set all values to 100 %.
 - **Electricity costs day by day:** the calculation takes the brightness of every day into account. The breakdown shows e.g. "18 h @ 60 % · 12 h @ 60→100 %" per lamp.

@@ -1,11 +1,14 @@
 import { HardDrive, FileJson, FolderOpen, MapPin } from 'lucide-react';
 import { exportCapability } from '@/lib/backupExport';
 import { t } from '@/lib/i18n';
+import { useLastSave } from '@/lib/saveState';
 
 /** Übersicht: Wo werden welche Backups gespeichert? */
 export default function BackupLocationInfo({ dirName }: { dirName?: string | null }) {
   const desktop = exportCapability() === 'tauri';
   const isWindows = typeof navigator !== 'undefined' && /Windows/i.test(navigator.userAgent);
+  const last = useLastSave();
+  const when = last ? new Date(last.at).toLocaleString() : '';
 
   const rows = [
     {
@@ -39,9 +42,18 @@ export default function BackupLocationInfo({ dirName }: { dirName?: string | nul
       title: t('Backup-Speicherort (Ordner)', 'Backup location (folder)'),
       text: dirName
         ? t(`Aktuell gewählter Ordner: „${dirName}“.`, `Currently selected folder: “${dirName}”.`)
-        : t('Noch kein Ordner gewählt – siehe „Backup-Speicherort“ weiter unten.', 'No folder selected yet – see “Backup location” below.'),
+        : last?.folder
+          ? t(`Zuletzt gewählter Ordner (Speichern unter …): ${last.folder}`, `Last chosen folder (Save as …): ${last.folder}`)
+          : t('Noch kein Ordner gewählt – speichere ein Backup mit „Speichern unter …“, dann steht der Ordner hier.', 'No folder selected yet – save a backup with “Save as …” and the folder appears here.'),
     },
   ];
+  if (last) {
+    rows.push({
+      icon: <MapPin size={15} className="text-accent-400" />,
+      title: t('Zuletzt gespeichertes Backup', 'Last saved backup'),
+      text: `${last.location ?? last.filename} · ${when}`,
+    });
+  }
 
   return (
     <div className="rounded-2xl border border-ink-800 bg-ink-900/60 p-5" data-testid="backup-location-info">
@@ -55,7 +67,7 @@ export default function BackupLocationInfo({ dirName }: { dirName?: string | nul
             <div className="mt-0.5 shrink-0">{r.icon}</div>
             <div>
               <div className="text-sm font-semibold text-ink-100">{r.title}</div>
-              <p className="text-xs text-ink-400 mt-0.5 leading-relaxed">{r.text}</p>
+              <p className="text-xs text-ink-400 mt-0.5 leading-relaxed break-all" data-testid="location-row-text">{r.text}</p>
             </div>
           </div>
         ))}

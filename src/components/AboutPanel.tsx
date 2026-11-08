@@ -2,6 +2,7 @@ import { Info, User, Github, Mail, Leaf, ShieldCheck, ListOrdered } from 'lucide
 import { APP_NAME, APP_VERSION, CHANGELOG, DEVELOPER } from '@/lib/appInfo';
 import { t, isEn } from '@/lib/i18n';
 import { resetHints } from '@/lib/hints';
+import UpdateCard from '@/components/UpdateCard';
 
 export default function AboutPanel({ onStartTour, onReset }: { onStartTour?: () => void; onReset?: () => void }) {
   return (
@@ -40,8 +41,8 @@ export default function AboutPanel({ onStartTour, onReset }: { onStartTour?: () 
             <ShieldCheck size={15} className="text-primary-400 shrink-0 mt-0.5" />
             <span>
               {t(
-                'Alle Daten bleiben lokal auf deinem Gerät. Es werden keine Daten an Server gesendet.',
-                'All data stays local on your device. No data is sent to any server.'
+                'Alle Daten bleiben lokal auf deinem Gerät. Es werden keine Daten an Server gesendet – die App fragt nur bei GitHub nach, ob es eine neue Version gibt (abschaltbar).',
+                'All data stays local on your device. No data is sent to any server – the app only asks GitHub whether a new version exists (can be turned off).'
               )}
             </span>
           </div>
@@ -88,6 +89,9 @@ export default function AboutPanel({ onStartTour, onReset }: { onStartTour?: () 
           </p>
         </div>
       </div>
+
+      {/* Updates */}
+      <UpdateCard />
 
       {/* Einführung / Hinweise */}
       {onStartTour && (

@@ -13,6 +13,10 @@ on:
 concurrency:
   group: build-appimage
   cancel-in-progress: true
+
+# Nötig, damit der Workflow Releases anlegen und das AppImage anhängen darf
+permissions:
+  contents: write
  
 jobs:
   build-linux:
@@ -64,4 +68,28 @@ jobs:
           # Nach 7 Tagen automatisch löschen -> Speicher läuft nicht wieder voll
           retention-days: 7
           if-no-files-found: error
+
+      # Nur bei Versions-Tags (v1.9.0 …): öffentliches GitHub-Release mit AppImage erstellen.
+      # Die App prüft beim Start genau dieses „neueste Release“ und zeigt dann den Update-Hinweis.
+      - name: Patchnotes aus CHANGELOG.md holen
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          # Abschnitt "## vX.Y.Z" bis zum nächsten "## " ausschneiden
+          awk -v v="## v${VERSION}" '
+            $0 == v { found = 1; next }
+            found && /^## / { exit }
+            found { print }
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then echo "Version ${VERSION}" > release-notes.md; fi
+          cat release-notes.md
+
+      - name: GitHub-Release erstellen
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: growmanager ${{ github.ref_name }}
+          body_path: release-notes.md
+          files: src-tauri/target/release/bundle/appimage/*.AppImage
+          fail_on_unmatched_files: true
  

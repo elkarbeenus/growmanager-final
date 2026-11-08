@@ -61,6 +61,8 @@ import { resetHints, setTourSeen } from '@/lib/hints';
 import { resetSelectedFertilizer } from '@/lib/fertilizerSelection';
 import { isTourSeen } from '@/lib/hints';
 import VersionBadge from '@/components/VersionBadge';
+import UpdateDialog from '@/components/UpdateDialog';
+import { checkOnStartup } from '@/lib/updateCheck';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { t, useLang } from '@/lib/i18n';
 
@@ -113,6 +115,9 @@ export default function App() {
       clearTimeout(timer);
     };
   }, []);
+
+  // Beim Start im Hintergrund nach einer neuen Version suchen (GitHub Releases)
+  useEffect(() => checkOnStartup(), []);
 
   // Beim Schließen fragen, wenn es Änderungen seit dem letzten Backup gibt
   const dataRef = useRef(data);
@@ -804,6 +809,7 @@ function Shell({
       </footer>
 
       <VersionBadge />
+      <UpdateDialog />
     </div>
   );
 }

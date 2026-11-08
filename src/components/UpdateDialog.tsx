@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Download, Sparkles, X } from 'lucide-react';
+import { LinkFeedback } from '@/components/UpdateCard';
 import { APP_VERSION } from '@/lib/appInfo';
 import { t } from '@/lib/i18n';
 import { openExternal } from '@/lib/openExternal';
@@ -17,6 +19,7 @@ function notesToLines(md: string): string[] {
 /** Hinweis „Neue Version verfügbar“ – erscheint beim Start, wenn es ein neueres Release gibt. */
 export default function UpdateDialog() {
   const { status, dialogOpen } = useUpdateState();
+  const [failed, setFailed] = useState(false);
   if (!dialogOpen || status.state !== 'available') return null;
   const rel = status.release;
   const lines = notesToLines(rel.notes);
@@ -66,15 +69,18 @@ export default function UpdateDialog() {
           <button
             type="button"
             data-testid="update-download"
-            onClick={() => {
-              void openExternal(rel.url);
-              closeUpdateDialog();
+            onClick={async () => {
+              if (await openExternal(rel.url)) {
+                setFailed(false);
+                closeUpdateDialog();
+              } else setFailed(true);
             }}
             className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-ink-950 bg-primary-500 hover:bg-primary-400 transition-colors"
           >
             <Download size={16} />
             {t('Zur Download-Seite', 'Go to download page')}
           </button>
+          {failed && <LinkFeedback ok={false} url={rel.url} />}
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"

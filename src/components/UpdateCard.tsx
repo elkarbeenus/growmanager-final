@@ -1,4 +1,5 @@
-import { RefreshCw, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
+import { useState } from 'react';
+import { RefreshCw, CheckCircle2, AlertCircle, Sparkles, ExternalLink } from 'lucide-react';
 import { APP_VERSION } from '@/lib/appInfo';
 import { t, getLang } from '@/lib/i18n';
 import { openExternal } from '@/lib/openExternal';
@@ -11,6 +12,7 @@ const timeOf = (ms: number) =>
 export default function UpdateCard() {
   const { status, settings } = useUpdateState();
   const checking = status.state === 'checking';
+  const [linkResult, setLinkResult] = useState<'ok' | 'failed' | null>(null);
 
   let line: React.ReactNode;
   switch (status.state) {
@@ -87,12 +89,16 @@ export default function UpdateCard() {
           </button>
         )}
         <button
-          onClick={() => void openExternal(RELEASES_PAGE)}
-          className="px-3.5 py-2 rounded-lg text-sm font-medium text-ink-300 bg-ink-850 hover:bg-ink-800 border border-ink-700/60 transition-colors"
+          type="button"
+          data-testid="update-all-releases"
+          onClick={async () => setLinkResult((await openExternal(RELEASES_PAGE)) ? 'ok' : 'failed')}
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium text-ink-300 bg-ink-850 hover:bg-ink-800 border border-ink-700/60 transition-colors"
         >
+          <ExternalLink size={14} />
           {t('Alle Versionen', 'All releases')}
         </button>
       </div>
+      {linkResult && <LinkFeedback ok={linkResult === 'ok'} url={RELEASES_PAGE} />}
     </div>
   );
 }
@@ -152,4 +158,20 @@ export function UpdateStatusPill() {
         </button>
       );
   }
+}
+
+/** Rückmeldung nach dem Öffnen eines Links: „Im Browser geöffnet“ oder Link zum Kopieren. */
+export function LinkFeedback({ ok, url }: { ok: boolean; url: string }) {
+  return (
+    <div className="basis-full text-xs" data-testid="link-feedback" data-ok={ok ? '1' : '0'}>
+      {ok ? (
+        <span className="text-accent-300">{t('Im Browser geöffnet.', 'Opened in your browser.')}</span>
+      ) : (
+        <span className="text-warning-300">
+          {t('Der Browser ließ sich nicht öffnen. Link zum Kopieren:', 'Could not open the browser. Link to copy:')}{' '}
+          <span className="select-all break-all text-ink-200 font-mono">{url}</span>
+        </span>
+      )}
+    </div>
+  );
 }

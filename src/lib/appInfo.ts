@@ -3,7 +3,7 @@
 // Die Version wird beim Build aus package.json übernommen (siehe vite.config.ts).
 import { t } from '@/lib/i18n';
 
-export const APP_VERSION: string = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.8.0';
+export const APP_VERSION: string = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.9.0';
 
 export const APP_NAME = 'growmanager';
 
@@ -20,6 +20,15 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '1.9.0',
+    items: [
+      { de: 'Update-Hinweis: Beim Start prüft die App, ob es eine neue Version gibt, und zeigt sie mit den Patchnotes an (Später / Version überspringen / Zur Download-Seite)', en: 'Update notice: on start the app checks whether a new version is available and shows it with the patch notes (Later / Skip this version / Go to download page)' },
+      { de: 'Im Reiter „Über“ steht neben der Version, ob du die neueste Version hast; im Bereich „Updates“ lässt sich jederzeit prüfen und die automatische Prüfung abschalten', en: 'The “About” tab shows next to the version whether you have the latest version; in the “Updates” section you can check at any time and turn off the automatic check' },
+      { de: 'Die Versionsanzeige unten links zeigt kurz „aktuell ✓“ bzw. dauerhaft ein verfügbares Update', en: 'The version badge at the bottom left briefly shows “up to date ✓” or, if available, the new update' },
+      { de: 'Neue Versionen erscheinen als Release auf GitHub (AppImage zum Herunterladen)', en: 'New versions are published as a release on GitHub (AppImage to download)' },
+    ],
+  },
   {
     version: '1.8.0',
     items: [

@@ -2,7 +2,7 @@ import { Info, User, Github, Mail, Leaf, ShieldCheck, ListOrdered } from 'lucide
 import { APP_NAME, APP_VERSION, CHANGELOG, DEVELOPER } from '@/lib/appInfo';
 import { t, isEn } from '@/lib/i18n';
 import { resetHints } from '@/lib/hints';
-import UpdateCard from '@/components/UpdateCard';
+import UpdateCard, { UpdateStatusPill } from '@/components/UpdateCard';
 
 export default function AboutPanel({ onStartTour, onReset }: { onStartTour?: () => void; onReset?: () => void }) {
   return (
@@ -29,6 +29,7 @@ export default function AboutPanel({ onStartTour, onReset }: { onStartTour?: () 
               <div className="text-xs text-ink-500 tabular-nums" data-testid="about-version">
                 {t('Version', 'Version')} {APP_VERSION}
               </div>
+              <UpdateStatusPill />
             </div>
           </div>
           <p className="text-sm text-ink-400 mt-4 leading-relaxed">
@@ -147,7 +148,7 @@ export default function AboutPanel({ onStartTour, onReset }: { onStartTour?: () 
                 <span className="text-sm font-bold text-white tabular-nums">v{entry.version}</span>
                 {entry.version === APP_VERSION && (
                   <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full text-primary-300 bg-primary-500/10 border border-primary-500/30">
-                    {t('Aktuell', 'Current')}
+                    {t('Installiert', 'Installed')}
                   </span>
                 )}
               </div>

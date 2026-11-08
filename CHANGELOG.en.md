@@ -1,5 +1,11 @@
 # Patch notes – growmanager
 
+## v1.9.0
+- **Update notice:** on start the app checks whether a new version is available and shows it with the patch notes (Later / Skip this version / Go to download page). Without internet nothing happens.
+- **“About” tab:** next to the version it shows whether you have the latest version. In the new “Updates” section you can check at any time and turn off the automatic check on start.
+- The version badge at the bottom left briefly shows “up to date ✓” or, if available, the new update.
+- New versions are now published as a release on GitHub (AppImage to download).
+
 ## v1.8.0
 - Nutrient solution: choose the purpose – “Use” (starts the countdown) or “Soaking” (does not count for the countdown); can also be changed later in the history.
 - Countdown per grow: batches assigned to a grow have their own countdown – each grow is reminded separately at the top and in the “Nutrient mix” tab.

@@ -1,5 +1,11 @@
 # Patchnotes – growmanager
 
+## v1.9.0
+- **Update-Hinweis:** Beim Start prüft die App, ob es eine neue Version gibt, und zeigt sie mit den Patchnotes an (Später / Version überspringen / Zur Download-Seite). Ohne Internet passiert nichts.
+- **Reiter „Über“:** Neben der Version steht, ob du die neueste Version hast. Im neuen Bereich „Updates“ lässt sich jederzeit prüfen und die automatische Prüfung beim Start abschalten.
+- Die Versionsanzeige unten links zeigt kurz „aktuell ✓“ bzw. dauerhaft ein verfügbares Update.
+- Neue Versionen erscheinen ab jetzt als Release auf GitHub (AppImage zum Herunterladen).
+
 ## v1.8.0
 - Nährlösung: Verwendung wählbar – „Gebrauch“ (startet den Countdown) oder „Tränken“ (zählt nicht für den Countdown); auch nachträglich im Verlauf änderbar.
 - Countdown je Grow: Ansätze, die einem Grow zugeordnet sind, haben einen eigenen Countdown – oben und im Reiter „Nährlösung“ wird jeder Grow getrennt erinnert.

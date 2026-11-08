@@ -96,3 +96,60 @@ export default function UpdateCard() {
     </div>
   );
 }
+
+/** Kleiner Status neben der Versionsnummer: „Neueste Version ✓“ / „Update verfügbar“ / „Wird geprüft …“. */
+export function UpdateStatusPill() {
+  const { status } = useUpdateState();
+  const base = 'inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold border';
+  switch (status.state) {
+    case 'current':
+      return (
+        <span data-testid="update-pill" data-state="current" className={`${base} text-primary-300 bg-primary-500/10 border-primary-500/30`}>
+          <CheckCircle2 size={12} /> {t('Neueste Version', 'Latest version')}
+        </span>
+      );
+    case 'available':
+      return (
+        <button
+          type="button"
+          data-testid="update-pill"
+          data-state="available"
+          onClick={openUpdateDialog}
+          className={`${base} text-ink-950 bg-primary-500 border-primary-400 hover:bg-primary-400`}
+        >
+          <Sparkles size={12} /> {t(`Update auf v${status.release.version} verfügbar`, `Update to v${status.release.version} available`)}
+        </button>
+      );
+    case 'checking':
+      return (
+        <span data-testid="update-pill" data-state="checking" className={`${base} text-ink-400 bg-ink-850 border-ink-700`}>
+          <RefreshCw size={12} className="animate-spin" /> {t('Suche nach Updates …', 'Checking for updates …')}
+        </span>
+      );
+    case 'error':
+      return (
+        <button
+          type="button"
+          data-testid="update-pill"
+          data-state="error"
+          onClick={() => void checkForUpdates({ manual: true })}
+          title={t('Erneut prüfen', 'Check again')}
+          className={`${base} text-warning-300 bg-warning-500/10 border-warning-500/30 hover:bg-warning-500/20`}
+        >
+          <AlertCircle size={12} /> {t('Update-Status unbekannt', 'Update status unknown')}
+        </button>
+      );
+    default:
+      return (
+        <button
+          type="button"
+          data-testid="update-pill"
+          data-state="idle"
+          onClick={() => void checkForUpdates({ manual: true })}
+          className={`${base} text-ink-400 bg-ink-850 border-ink-700 hover:text-white`}
+        >
+          <RefreshCw size={12} /> {t('Auf Updates prüfen', 'Check for updates')}
+        </button>
+      );
+  }
+}

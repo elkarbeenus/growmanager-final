@@ -99,7 +99,13 @@ npx tauri dev      # desktop app (requires Rust)
 npx tauri build    # installer for your current system
 ```
 
-When the version is raised, update `package.json`, `package-lock.json`, `src-tauri/tauri.conf.json` and `src-tauri/Cargo.toml`, add a `## vX.Y.Z` section to both changelogs and to `CHANGELOG` in `src/lib/appInfo.ts`, then push a tag `vX.Y.Z`. GitHub Actions builds Linux and Windows and publishes the release with the patch notes from `CHANGELOG.md`.
+When the version is raised, update `package.json`, `package-lock.json`, `src-tauri/tauri.conf.json` and `src-tauri/Cargo.toml`, add a `## vX.Y.Z` section to both changelogs and to `CHANGELOG` in `src/lib/appInfo.ts`, then open **Actions → Build & Release → Run workflow**:
+
+- **test** – publishes a pre-release `vX.Y.Z-test` to try out first,
+- **release** – publishes the real release `vX.Y.Z` (and removes the test release of that version); tick *alte_loeschen* to delete all older releases and tags,
+- **nur-build** – only builds.
+
+The version is read from `package.json`; the patch notes come from `CHANGELOG.md`. Pushing a tag `vX.Y.Z` works as well.
 
 Every push to a branch also runs a quick check (typecheck, lint, web build).
 

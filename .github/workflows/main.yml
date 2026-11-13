@@ -1,12 +1,28 @@
 name: Build & Release
 
 # Läuft NICHT bei jedem Push (spart Minuten), sondern:
-#  - per Knopfdruck (Actions-Tab -> "Run workflow") – nur Build, kein Release
-#  - wenn ein Versions-Tag gepusht wird:
-#      v0.5.1          -> normales Release
-#      v0.5.1-test.1   -> Test-Release (als „Vorabversion“ markiert, die App zeigt es nicht als Update)
+#  - per Knopfdruck: Actions-Tab -> "Build & Release" -> "Run workflow"
+#      Art = test     -> Test-Release v<Version>-test (Vorabversion, die App bietet es nicht als Update an)
+#      Art = release  -> echtes Release v<Version>; ein vorhandenes Test-Release dieser Version wird entfernt
+#      Art = nur-build -> nur bauen, nichts veröffentlichen
+#      „Alte Releases löschen“ entfernt beim echten Release alle anderen Releases samt Tags
+#    Die Version kommt automatisch aus package.json.
+#  - oder wenn ein Versions-Tag gepusht wird (v0.5.1 / v0.5.1-test.1)
 on:
   workflow_dispatch:
+    inputs:
+      art:
+        description: "Was soll passieren?"
+        type: choice
+        options:
+          - test
+          - release
+          - nur-build
+        default: test
+      alte_loeschen:
+        description: "Beim echten Release alle älteren Releases (und deren Tags) löschen"
+        type: boolean
+        default: false
   push:
     tags:
       - "v*"
@@ -107,12 +123,33 @@ jobs:
   # Nur bei Versions-Tags: GitHub-Release mit allen Dateien erstellen.
   # Die App prüft beim Start das „neueste Release“ (ohne Vorabversionen) und zeigt dann den Update-Hinweis.
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.art != 'nur-build')
     needs: [build-linux, build-windows]
     runs-on: ubuntu-22.04
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Code auschecken
         uses: actions/checkout@v4
+
+      - name: Tag bestimmen
+        id: tag
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            V=$(node -p "require('./package.json').version")
+            if [ "${{ inputs.art }}" = "test" ]; then TAG="v${V}-test"; else TAG="v${V}"; fi
+          else
+            TAG="${GITHUB_REF_NAME}"
+          fi
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "Tag: ${TAG}"
+
+      - name: Vorhandenes Release mit gleichem Tag ersetzen
+        run: |
+          TAG="${{ steps.tag.outputs.tag }}"
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ] && gh release view "$TAG" >/dev/null 2>&1; then
+            gh release delete "$TAG" --cleanup-tag --yes
+          fi
 
       - name: Gebaute Dateien holen
         uses: actions/download-artifact@v4
@@ -122,7 +159,7 @@ jobs:
       - name: Patchnotes aus CHANGELOG.md holen
         id: notes
         run: |
-          TAG="${GITHUB_REF_NAME}"
+          TAG="${{ steps.tag.outputs.tag }}"
           VERSION="${TAG#v}"
           BASE="${VERSION%%-*}"          # v0.5.1-test.1 -> 0.5.1
           if [ "$VERSION" != "$BASE" ]; then echo "prerelease=true" >> "$GITHUB_OUTPUT"; else echo "prerelease=false" >> "$GITHUB_OUTPUT"; fi
@@ -141,7 +178,9 @@ jobs:
       - name: GitHub-Release erstellen
         uses: softprops/action-gh-release@v2
         with:
-          name: growmanager ${{ github.ref_name }}
+          tag_name: ${{ steps.tag.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: growmanager ${{ steps.tag.outputs.tag }}
           body_path: release-notes.md
           prerelease: ${{ steps.notes.outputs.prerelease }}
           make_latest: ${{ steps.notes.outputs.prerelease == 'true' && 'false' || 'true' }}
@@ -150,3 +189,24 @@ jobs:
             dist-release/linux/**/*.deb
             dist-release/windows/**/*.exe
           fail_on_unmatched_files: true
+
+      # Beim echten Release: Test-Release derselben Version entfernen
+      - name: Test-Release dieser Version entfernen
+        if: steps.notes.outputs.prerelease == 'false'
+        run: |
+          TAG="${{ steps.tag.outputs.tag }}"
+          for R in $(gh release list --limit 100 --json tagName --jq '.[].tagName'); do
+            case "$R" in "${TAG}"-*) echo "lösche $R"; gh release delete "$R" --cleanup-tag --yes ;; esac
+          done
+
+      - name: Alte Releases löschen
+        if: steps.notes.outputs.prerelease == 'false' && github.event_name == 'workflow_dispatch' && inputs.alte_loeschen
+        run: |
+          TAG="${{ steps.tag.outputs.tag }}"
+          for R in $(gh release list --limit 100 --json tagName --jq '.[].tagName'); do
+            if [ "$R" != "$TAG" ]; then echo "lösche Release $R"; gh release delete "$R" --cleanup-tag --yes; fi
+          done
+          # übrig gebliebene Versions-Tags ohne Release ebenfalls entfernen
+          for T in $(git ls-remote --tags origin | sed -n 's#.*refs/tags/\(v[^^]*\)$#\1#p' | sort -u); do
+            if [ "$T" != "$TAG" ]; then echo "lösche Tag $T"; git push origin ":refs/tags/$T" || true; fi
+          done

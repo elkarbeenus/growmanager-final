@@ -7,6 +7,10 @@ on:
   push:
     branches:
       - "**"
+      - "!ci-preview"
+
+permissions:
+  contents: write
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -35,10 +39,13 @@ jobs:
       - name: Web-Build
         run: npm run build
 
-      - name: dist hochladen
-        uses: actions/upload-artifact@v4
-        with:
-          name: web-dist
-          path: dist
-          retention-days: 3
-          if-no-files-found: error
+      # Gebautes Frontend als Vorschau auf einen Hilfs-Branch legen (zum Testen ohne lokales npm)
+      - name: dist auf Branch ci-preview legen
+        run: |
+          cd dist
+          git init -q -b ci-preview
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -A
+          git commit -qm "preview ${GITHUB_SHA}"
+          git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" ci-preview

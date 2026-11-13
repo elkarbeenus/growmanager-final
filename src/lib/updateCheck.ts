@@ -4,7 +4,7 @@
 import { useSyncExternalStore } from 'react';
 import { APP_VERSION } from '@/lib/appInfo';
 
-export const REPO = 'elkarbeenus/growmanager-final';
+export const REPO = 'elkarbeenus/growmanager';
 export const RELEASES_PAGE = `https://github.com/${REPO}/releases`;
 const API = `https://api.github.com/repos/${REPO}`;
 const TIMEOUT_MS = 8000;

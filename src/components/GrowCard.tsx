@@ -75,7 +75,7 @@ export default function GrowCard({ grow, onOpen, onEdit, onDelete }: GrowCardPro
         if (e.key === 'Enter' && e.currentTarget === e.target) onOpen();
       }}
       data-testid="grow-card"
-      className="group relative rounded-2xl border border-ink-800 bg-ink-900 hover:border-ink-700 hover:bg-[#1c1823] transition-colors cursor-pointer overflow-hidden shadow-card"
+      className="group relative rounded-2xl border border-ink-800 bg-ink-900 hover:border-ink-700 hover:bg-ink-850 transition-colors cursor-pointer overflow-hidden shadow-card"
     >
       {/* Farbkante des Grows */}
       <span className="absolute inset-y-0 left-0 w-1" style={{ backgroundColor: tint }} aria-hidden="true" />

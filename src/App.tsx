@@ -63,6 +63,7 @@ import VersionBadge from '@/components/VersionBadge';
 import UpdateDialog from '@/components/UpdateDialog';
 import { checkOnStartup } from '@/lib/updateCheck';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { ThemeSwitcher } from '@/components/ThemePicker';
 import { t, useLang } from '@/lib/i18n';
 
 type Tab = 'grows' | 'overview' | 'nutrient' | 'athena' | 'shotsize' | 'order' | 'backup' | 'settings' | 'about';
@@ -728,7 +729,10 @@ function Shell({
           ))}
         </nav>
         <div className="px-4 pt-4 pb-14 border-t border-ink-800/80 space-y-3">
-          <LanguageSwitcher up full />
+          <div data-tour="theme-switcher" className="space-y-2">
+            <ThemeSwitcher up full />
+            <LanguageSwitcher up full />
+          </div>
           <p className="text-[11px] leading-relaxed text-ink-500">
             {t('Alles bleibt lokal auf diesem Gerät. Exportiere regelmäßig Backups.', 'Everything stays on this device. Export backups regularly.')}
           </p>
@@ -744,7 +748,8 @@ function Shell({
             <div className="hidden min-[480px]:block lg:hidden min-w-0">
               <div className="font-display font-extrabold text-white tracking-tight">growmanager</div>
             </div>
-            <div className="lg:hidden ml-auto min-[480px]:ml-2">
+            <div className="lg:hidden ml-auto min-[480px]:ml-2 flex items-center gap-2" data-tour="theme-switcher">
+              <ThemeSwitcher />
               <LanguageSwitcher />
             </div>
             <div className="flex items-center gap-2 ml-auto" data-tour="header-actions">

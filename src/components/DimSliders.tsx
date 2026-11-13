@@ -24,7 +24,7 @@ function Row({ label, value, min, max, unit, onChange, id }: { label: string; va
         data-testid={id}
         aria-label={label}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="flex-1 accent-lime-400 h-1.5"
+        className="flex-1 accent-primary-400 h-1.5"
       />
       <span className="text-xs font-semibold text-ink-100 tabular-nums w-14 text-right">
         {value} {unit}

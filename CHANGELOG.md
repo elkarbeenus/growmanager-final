@@ -1,5 +1,12 @@
 # Patchnotes – growmanager
 
+## v0.5.1
+- **11 dunkle Themes:** eigene Grow-Themes – **Nachtzelt** (Standard), **Grünlicht** (sehr gedämpft, für die Dunkelphase am Zelt), **Natriumdampf** (warmes HPS-Bernstein), **Blurple** und **OLED-Schwarz** – sowie die Klassiker **Catppuccin Mocha**, **Dracula**, **Tokyo Night**, **Nord**, **Gruvbox** und **Rosé Pine**.
+- **Sofort wechseln, ohne Neustart:** unten in der Seitenleiste (im kleinen Fenster oben rechts) oder unter **Einstellungen → Erscheinungsbild** mit Vorschau-Karten. Das Theme wird pro Gerät gespeichert.
+- **Neuer Update-Hinweis:** erscheint oben mittig wie eine Nachricht – kurz „tippt …“, dann eine Sprechblase mit den wichtigsten Neuerungen, „Alle Neuerungen ansehen“, Herunterladen / Später / Überspringen. Die App bleibt dabei bedienbar.
+- **Fix:** Die Update-Prüfung hat ein falsches GitHub-Repo abgefragt und dadurch keine neuen Versionen gefunden.
+- Einführungstour um einen Schritt zu Themes und Sprache ergänzt.
+
 ## v0.5.0
 - **Komplett neues Design „Grow-Zelt bei Nacht“:** dunkle Pflaumentöne statt Blaugrau, Blattgrün für Aktionen, LED-Violett als Zweitfarbe und eine kräftigere Überschriften-Schrift (Inter Display, wird mitgeliefert – sieht auch offline gleich aus).
 - **Seitenleiste:** Die Navigation sitzt links, gruppiert nach Garten (Grows, Übersicht, Nährlösung), Werkzeuge (Dünger, Shot Size, Steckling bestellen) und System (Backup, Einstellungen, Über). In kleinen Fenstern erscheint sie als Leiste oben.

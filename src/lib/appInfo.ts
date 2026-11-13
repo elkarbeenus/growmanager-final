@@ -3,7 +3,7 @@
 // Die Version wird beim Build aus package.json übernommen (siehe vite.config.ts).
 import { t } from '@/lib/i18n';
 
-export const APP_VERSION: string = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.5.0';
+export const APP_VERSION: string = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.5.1';
 
 export const APP_NAME = 'growmanager';
 
@@ -20,6 +20,16 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '0.5.1',
+    items: [
+      { de: '11 dunkle Themes: Nachtzelt, Grünlicht, Natriumdampf, Blurple, OLED-Schwarz sowie Catppuccin Mocha, Dracula, Tokyo Night, Nord, Gruvbox und Rosé Pine', en: '11 dark themes: Night tent, Green light, Sodium, Blurple, OLED black plus Catppuccin Mocha, Dracula, Tokyo Night, Nord, Gruvbox and Rosé Pine' },
+      { de: 'Theme-Wechsel sofort ohne Neustart – unten in der Seitenleiste oder unter Einstellungen → Erscheinungsbild (mit Vorschau); gespeichert pro Gerät', en: 'Switch themes instantly without a restart – at the bottom of the sidebar or under Settings → Appearance (with preview); saved per device' },
+      { de: 'Update-Hinweis neu als Nachricht oben mittig: kurz „tippt …“, dann eine Sprechblase mit den wichtigsten Neuerungen; blockiert die App nicht', en: 'New update notice as a message at the top centre: a short “typing …”, then a bubble with the highlights; does not block the app' },
+      { de: 'Fix: Die Update-Prüfung fragt jetzt das richtige GitHub-Repo ab', en: 'Fix: the update check now asks the correct GitHub repository' },
+      { de: 'Einführungstour: neuer Schritt zu Themes und Sprache', en: 'Guided tour: new step for themes and language' },
+    ],
+  },
   {
     version: '0.5.0',
     items: [

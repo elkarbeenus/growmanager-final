@@ -1,5 +1,12 @@
 # Patch notes – growmanager
 
+## v0.5.1
+- **11 dark themes:** grow themes – **Night tent** (default), **Green light** (very dim, for the dark period at the tent), **Sodium** (warm HPS amber), **Blurple** and **OLED black** – plus the classics **Catppuccin Mocha**, **Dracula**, **Tokyo Night**, **Nord**, **Gruvbox** and **Rosé Pine**.
+- **Switch instantly, no restart:** at the bottom of the sidebar (top right in small windows) or under **Settings → Appearance** with preview cards. The theme is saved per device.
+- **New update notice:** appears at the top centre like a message – a short “typing …”, then a bubble with the highlights, “See everything new”, Download / Later / Skip. The app stays usable.
+- **Fix:** the update check asked the wrong GitHub repository and therefore found no new versions.
+- Guided tour gained a step for themes and language.
+
 ## v0.5.0
 - **All-new “grow tent at night” design:** dark plum tones instead of blue-grey, leaf green for actions, LED violet as second colour and a bolder heading font (Inter Display, bundled – looks the same offline).
 - **Sidebar:** navigation sits on the left, grouped into Garden (Grows, Overview, Nutrient mix), Tools (Nutrients, Shot size, Order clones) and System (Backup, Settings, About). In small windows it appears as a bar at the top.

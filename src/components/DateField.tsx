@@ -15,7 +15,7 @@ export default function DateField({
   hint,
   value,
   onChange,
-  accentColor = '#93dd53',
+  accentColor = 'rgb(var(--c-primary-400))',
 }: DateFieldProps) {
   return (
     <div className="block">

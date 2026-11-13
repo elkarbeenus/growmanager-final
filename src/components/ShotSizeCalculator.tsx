@@ -167,7 +167,7 @@ function ResultCard({
     tone === 'primary'
       ? 'text-primary-400 bg-primary-500/10 border-primary-500/20'
       : 'text-warning-400 bg-warning-500/10 border-warning-500/20';
-  const accent = tone === 'primary' ? 'accent-lime-400' : 'accent-amber-500';
+  const accent = tone === 'primary' ? 'accent-primary-400' : 'accent-warning-500';
 
   return (
     <div className="rounded-2xl border border-ink-800 bg-ink-900/60 p-5" data-testid={`card-${mode}`}>

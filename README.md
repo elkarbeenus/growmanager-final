@@ -1,6 +1,6 @@
 # growmanager
 
-**Current version: 0.5.0** · [Download the latest release](https://github.com/elkarbeenus/growmanager/releases/latest)
+**Current version: 0.5.1** · [Download the latest release](https://github.com/elkarbeenus/growmanager/releases/latest)
 
 **Your personal grow manager – plan every grow, track nutrients, costs and yield, and keep everything on your own device.**
 
@@ -22,6 +22,21 @@ Version 0.5 brings a completely new look, built around the idea of a **grow tent
 - a **sidebar** on the left, grouped into *Garden*, *Tools* and *System* (a top bar in small windows),
 - a **light-spectrum strip** on every grow that lights up further with each milestone reached,
 - bundled fonts (Inter / Inter Display), so the app looks the same offline on Linux, SteamOS and Windows.
+
+### Themes
+
+Since 0.5.1 there are **11 dark themes**, switchable instantly without a restart (sidebar or *Settings → Appearance*):
+
+| Grow themes | Classics |
+| --- | --- |
+| Night tent (default) | Catppuccin Mocha |
+| Green light – very dim, for the dark period at the tent | Dracula |
+| Sodium – warm HPS amber | Tokyo Night |
+| Blurple | Nord |
+| OLED black | Gruvbox |
+| | Rosé Pine |
+
+The classic palettes are based on the freely licensed (MIT) colour schemes of the same name.
 
 ## Features
 
@@ -68,7 +83,8 @@ Version 0.5 brings a completely new look, built around the idea of a **grow tent
 - **Order clones** tab with links to clone shops that open in your default browser.
 - The app **remembers your layout** (tab, open grow, collapsed sections, scroll position, window size) and asks to make a backup when you close it with unsaved changes.
 - Optional **hardware acceleration** on Linux for smooth scrolling, with automatic fallback to safe mode.
-- A short **guided tour** explains where to find what – the sidebar, the header buttons and every tab. It runs once and can be switched off or restarted at any time. Hint cards can be dismissed.
+- A short **guided tour** explains where to find what – the sidebar, the header buttons, themes and every tab.
+- **Update notice** as a small message at the top when a new version is out. It runs once and can be switched off or restarted at any time. Hint cards can be dismissed.
 - English and German, liters and gallons.
 - Dark interface for use in low light.
 
@@ -83,7 +99,7 @@ Go to **[Releases](https://github.com/elkarbeenus/growmanager/releases)** and do
 
 ## Versioning
 
-growmanager is in its 0.x phase: every release raises the patch number (0.5.0 → 0.5.1 → 0.5.2 …) until version **1.0**. Test builds are published as pre-releases (`v0.5.1-test.1`) and are not offered as updates.
+growmanager is in its 0.x phase: every release raises the patch number (0.5.0 → 0.5.1 → 0.5.2 …) until version **1.0**. Test builds are published as pre-releases (`v0.5.1-test`) and are not offered as updates.
 
 ## Tech stack
 

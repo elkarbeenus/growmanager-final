@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Settings, Plus, Trash2, Zap, Info } from 'lucide-react';
+import { Settings, Plus, Trash2, Zap, Info, Palette } from 'lucide-react';
+import { ThemeGrid } from './ThemePicker';
 import DarkSelect from './DarkSelect';
 import type { AppSettings, Device, DevicePhase, DeviceType, Grow, Lamp } from '@/types';
 import ConfirmDialog from './ConfirmDialog';
@@ -116,10 +117,22 @@ export default function SettingsPanel({ settings, grows, onChange }: Props) {
         </h2>
         <p className="text-sm text-ink-500 mt-0.5">
           {t(
-            'Hinterlege Strompreis und deine LED-Lampen – daraus werden die Stromkosten jedes Grows automatisch berechnet.',
-            'Enter your electricity price and your LED lamps – the electricity costs of every grow are calculated automatically from them.'
+            'Theme, Strompreis und deine LED-Lampen – daraus werden die Stromkosten jedes Grows automatisch berechnet.',
+            'Theme, electricity price and your LED lamps – the electricity costs of every grow are calculated automatically from them.'
           )}
         </p>
+      </div>
+
+      {/* Erscheinungsbild */}
+      <div className="rounded-2xl border border-ink-800 bg-ink-900/60 p-5" data-testid="appearance-card">
+        <h3 className="text-sm font-semibold text-white mb-1 flex items-center gap-2">
+          <Palette size={16} className="text-led-400" />
+          {t('Erscheinungsbild', 'Appearance')}
+        </h3>
+        <p className="text-xs text-ink-400 mb-4">
+          {t('Wähle ein Theme – es gilt sofort und wird auf diesem Gerät gespeichert. Schnell wechseln geht auch unten in der Seitenleiste.', 'Pick a theme – it applies right away and is saved on this device. You can also switch quickly at the bottom of the sidebar.')}
+        </p>
+        <ThemeGrid />
       </div>
 
       {/* Strom */}

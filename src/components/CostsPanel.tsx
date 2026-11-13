@@ -159,7 +159,7 @@ export default function CostsPanel({ grow, allGrows, batches, fertPrices, onFert
               type="checkbox"
               checked={auto.enabled}
               onChange={(e) => onToggleAuto(e.target.checked)}
-              className="accent-lime-400 h-4 w-4"
+              className="accent-primary-400 h-4 w-4"
             />
             {t('einrechnen', 'include')}
           </label>
@@ -267,7 +267,7 @@ export default function CostsPanel({ grow, allGrows, batches, fertPrices, onFert
               type="checkbox"
               checked={power.enabled}
               onChange={(e) => onToggleAutoPower(e.target.checked)}
-              className="accent-lime-400 h-4 w-4"
+              className="accent-primary-400 h-4 w-4"
             />
             {t('einrechnen', 'include')}
           </label>

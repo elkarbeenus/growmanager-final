@@ -41,6 +41,17 @@ function steps(): Step[] {
       ],
     },
     {
+      id: 'themes',
+      target: 'theme-switcher',
+      title: t('Themes & Sprache', 'Themes & language'),
+      intro: t('Hier wechselst du das Aussehen der App – sofort, ohne Neustart.', 'Change the look of the app here – instantly, no restart.'),
+      bullets: [
+        t('11 dunkle Themes: eigene Grow-Themes wie Grünlicht (für die Dunkelphase am Zelt) oder Natriumdampf, dazu Klassiker wie Dracula, Nord und Tokyo Night.', '11 dark themes: grow themes like Green light (for the dark period at the tent) or Sodium, plus classics like Dracula, Nord and Tokyo Night.'),
+        t('Alle Themes mit Vorschau findest du auch unter „Einstellungen“ → „Erscheinungsbild“.', 'All themes with a preview are also under “Settings” → “Appearance”.'),
+        t('Darunter stellst du die Sprache um (Deutsch / English).', 'Below it you switch the language (Deutsch / English).'),
+      ],
+    },
+    {
       id: 'grows',
       tab: 'grows',
       title: 'Grows',
@@ -110,7 +121,7 @@ function steps(): Step[] {
       id: 'settings',
       tab: 'settings',
       title: t('Einstellungen', 'Settings'),
-      intro: t('Hinterlege deinen Strompreis, die Lichtzeiten, deine LED-Lampen und weitere Geräte (Abluft, Clip-Fan, Controller, Ent-/Befeuchter) mit Watt.', 'Enter your electricity price, light hours, your LED lamps and other devices (exhaust, clip fan, controller, dehumidifier/humidifier) with their wattage.'),
+      intro: t('Wähle dein Theme, hinterlege deinen Strompreis, die Lichtzeiten, deine LED-Lampen und weitere Geräte (Abluft, Clip-Fan, Controller, Ent-/Befeuchter) mit Watt.', 'Pick your theme, enter your electricity price, light hours, your LED lamps and other devices (exhaust, clip fan, controller, dehumidifier/humidifier) with their wattage.'),
       bullets: [
         t('Beim Anlegen oder Bearbeiten eines Grows wählst du, welche Lampe und welche Geräte genutzt werden.', 'When creating or editing a grow you choose which lamp and devices are used.'),
         t('Daraus werden die Stromkosten automatisch berechnet und in „Kosten & Ertrag“ eingerechnet.', 'The electricity costs are then calculated automatically and included in “Costs & yield”.'),
@@ -220,7 +231,7 @@ export default function GuidedTour({ startTab, onNavigate, onClose }: Props) {
         <div
           data-testid="tour-spot"
           className="absolute rounded-xl ring-2 ring-led-400 pointer-events-none transition-all duration-300"
-          style={{ left: rect.left - 6, top: rect.top - 4, width: rect.width + 12, height: rect.height + 8, boxShadow: '0 0 0 9999px rgba(8,6,12,0.82), 0 0 32px 2px rgba(173,140,255,0.45)' }}
+          style={{ left: rect.left - 6, top: rect.top - 4, width: rect.width + 12, height: rect.height + 8, boxShadow: '0 0 0 9999px rgb(var(--c-ink-950) / 0.84), 0 0 32px 2px rgb(var(--c-led-400) / 0.45)' }}
         />
       ) : (
         <div className="absolute inset-0 bg-ink-950/80 pointer-events-none" />
@@ -257,7 +268,7 @@ export default function GuidedTour({ startTab, onNavigate, onClose }: Props) {
         )}
 
         <label className="mt-4 flex items-center gap-2 text-xs text-ink-400 cursor-pointer select-none">
-          <input data-testid="tour-never" type="checkbox" checked={hideNext} onChange={(e) => setHideNext(e.target.checked)} className="accent-violet-400 h-3.5 w-3.5" />
+          <input data-testid="tour-never" type="checkbox" checked={hideNext} onChange={(e) => setHideNext(e.target.checked)} className="accent-led-400 h-3.5 w-3.5" />
           {t('Beim nächsten Start nicht mehr anzeigen', 'Don’t show again at the next start')}
         </label>
 

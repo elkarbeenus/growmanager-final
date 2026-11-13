@@ -320,7 +320,7 @@ export default function BackupPanel({ data, onRestore }: BackupPanelProps) {
             <Database size={24} className="text-primary-400" />
           </div>
           <div className="flex-1">
-            <h2 className="text-xl font-bold text-white tracking-tight">{t('Backup & Wiederherstellung', 'Backup & restore')}</h2>
+            <h2 className="gm-title">{t('Backup & Wiederherstellung', 'Backup & restore')}</h2>
             <p className="text-sm text-ink-400 mt-1 leading-relaxed">
               {t(
                 'Exportiere alle deine Daten als Datei für den Transfer auf einen anderen Rechner. Automatische Tages-Backups werden lokal gespeichert und verifiziert. Jede Aktion wird im Backup-Log unten protokolliert.',

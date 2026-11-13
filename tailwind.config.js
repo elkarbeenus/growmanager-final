@@ -4,35 +4,38 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'Segoe UI', 'system-ui', 'sans-serif'],
+        display: ['Inter Display', 'Inter', 'Segoe UI', 'system-ui', 'sans-serif'],
       },
       colors: {
         // Deep professional greens
+        // Chlorophyll – Blattgrün mit Gelbstich (Aktionen, aktive Elemente)
         primary: {
-          50: '#ecfdf5',
-          100: '#d1fae5',
-          200: '#a7f3d0',
-          300: '#6ee7b7',
-          400: '#34d399',
-          500: '#10b981',
-          600: '#059669',
-          700: '#047857',
-          800: '#065f46',
-          900: '#064e3b',
-          950: '#022c22',
+          50: '#f4fdec',
+          100: '#e5fad2',
+          200: '#ccf4a8',
+          300: '#aeea78',
+          400: '#93dd53',
+          500: '#78c63a',
+          600: '#5ea42b',
+          700: '#487f25',
+          800: '#3a6422',
+          900: '#30521f',
+          950: '#162d0b',
         },
         // Crisp lime accent
+        // Minze – Wachstum / Erfolg
         accent: {
-          50: '#f7fee7',
-          100: '#ecfccb',
-          200: '#d9f99d',
-          300: '#bef264',
-          400: '#a3e635',
-          500: '#84cc16',
-          600: '#65a30d',
-          700: '#4d7c0f',
-          800: '#3f6212',
-          900: '#365314',
+          50: '#effdf8',
+          100: '#d8fbee',
+          200: '#b2f5dd',
+          300: '#7cebc6',
+          400: '#47d9ab',
+          500: '#22bf92',
+          600: '#169a77',
+          700: '#157b61',
+          800: '#16624f',
+          900: '#155143',
         },
         // Warm amber for harvest / stretch
         warning: {
@@ -60,24 +63,37 @@ export default {
           900: '#7f1d1d',
         },
         // Dark surface grays (slate-tinted)
+        // Zelt bei Nacht – pflaumen-getönte Dunkeltöne (wie Mylar im LED-Licht)
         ink: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
-          400: '#94a3b8',
-          500: '#64748b',
-          600: '#475569',
-          700: '#334155',
-          800: '#1e293b',
-          850: '#172033',
-          900: '#0f172a',
-          950: '#080d1a',
+          50: '#f8f6fa',
+          100: '#efecf3',
+          200: '#ddd8e4',
+          300: '#c1bacc',
+          400: '#9a91a8',
+          500: '#736a82',
+          600: '#544c62',
+          700: '#3a3445',
+          800: '#2a2532',
+          850: '#211d28',
+          900: '#18151e',
+          950: '#0e0c12',
+        },
+        // LED-Violett – Licht, Hinweise, Tour
+        led: {
+          200: '#ddd0ff',
+          300: '#c6b0ff',
+          400: '#ad8cff',
+          500: '#9268f5',
+          600: '#7a4fe0',
         },
       },
       boxShadow: {
-        glow: '0 0 24px -4px rgba(16, 185, 129, 0.45)',
-        card: '0 1px 2px rgba(0,0,0,0.4), 0 8px 24px -12px rgba(0,0,0,0.6)',
+        glow: '0 0 28px -6px rgba(147, 221, 83, 0.55)',
+        'glow-led': '0 0 28px -6px rgba(173, 140, 255, 0.55)',
+        card: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 2px rgba(0,0,0,0.45), 0 12px 32px -16px rgba(0,0,0,0.7)',
+      },
+      backgroundImage: {
+        spectrum: 'linear-gradient(90deg, #7a4fe0 0%, #4f7dff 22%, #47d9ab 45%, #93dd53 62%, #f5b544 80%, #ff5d6c 100%)',
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-out',

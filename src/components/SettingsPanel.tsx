@@ -110,7 +110,7 @@ export default function SettingsPanel({ settings, grows, onChange }: Props) {
   return (
     <div className="space-y-6 animate-fade-in" data-testid="settings-panel">
       <div>
-        <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+        <h2 className="gm-title flex items-center gap-2">
           <Settings size={18} className="text-primary-400" />
           {t('Einstellungen', 'Settings')}
         </h2>

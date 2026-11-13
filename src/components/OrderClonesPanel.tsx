@@ -24,7 +24,7 @@ export default function OrderClonesPanel() {
   return (
     <div className="space-y-6" data-testid="order-panel">
       <div>
-        <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+        <h2 className="gm-title flex items-center gap-2">
           <ShoppingCart size={18} className="text-primary-400" />
           {t('Steckling bestellen', 'Order clones')}
         </h2>

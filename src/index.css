@@ -2,29 +2,83 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Schriften werden mitgeliefert – damit sieht die App auch offline (AppImage/Steam Deck) gleich aus */
+@font-face { font-family: 'Inter'; font-weight: 400; font-style: normal; font-display: swap; src: url('./assets/fonts/Inter-Regular.woff') format('woff'); }
+@font-face { font-family: 'Inter'; font-weight: 500; font-style: normal; font-display: swap; src: url('./assets/fonts/Inter-Medium.woff') format('woff'); }
+@font-face { font-family: 'Inter'; font-weight: 600; font-style: normal; font-display: swap; src: url('./assets/fonts/Inter-SemiBold.woff') format('woff'); }
+@font-face { font-family: 'Inter'; font-weight: 700; font-style: normal; font-display: swap; src: url('./assets/fonts/Inter-Bold.woff') format('woff'); }
+@font-face { font-family: 'Inter Display'; font-weight: 600; font-style: normal; font-display: swap; src: url('./assets/fonts/InterDisplay-SemiBold.woff') format('woff'); }
+@font-face { font-family: 'Inter Display'; font-weight: 700; font-style: normal; font-display: swap; src: url('./assets/fonts/InterDisplay-Bold.woff') format('woff'); }
+@font-face { font-family: 'Inter Display'; font-weight: 800; font-style: normal; font-display: swap; src: url('./assets/fonts/InterDisplay-ExtraBold.woff') format('woff'); }
+
 @layer base {
   html {
     color-scheme: dark; /* native Elemente (Scrollbars, Eingabefelder) dunkel darstellen */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'cv11', 'ss01';
   }
   body {
     @apply bg-ink-950 text-ink-200 font-sans antialiased;
+    /* LED-Schein von oben: violett links, Blattgrün rechts – statisch, kein fixed (Scroll-Performance) */
     background-image:
-      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(16, 185, 129, 0.12), transparent),
-      radial-gradient(ellipse 60% 50% at 100% 0%, rgba(132, 204, 22, 0.06), transparent);
+      radial-gradient(ellipse 70% 40% at 15% -8%, rgba(146, 104, 245, 0.14), transparent 70%),
+      radial-gradient(ellipse 60% 40% at 95% -10%, rgba(147, 221, 83, 0.08), transparent 70%);
     background-repeat: no-repeat;
-    /* kein background-attachment: fixed – das erzwingt bei jedem Scroll-Schritt ein Neuzeichnen der ganzen Seite */
+  }
+  h1, h2, h3 {
+    font-family: theme('fontFamily.display');
+    letter-spacing: -0.012em;
   }
   ::selection {
-    @apply bg-primary-500/30 text-white;
+    @apply bg-primary-400/30 text-white;
+  }
+  /* Sichtbarer Tastatur-Fokus überall */
+  :focus-visible {
+    outline: 2px solid theme('colors.primary.400');
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  button, a, input, select, textarea {
+    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+    transition-duration: 140ms;
+    transition-timing-function: ease-out;
+  }
+  button:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
+  textarea {
+    caret-color: theme('colors.primary.400');
+  }
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):focus,
+  textarea:focus {
+    border-color: rgba(147, 221, 83, 0.55) !important;
+    box-shadow: 0 0 0 3px rgba(147, 221, 83, 0.12);
+    outline: none;
+  }
+}
+
+@layer components {
+  /* Seitentitel in jedem Reiter */
+  .gm-title {
+    @apply font-display text-2xl sm:text-[1.75rem] font-bold text-white leading-tight;
+    letter-spacing: -0.025em;
+  }
+  /* Die Navigation zeigt das Symbol schon – im Titel zählt die Schrift */
+  .gm-title > svg {
+    display: none;
+  }
+  /* Vollspektrum-Lichtstreifen – das Erkennungszeichen der Oberfläche */
+  .gm-spectrum {
+    background-image: theme('backgroundImage.spectrum');
   }
 }
 
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: rgba(16, 185, 129, 0.3) transparent;
+    scrollbar-color: rgba(173, 140, 255, 0.3) transparent;
   }
   .scrollbar-thin::-webkit-scrollbar {
     width: 8px;
@@ -34,12 +88,18 @@
     background: transparent;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: rgba(16, 185, 129, 0.25);
+    background-color: rgba(173, 140, 255, 0.25);
     border-radius: 9999px;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(16, 185, 129, 0.45);
+    background-color: rgba(173, 140, 255, 0.45);
   }
+}
+
+/* Karten: feine Lichtkante oben statt flacher Kästen */
+.rounded-2xl.border,
+.rounded-3xl.border {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
 }
 
 /* Dark-mode friendly native date inputs */
@@ -47,7 +107,7 @@ input[type='date'] {
   color-scheme: dark;
 }
 input[type='date']::-webkit-calendar-picker-indicator {
-  filter: invert(0.85) sepia(1) saturate(4) hue-rotate(95deg);
+  filter: invert(0.8) sepia(1) saturate(3) hue-rotate(40deg);
   cursor: pointer;
   opacity: 0.85;
 }
@@ -63,4 +123,12 @@ input[type='number']::-webkit-inner-spin-button {
 }
 input[type='number'] {
   -moz-appearance: textfield;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

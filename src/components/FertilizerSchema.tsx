@@ -162,7 +162,7 @@ function ScheduleView({
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-xl font-bold text-white tracking-tight">
+              <h2 className="font-display text-xl font-bold text-white tracking-tight">
                 {schedule.brand} <span className="text-ink-400 font-medium">· {schedule.line}</span>
               </h2>
               {schedule.verified && (

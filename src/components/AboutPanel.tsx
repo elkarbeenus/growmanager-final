@@ -8,7 +8,7 @@ export default function AboutPanel({ onStartTour, onReset }: { onStartTour?: () 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+        <h2 className="gm-title flex items-center gap-2">
           <Info size={18} className="text-primary-400" />
           {t('Über', 'About')}
         </h2>

@@ -42,7 +42,7 @@ function fromYMD(s: string): Date {
 export default function DatePicker({
   value,
   onChange,
-  accentColor = '#10b981',
+  accentColor = '#93dd53',
 }: DatePickerProps) {
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<Date>(() => {

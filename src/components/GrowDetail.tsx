@@ -125,7 +125,7 @@ export default function GrowDetail({
               <Sprout size={22} />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+              <h1 className="gm-title">
                 {grow.name}
               </h1>
               <p className="text-sm text-ink-400 mt-0.5">

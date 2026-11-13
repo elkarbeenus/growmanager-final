@@ -54,7 +54,7 @@ export default function Modal({
               </div>
             )}
             <div>
-              <h2 className="text-lg font-semibold text-white tracking-tight">{title}</h2>
+              <h2 className="font-display text-lg font-bold text-white tracking-tight">{title}</h2>
               {subtitle && (
                 <p className="text-sm text-ink-400 mt-0.5">{subtitle}</p>
               )}

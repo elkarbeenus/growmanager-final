@@ -8,6 +8,8 @@ export type TourTab = 'grows' | 'overview' | 'nutrient' | 'athena' | 'shotsize' 
 interface Step {
   id: string;
   tab?: TourTab;
+  /** anderes Element hervorheben (data-tour-Wert), z. B. die Kopfzeile */
+  target?: string;
   title: string;
   intro: string;
   bullets?: string[];
@@ -19,9 +21,24 @@ function steps(): Step[] {
       id: 'welcome',
       title: t('Willkommen im Grow Manager', 'Welcome to Grow Manager'),
       intro: t(
-        'Diese kurze Tour (ca. 1 Minute) zeigt dir, wo du was findest. Du kannst sie jederzeit überspringen und später über das „?“ oben rechts oder im Reiter „Über“ erneut starten.',
-        'This short tour (about 1 minute) shows you where to find what. You can skip it any time and restart it later via the “?” at the top right or in the “About” tab.'
+        'Diese kurze Tour (ca. 1 Minute) zeigt dir, wo du was findest. Du kannst sie jederzeit überspringen und später über „? Tour“ oben rechts oder im Reiter „Über“ erneut starten.',
+        'This short tour (about 1 minute) shows you where to find what. You can skip it any time and restart it later via “? Tour” at the top right or in the “About” tab.'
       ),
+      bullets: [
+        t('Die Navigation sitzt links in der Seitenleiste – gruppiert nach Garten, Werkzeuge und System. In kleinen Fenstern erscheint sie als Leiste oben.', 'Navigation sits in the sidebar on the left – grouped into Garden, Tools and System. In small windows it appears as a bar at the top.'),
+        t('Mit den Pfeiltasten ← → blätterst du durch die Tour, Esc beendet sie.', 'Use the arrow keys ← → to move through the tour, Esc ends it.'),
+      ],
+    },
+    {
+      id: 'header',
+      target: 'header-actions',
+      title: t('Kopfzeile', 'Header'),
+      intro: t('Oben rechts findest du immer dieselben drei Knöpfe.', 'At the top right you always find the same three buttons.'),
+      bullets: [
+        t('„? Tour“ startet diese Einführung erneut.', '“? Tour” restarts this introduction.'),
+        t('„Export“ speichert alle Daten als Backup-Datei (Speichern unter …).', '“Export” saves all data as a backup file (Save as …).'),
+        t('„Import“ lädt eine Backup-Datei – vorher fragt die App nach und sichert deine aktuellen Daten.', '“Import” loads a backup file – the app asks first and backs up your current data.'),
+      ],
     },
     {
       id: 'grows',
@@ -33,6 +50,7 @@ function steps(): Step[] {
         t('Im Grow ganz oben bei „Meilensteine“: Pflanzenanzahl und Daten (Start, Wachstum, Blüte, Ernte).', 'In the grow, at the top under “Milestones”: number of plants and dates (start, veg, flower, harvest).'),
         t('Weiter unten: Tagebuch, Bilder, Trocknung & Ernte, Dünger-Verbrauch, Kosten & Ertrag.', 'Further down: journal, photos, drying & harvest, fertilizer usage, costs & yield.'),
         t('„Aktiv“ und „Geplant“ lassen sich einklappen – die App merkt sich dein Layout für den nächsten Start.', '“Active” and “Planned” can be collapsed – the app remembers your layout for the next start.'),
+        t('Der Lichtstreifen auf jeder Grow-Karte zeigt, wie viele Meilensteine erreicht sind – je weiter, desto mehr vom Spektrum leuchtet.', 'The light strip on every grow card shows how many milestones are reached – the further along, the more of the spectrum lights up.'),
         t('Die Chips unter dem Titel springen direkt zu jedem Bereich.', 'The chips below the title jump straight to each section.'),
         t('„PDF-Bericht“ oben rechts zeigt den Bericht erst in einer Vorschau.', '“PDF report” at the top right shows the report in a preview first.'),
       ],
@@ -51,6 +69,7 @@ function steps(): Step[] {
       bullets: [
         t('Der Timer erinnert dich ans Erneuern der Nährlösung – ordnest du einen Ansatz einem Grow zu, bekommt dieser Grow seinen eigenen Countdown.', 'The timer reminds you to renew the solution – if you assign a batch to a grow, that grow gets its own countdown.'),
         t('„Tränken“ (zum Durchtränken des Substrats) zählt nicht für den Countdown, „Gebrauch“ schon.', '“Soaking” (for soaking the substrate) does not count for the countdown, “Use” does.'),
+        t('Läuft ein Countdown, erscheint die Erinnerung zusätzlich oben in der Kopfzeile.', 'While a countdown runs, the reminder also appears at the top in the header.'),
         t('Ohne Zuordnung wird der Ansatz für den Verbrauch automatisch dem Grow zugeordnet, der an diesem Datum lief.', 'Without an assignment the batch is matched to the grow that was running on that date for the usage.'),
         t('Oben siehst du den Verbrauch je Phase (Wachstum / Blüte) in mL.', 'At the top you see the usage per phase (veg / flower) in mL.'),
       ],
@@ -60,7 +79,10 @@ function steps(): Step[] {
       tab: 'athena',
       title: t('Dünger', 'Nutrients'),
       intro: t('Wähle hier deinen Dünger (z. B. Athena) und sieh dir das Schema an.', 'Choose your fertilizer here (e.g. Athena) and look at its schedule.'),
-      bullets: [t('Der gewählte Dünger wird für die Verbrauchsrechnung in „Nährlösung“ und im Grow verwendet.', 'The selected fertilizer is used for the usage calculation in “Nutrient mix” and in the grow.')],
+      bullets: [
+        t('Der gewählte Dünger wird für die Verbrauchsrechnung in „Nährlösung“ und im Grow verwendet.', 'The selected fertilizer is used for the usage calculation in “Nutrient mix” and in the grow.'),
+        t('Athena: In Blüte 8 und 9 gibt es kein Bloom A/B mehr – nur noch PK, Fade und Cleanse.', 'Athena: in flower weeks 8 and 9 there is no more Bloom A/B – only PK, Fade and Cleanse.'),
+      ],
     },
     {
       id: 'shotsize',
@@ -127,6 +149,7 @@ export default function GuidedTour({ startTab, onNavigate, onClose }: Props) {
   const [hideNext, setHideNext] = useState(true);
   const [rect, setRect] = useState<Rect | null>(null);
   const [vw, setVw] = useState(() => window.innerWidth);
+  const [vh, setVh] = useState(() => window.innerHeight);
   const step = list[i];
   const last = i === list.length - 1;
 
@@ -142,16 +165,24 @@ export default function GuidedTour({ startTab, onNavigate, onClose }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [i]);
 
-  // Reiter-Button vermessen
+  // Hervorzuhebendes Element vermessen. Die Navigation gibt es zweimal (Seitenleiste und
+  // Leiste oben) – es zählt die gerade sichtbare.
+  const key = step.target ?? (step.tab ? `tab-${step.tab}` : null);
   useLayoutEffect(() => {
+    const find = (): HTMLElement | null => {
+      if (!key) return null;
+      const all = Array.from(document.querySelectorAll(`[data-tour="${key}"]`)) as HTMLElement[];
+      return all.find((e) => e.getClientRects().length > 0 && e.offsetWidth > 0) ?? null;
+    };
     const measure = () => {
       setVw(window.innerWidth);
-      const el = step.tab ? (document.querySelector(`[data-tour="tab-${step.tab}"]`) as HTMLElement | null) : null;
+      setVh(window.innerHeight);
+      const el = find();
       if (!el) return setRect(null);
       const r = el.getBoundingClientRect();
       setRect({ left: r.left, top: r.top, width: r.width, height: r.height });
     };
-    const el = step.tab ? (document.querySelector(`[data-tour="tab-${step.tab}"]`) as HTMLElement | null) : null;
+    const el = find();
     el?.scrollIntoView({ inline: 'center', block: 'nearest' });
     const id = window.setTimeout(measure, 60);
     measure();
@@ -160,7 +191,7 @@ export default function GuidedTour({ startTab, onNavigate, onClose }: Props) {
       window.clearTimeout(id);
       window.removeEventListener('resize', measure);
     };
-  }, [i, step.tab]);
+  }, [i, key]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -173,10 +204,14 @@ export default function GuidedTour({ startTab, onNavigate, onClose }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hideNext]);
 
-  const cardW = Math.min(380, vw - 24);
-  const cardStyle: React.CSSProperties = rect
-    ? { top: rect.top + rect.height + 18, left: Math.min(Math.max(12, rect.left + rect.width / 2 - cardW / 2), vw - cardW - 12), width: cardW }
-    : { top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: cardW };
+  const cardW = Math.min(400, vw - 24);
+  // Element in der Seitenleiste links → Karte rechts daneben, sonst darunter
+  const sideways = !!rect && rect.left + rect.width < vw * 0.3 && vw - (rect.left + rect.width) > cardW + 40;
+  const cardStyle: React.CSSProperties = !rect
+    ? { top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: cardW }
+    : sideways
+      ? { top: Math.max(12, Math.min(rect.top - 24, vh - 420)), left: rect.left + rect.width + 22, width: cardW }
+      : { top: rect.top + rect.height + 18, left: Math.min(Math.max(12, rect.left + rect.width / 2 - cardW / 2), vw - cardW - 12), width: cardW };
 
   return (
     <div className="fixed inset-0 z-[70]" data-testid="tour" role="dialog" aria-modal="true">
@@ -184,20 +219,26 @@ export default function GuidedTour({ startTab, onNavigate, onClose }: Props) {
       {rect ? (
         <div
           data-testid="tour-spot"
-          className="absolute rounded-xl ring-2 ring-primary-400 pointer-events-none transition-all duration-300"
-          style={{ left: rect.left - 6, top: rect.top - 4, width: rect.width + 12, height: rect.height + 8, boxShadow: '0 0 0 9999px rgba(2,6,15,0.8)' }}
+          className="absolute rounded-xl ring-2 ring-led-400 pointer-events-none transition-all duration-300"
+          style={{ left: rect.left - 6, top: rect.top - 4, width: rect.width + 12, height: rect.height + 8, boxShadow: '0 0 0 9999px rgba(8,6,12,0.82), 0 0 32px 2px rgba(173,140,255,0.45)' }}
         />
       ) : (
         <div className="absolute inset-0 bg-ink-950/80 pointer-events-none" />
       )}
 
-      <div className="absolute rounded-2xl border border-ink-700 bg-ink-900 shadow-2xl p-5 animate-fade-in max-h-[80vh] overflow-y-auto" style={cardStyle} data-testid="tour-card">
+      <div className="absolute rounded-2xl border border-ink-700 bg-ink-900 shadow-2xl p-5 pt-6 animate-fade-in max-h-[80vh] overflow-y-auto overflow-x-hidden" style={cardStyle} data-testid="tour-card">
+        <span className="absolute inset-x-0 top-0 h-[3px] gm-spectrum" aria-hidden="true" />
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-[11px] uppercase tracking-widest text-primary-300 font-semibold" data-testid="tour-step">
+            <div className="text-xs text-led-300 font-semibold tabular-nums" data-testid="tour-step">
               {t('Schritt', 'Step')} {i + 1} / {list.length}
             </div>
-            <h3 className="text-base font-bold text-white mt-1" data-testid="tour-title">{step.title}</h3>
+            <h3 className="font-display text-xl font-bold text-white mt-1 tracking-tight" data-testid="tour-title">{step.title}</h3>
+            <div className="flex gap-1 mt-2.5" aria-hidden="true">
+              {list.map((_, k) => (
+                <span key={k} className={`h-1 rounded-full ${k === i ? 'w-5 bg-led-400' : k < i ? 'w-2 bg-led-500/60' : 'w-2 bg-ink-700'}`} />
+              ))}
+            </div>
           </div>
           <button onClick={close} className="h-7 w-7 rounded-lg flex items-center justify-center text-ink-500 hover:text-white hover:bg-ink-800 shrink-0" aria-label={t('Tour schließen', 'Close tour')}>
             <X size={15} />
@@ -208,7 +249,7 @@ export default function GuidedTour({ startTab, onNavigate, onClose }: Props) {
           <ul className="mt-2.5 space-y-1.5">
             {step.bullets.map((b, k) => (
               <li key={k} className="text-xs text-ink-400 leading-relaxed flex gap-2">
-                <span className="text-primary-400 mt-px">•</span>
+                <span className="text-led-400 mt-px">•</span>
                 <span>{b}</span>
               </li>
             ))}
@@ -216,7 +257,7 @@ export default function GuidedTour({ startTab, onNavigate, onClose }: Props) {
         )}
 
         <label className="mt-4 flex items-center gap-2 text-xs text-ink-400 cursor-pointer select-none">
-          <input data-testid="tour-never" type="checkbox" checked={hideNext} onChange={(e) => setHideNext(e.target.checked)} className="accent-emerald-500 h-3.5 w-3.5" />
+          <input data-testid="tour-never" type="checkbox" checked={hideNext} onChange={(e) => setHideNext(e.target.checked)} className="accent-violet-400 h-3.5 w-3.5" />
           {t('Beim nächsten Start nicht mehr anzeigen', 'Don’t show again at the next start')}
         </label>
 
@@ -228,14 +269,14 @@ export default function GuidedTour({ startTab, onNavigate, onClose }: Props) {
           )}
           {last && <span className="mr-auto" />}
           {i > 0 && (
-            <button data-testid="tour-prev" onClick={() => setI(i - 1)} className="px-3.5 py-2 rounded-lg text-sm font-medium text-ink-300 bg-ink-850 hover:bg-ink-800 border border-ink-700/60 transition-colors">
+            <button data-testid="tour-prev" onClick={() => setI(i - 1)} className="px-3.5 py-2 rounded-lg text-sm font-medium text-ink-200 bg-ink-850 hover:bg-ink-800 border border-ink-700">
               {t('Zurück', 'Back')}
             </button>
           )}
           <button
             data-testid="tour-next"
             onClick={() => (last ? close() : setI(i + 1))}
-            className="px-4 py-2 rounded-lg text-sm font-semibold text-ink-950 bg-primary-500 hover:bg-primary-400 transition-colors shadow-glow"
+            className="px-4 py-2 rounded-lg text-sm font-semibold text-ink-950 bg-primary-400 hover:bg-primary-300 shadow-glow"
           >
             {last ? t('Fertig', 'Done') : i === 0 ? t('Los geht’s', 'Let’s go') : t('Weiter', 'Next')}
           </button>

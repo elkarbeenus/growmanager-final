@@ -55,7 +55,7 @@ export default function AthenaSchema() {
             <FlaskConical size={24} className="text-primary-400" />
           </div>
           <div className="flex-1">
-            <h2 className="text-xl font-bold text-white tracking-tight">
+            <h2 className="font-display text-xl font-bold text-white tracking-tight">
               Athena Blended Line
             </h2>
             <p className="text-sm text-ink-400 mt-1 leading-relaxed">

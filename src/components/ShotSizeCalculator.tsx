@@ -73,7 +73,7 @@ export default function ShotSizeCalculator() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+        <h2 className="gm-title flex items-center gap-2">
           <Calculator size={18} className="text-primary-400" />
           {t('Crop Steering Shot Size Rechner', 'Crop Steering Shot Size Calculator')}
         </h2>
@@ -167,7 +167,7 @@ function ResultCard({
     tone === 'primary'
       ? 'text-primary-400 bg-primary-500/10 border-primary-500/20'
       : 'text-warning-400 bg-warning-500/10 border-warning-500/20';
-  const accent = tone === 'primary' ? 'accent-emerald-500' : 'accent-amber-500';
+  const accent = tone === 'primary' ? 'accent-lime-400' : 'accent-amber-500';
 
   return (
     <div className="rounded-2xl border border-ink-800 bg-ink-900/60 p-5" data-testid={`card-${mode}`}>

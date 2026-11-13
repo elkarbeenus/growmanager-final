@@ -35,7 +35,7 @@ const OPTIONS: { lang: Lang; label: string; short: string; Flag: typeof FlagDE }
   { lang: 'en', label: 'English', short: 'EN', Flag: FlagUS },
 ];
 
-export default function LanguageSwitcher() {
+export default function LanguageSwitcher({ up = false, full = false }: { up?: boolean; full?: boolean }) {
   const lang = useLang();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -64,23 +64,23 @@ export default function LanguageSwitcher() {
         aria-haspopup="listbox"
         aria-expanded={open}
         title={lang === 'en' ? 'Language' : 'Sprache'}
-        className={`flex items-center gap-2 pl-2.5 pr-2 py-2 rounded-lg text-sm font-medium border transition-colors ${
+        className={`flex items-center gap-2 pl-2.5 pr-2 h-9 rounded-lg text-sm font-medium border ${full ? 'w-full' : ''} ${
           open
-            ? 'text-white bg-ink-800 border-primary-500/50'
-            : 'text-ink-200 bg-ink-850 hover:bg-ink-800 border-ink-700/60'
+            ? 'text-white bg-ink-850 border-primary-400/50'
+            : 'text-ink-200 bg-ink-900 hover:bg-ink-850 border-ink-800 hover:border-ink-700'
         }`}
       >
         <active.Flag className="h-3.5 w-5 rounded-[2px] ring-1 ring-black/30 shrink-0" />
-        <span className="hidden sm:inline">{active.label}</span>
-        <span className="sm:hidden">{active.short}</span>
-        <ChevronDown size={14} className={`text-ink-500 transition-transform ${open ? 'rotate-180' : ''}`} />
+        <span className={full ? '' : 'hidden sm:inline'}>{active.label}</span>
+        {!full && <span className="sm:hidden">{active.short}</span>}
+        <ChevronDown size={14} className={`text-ink-500 transition-transform ${full ? 'ml-auto' : ''} ${open ? (up ? '' : 'rotate-180') : up ? 'rotate-180' : ''}`} />
       </button>
 
       {open && (
         <div
           role="listbox"
           data-testid="language-switcher-menu"
-          className="absolute left-1/2 -translate-x-1/2 top-11 z-40 w-40 rounded-xl border border-ink-700 bg-ink-850 shadow-xl py-1 animate-fade-in"
+          className={`absolute z-40 rounded-xl ${up ? 'bottom-11 left-0 right-0' : 'left-1/2 -translate-x-1/2 top-11 w-40'} border border-ink-700 bg-ink-850 shadow-xl py-1 animate-fade-in`}
         >
           {OPTIONS.map((o) => {
             const selected = o.lang === lang;

@@ -87,7 +87,7 @@ export default function NutrientPanel({ batches, grows = [], onChange }: Props) 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+        <h2 className="gm-title flex items-center gap-2">
           <FlaskConical size={18} className="text-primary-400" />
           {t('Nährlösung', 'Nutrient solution')}
         </h2>

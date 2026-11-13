@@ -431,48 +431,34 @@ export default function App() {
         </>
       ) : (
         <>
-          <section className="mb-8">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-              <SummaryStat
-                icon={<Sprout size={18} />}
-                label={t('Aktive Grows', 'Active grows')}
-                value={activeGrows.length}
-                tone="primary"
-              />
-              <SummaryStat
-                icon={<Leaf size={18} />}
-                label={t('In Wachstum', 'In veg')}
-                value={activeGrows.filter((g) => currentPhase(g).key === 'veg').length}
-                tone="accent"
-              />
-              <SummaryStat
-                icon={<Flower2 size={18} />}
-                label={t('In Blüte', 'In flower')}
-                value={activeGrows.filter((g) => ['stretch', 'bloom', 'ready'].includes(currentPhase(g).key)).length}
-                tone="warning"
-              />
-              <SummaryStat
-                icon={<Hourglass size={18} />}
-                label={t('Ausstehend', 'Pending')}
-                value={plannedGrows.length}
-                tone="muted"
-              />
-            </div>
-
-            <div className="flex items-center justify-between gap-4 flex-wrap">
+          <section className="mb-9">
+            <div className="flex items-end justify-between gap-4 flex-wrap mb-6">
               <div>
-                <h2 className="text-lg font-semibold text-white">{t('Deine Grows & Tents', 'Your grows & tents')}</h2>
-                <p className="text-sm text-ink-500 mt-0.5">
-                  {t('Meilensteine, Phasen und Tageswerte für jeden Grow verfolgen.', 'Track milestones, phases and daily values for every grow.')}
+                <h2 className="gm-title">{t('Deine Grows', 'Your grows')}</h2>
+                <p className="text-sm text-ink-400 mt-1.5 max-w-xl">
+                  {t('Meilensteine, Phasen und Tageswerte für jeden Grow und jedes Zelt.', 'Milestones, phases and daily values for every grow and tent.')}
                 </p>
               </div>
               <button
                 onClick={openCreate}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-ink-950 bg-primary-500 hover:bg-primary-400 transition-colors shadow-glow"
+                data-testid="new-grow"
+                className="flex items-center gap-2 h-11 px-5 rounded-xl text-sm font-semibold text-ink-950 bg-primary-400 hover:bg-primary-300 shadow-glow"
               >
-                <Plus size={17} />
+                <Plus size={18} />
                 {t('Neuer Grow', 'New grow')}
               </button>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 rounded-2xl border border-ink-800 bg-ink-900/70 overflow-hidden divide-x divide-y md:divide-y-0 divide-ink-800" data-testid="phase-strip">
+              <SummaryStat icon={<Sprout size={16} />} label={t('Aktive Grows', 'Active grows')} value={activeGrows.length} tone="primary" />
+              <SummaryStat icon={<Leaf size={16} />} label={t('In Wachstum', 'In veg')} value={activeGrows.filter((g) => currentPhase(g).key === 'veg').length} tone="accent" />
+              <SummaryStat
+                icon={<Flower2 size={16} />}
+                label={t('In Blüte', 'In flower')}
+                value={activeGrows.filter((g) => ['stretch', 'bloom', 'ready'].includes(currentPhase(g).key)).length}
+                tone="warning"
+              />
+              <SummaryStat icon={<Hourglass size={16} />} label={t('Geplant', 'Planned')} value={plannedGrows.length} tone="muted" />
             </div>
           </section>
 
@@ -639,6 +625,54 @@ export default function App() {
 
 // ---------------- Shell + helpers ----------------
 
+type NavItem = { tab: Tab; icon: React.ReactNode; label: string };
+
+function navGroups(): { label: string; items: NavItem[] }[] {
+  return [
+    {
+      label: t('Garten', 'Garden'),
+      items: [
+        { tab: 'grows', icon: <Sprout size={17} />, label: 'Grows' },
+        { tab: 'overview', icon: <Archive size={17} />, label: t('Übersicht', 'Overview') },
+        { tab: 'nutrient', icon: <Droplets size={17} />, label: t('Nährlösung', 'Nutrient mix') },
+      ],
+    },
+    {
+      label: t('Werkzeuge', 'Tools'),
+      items: [
+        { tab: 'athena', icon: <FlaskConical size={17} />, label: t('Dünger', 'Nutrients') },
+        { tab: 'shotsize', icon: <Calculator size={17} />, label: t('Shot Size', 'Shot size') },
+        { tab: 'order', icon: <ShoppingCart size={17} />, label: t('Steckling bestellen', 'Order clones') },
+      ],
+    },
+    {
+      label: 'System',
+      items: [
+        { tab: 'backup', icon: <Database size={17} />, label: 'Backup' },
+        { tab: 'settings', icon: <Settings size={17} />, label: t('Einstellungen', 'Settings') },
+        { tab: 'about', icon: <Info size={17} />, label: t('Über', 'About') },
+      ],
+    },
+  ];
+}
+
+function BrandMark({ compact = false }: { compact?: boolean }) {
+  return (
+    <div className="flex items-center gap-3 min-w-0">
+      <div className="relative h-10 w-10 shrink-0 rounded-xl bg-ink-850 border border-ink-700 flex items-center justify-center overflow-hidden">
+        <span className="absolute inset-x-0 top-0 h-[3px] gm-spectrum" aria-hidden="true" />
+        <Leaf size={19} className="text-primary-300" />
+      </div>
+      {!compact && (
+        <div className="leading-none min-w-0">
+          <div className="font-display font-extrabold text-[1.15rem] text-white tracking-tight">growmanager</div>
+          <div className="text-[11px] text-ink-500 mt-1 whitespace-nowrap">{t('Dein Grow-Tagebuch', 'Your grow journal')}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Shell({
   children,
   tab,
@@ -664,148 +698,97 @@ function Shell({
   fileInputRef: React.RefObject<HTMLInputElement>;
   importError: string | null;
 }) {
+  const groups = navGroups();
+  const actionBtn =
+    'flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium text-ink-200 bg-ink-900 hover:bg-ink-850 border border-ink-800 hover:border-ink-700';
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-30 bg-ink-950/95 border-b border-ink-800/80">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center shadow-glow">
-              <Leaf size={18} className="text-ink-950" />
-            </div>
-            <div className="leading-none">
-              <div className="font-bold text-white tracking-tight">GrowHub</div>
-              <div className="hidden min-[420px]:block text-[10px] uppercase tracking-widest text-ink-500 mt-0.5 whitespace-nowrap">
-                Grow Manager
+    <div className="min-h-screen lg:grid lg:grid-cols-[252px_minmax(0,1fr)]">
+      {/* Seitenleiste (ab 1024 px) */}
+      <aside className="hidden lg:flex sticky top-0 h-screen flex-col border-r border-ink-800/80 bg-ink-950/60" data-testid="sidebar">
+        <div className="px-5 pt-5 pb-6">
+          <BrandMark />
+        </div>
+        <nav className="flex-1 overflow-y-auto scrollbar-thin px-3 space-y-6" aria-label={t('Hauptnavigation', 'Main navigation')}>
+          {groups.map((g) => (
+            <div key={g.label}>
+              <div className="px-3 mb-1.5 text-xs font-medium text-ink-500">{g.label}</div>
+              <div className="space-y-0.5">
+                {g.items.map((it) => (
+                  <TabButton key={it.tab} variant="side" tour={it.tab} active={tab === it.tab} onClick={() => onTabChange(it.tab)} icon={it.icon} label={it.label} />
+                ))}
               </div>
             </div>
-          </div>
-
-          {/* Sprachauswahl — oben mittig */}
-          <div className="justify-self-center">
-            <LanguageSwitcher />
-          </div>
-
-          <div className="flex items-center gap-2 justify-self-end">
-            <button
-              onClick={onHelp}
-              data-testid="help-button"
-              className="h-9 w-9 rounded-full text-sm font-bold text-primary-300 bg-primary-500/10 hover:bg-primary-500/20 border border-primary-500/30 transition-colors"
-              title={t('Kurze Einführung (Tour) starten', 'Start the short tour')}
-              aria-label={t('Einführung starten', 'Start tour')}
-            >
-              ?
-            </button>
-            <button
-              onClick={onExport}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-ink-300 bg-ink-850 hover:bg-ink-800 border border-ink-700/60 transition-colors"
-              title={t('Backup als JSON exportieren', 'Export backup as JSON')}
-            >
-              <Download size={15} />
-              <span className="hidden sm:inline">Export</span>
-            </button>
-            <button
-              onClick={onImport}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-ink-300 bg-ink-850 hover:bg-ink-800 border border-ink-700/60 transition-colors"
-              title={t('Backup aus JSON importieren', 'Import backup from JSON')}
-            >
-              <Upload size={15} />
-              <span className="hidden sm:inline">Import</span>
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="application/json,.json"
-              onChange={onImportFile}
-              className="hidden"
-            />
-          </div>
+          ))}
+        </nav>
+        <div className="px-4 pt-4 pb-14 border-t border-ink-800/80 space-y-3">
+          <LanguageSwitcher up full />
+          <p className="text-[11px] leading-relaxed text-ink-500">
+            {t('Alles bleibt lokal auf diesem Gerät. Exportiere regelmäßig Backups.', 'Everything stays on this device. Export backups regularly.')}
+          </p>
         </div>
+      </aside>
 
-        {/* Tab-Navigation */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <nav className="flex gap-0.5 sm:gap-1 -mb-px overflow-x-auto scrollbar-thin">
-            <TabButton
-              tour="grows"
-              active={tab === 'grows'}
-              onClick={() => onTabChange('grows')}
-              icon={<Sprout size={15} />}
-              label="Grows"
-            />
-            <TabButton
-              tour="overview"
-              active={tab === 'overview'}
-              onClick={() => onTabChange('overview')}
-              icon={<Archive size={15} />}
-              label={t('Übersicht', 'Overview')}
-            />
-            <TabButton
-              tour="nutrient"
-              active={tab === 'nutrient'}
-              onClick={() => onTabChange('nutrient')}
-              icon={<Droplets size={15} />}
-              label={t('Nährlösung', 'Nutrient mix')}
-            />
-            <TabButton
-              tour="athena"
-              active={tab === 'athena'}
-              onClick={() => onTabChange('athena')}
-              icon={<FlaskConical size={15} />}
-              label={t('Dünger', 'Nutrients')}
-            />
-            <TabButton
-              tour="shotsize"
-              active={tab === 'shotsize'}
-              onClick={() => onTabChange('shotsize')}
-              icon={<Calculator size={15} />}
-              label={t('Shot Size', 'Shot size')}
-            />
-            <TabButton
-              tour="order"
-              active={tab === 'order'}
-              onClick={() => onTabChange('order')}
-              icon={<ShoppingCart size={15} />}
-              label={t('Steckling bestellen', 'Order clones')}
-            />
-            <TabButton
-              tour="backup"
-              active={tab === 'backup'}
-              onClick={() => onTabChange('backup')}
-              icon={<Database size={15} />}
-              label="Backup"
-            />
-            <TabButton
-              tour="settings"
-              active={tab === 'settings'}
-              onClick={() => onTabChange('settings')}
-              icon={<Settings size={15} />}
-              label={t('Einstellungen', 'Settings')}
-            />
-            <TabButton
-              tour="about"
-              active={tab === 'about'}
-              onClick={() => onTabChange('about')}
-              icon={<Info size={15} />}
-              label={t('Über', 'About')}
-            />
-          </nav>
-        </div>
-
-        <NutrientBanner batches={batches} grows={grows} onClick={() => onTabChange('nutrient')} />
-
-        {importError && (
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-2 mt-1">
-            <div className="text-xs text-error-300 bg-error-500/10 border border-error-500/30 rounded-lg px-3 py-2">
-              {importError}
+      <div className="min-w-0 flex flex-col min-h-screen">
+        <header className="sticky top-0 z-30 bg-ink-950/95 border-b border-ink-800/80">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center gap-3">
+            <div className="lg:hidden min-w-0">
+              <BrandMark compact />
+            </div>
+            <div className="hidden min-[480px]:block lg:hidden min-w-0">
+              <div className="font-display font-extrabold text-white tracking-tight">growmanager</div>
+            </div>
+            <div className="lg:hidden ml-auto min-[480px]:ml-2">
+              <LanguageSwitcher />
+            </div>
+            <div className="flex items-center gap-2 ml-auto" data-tour="header-actions">
+              <button
+                onClick={onHelp}
+                data-testid="help-button"
+                className="h-9 px-3 rounded-lg flex items-center gap-1.5 text-sm font-semibold text-led-300 bg-led-500/10 hover:bg-led-500/20 border border-led-500/30"
+                title={t('Kurze Einführung (Tour) starten', 'Start the short tour')}
+                aria-label={t('Einführung starten', 'Start tour')}
+              >
+                <span className="font-display text-base leading-none">?</span>
+                <span className="hidden xl:inline">{t('Tour', 'Tour')}</span>
+              </button>
+              <button onClick={onExport} data-testid="export-button" className={actionBtn} title={t('Backup als JSON exportieren', 'Export backup as JSON')}>
+                <Download size={15} />
+                <span className="hidden sm:inline">Export</span>
+              </button>
+              <button onClick={onImport} data-testid="import-button" className={actionBtn} title={t('Backup aus JSON importieren', 'Import backup from JSON')}>
+                <Upload size={15} />
+                <span className="hidden sm:inline">Import</span>
+              </button>
+              <input ref={fileInputRef} type="file" accept="application/json,.json" onChange={onImportFile} className="hidden" />
             </div>
           </div>
-        )}
-      </header>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">{children}</main>
+          {/* Reiter als Leiste (unter 1024 px) */}
+          <div className="lg:hidden max-w-6xl mx-auto px-2 sm:px-4">
+            <nav className="flex gap-1 overflow-x-auto scrollbar-thin pb-2" aria-label={t('Hauptnavigation', 'Main navigation')}>
+              {groups.flatMap((g) => g.items).map((it) => (
+                <TabButton key={it.tab} variant="top" tour={it.tab} active={tab === it.tab} onClick={() => onTabChange(it.tab)} icon={it.icon} label={it.label} />
+              ))}
+            </nav>
+          </div>
 
-      <footer className="max-w-6xl mx-auto px-4 sm:px-6 py-8 text-center text-xs text-ink-600">
-        {t('Daten werden lokal im Browser gespeichert. Exportiere regelmäßig Backups.', 'Data is stored locally in your browser. Export backups regularly.')}
-      </footer>
+          <span className="absolute left-0 right-0 -bottom-px h-px gm-spectrum opacity-40" aria-hidden="true" />
+
+          <NutrientBanner batches={batches} grows={grows} onClick={() => onTabChange('nutrient')} />
+
+          {importError && (
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-2 mt-1">
+              <div className="text-xs text-error-300 bg-error-500/10 border border-error-500/30 rounded-lg px-3 py-2">{importError}</div>
+            </div>
+          )}
+        </header>
+
+        <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-9">{children}</main>
+
+        <footer className="lg:hidden max-w-6xl mx-auto px-4 sm:px-6 pt-4 pb-14 text-center text-xs text-ink-500">
+          {t('Alles bleibt lokal auf diesem Gerät. Exportiere regelmäßig Backups.', 'Everything stays on this device. Export backups regularly.')}
+        </footer>
+      </div>
 
       <VersionBadge />
       <UpdateDialog />
@@ -819,24 +802,43 @@ function TabButton({
   icon,
   label,
   tour,
+  variant,
 }: {
   tour?: string;
   active: boolean;
   onClick: () => void;
   icon: React.ReactNode;
   label: string;
+  variant: 'side' | 'top';
 }) {
+  if (variant === 'side') {
+    return (
+      <button
+        onClick={onClick}
+        data-tour={tour ? `tab-${tour}` : undefined}
+        data-testid={tour ? `nav-${tour}` : undefined}
+        aria-current={active ? 'page' : undefined}
+        className={`relative w-full flex items-center gap-3 pl-3 pr-2 py-2 rounded-lg text-sm font-medium text-left ${
+          active ? 'text-white bg-ink-850' : 'text-ink-400 hover:text-ink-100 hover:bg-ink-900'
+        }`}
+      >
+        {active && <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-full bg-gradient-to-b from-led-400 via-accent-400 to-primary-400" aria-hidden="true" />}
+        <span className={active ? 'text-primary-300' : 'text-ink-500'}>{icon}</span>
+        {label}
+      </button>
+    );
+  }
   return (
     <button
       onClick={onClick}
       data-tour={tour ? `tab-${tour}` : undefined}
-      className={`flex items-center gap-1.5 px-1.5 min-[420px]:px-3 sm:px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-        active
-          ? 'text-primary-300 border-primary-500'
-          : 'text-ink-500 border-transparent hover:text-ink-200 hover:border-ink-700'
+      data-testid={tour ? `navtop-${tour}` : undefined}
+      aria-current={active ? 'page' : undefined}
+      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap border ${
+        active ? 'text-white bg-ink-850 border-ink-700' : 'text-ink-400 border-transparent hover:text-ink-100 hover:bg-ink-900'
       }`}
     >
-      {icon}
+      <span className={active ? 'text-primary-300' : ''}>{icon}</span>
       {label}
     </button>
   );
@@ -854,19 +856,19 @@ function SummaryStat({
   tone: 'primary' | 'accent' | 'warning' | 'muted';
 }) {
   const toneMap = {
-    primary: 'text-primary-400 bg-primary-500/10 border-primary-500/20',
-    accent: 'text-accent-400 bg-accent-500/10 border-accent-500/20',
-    warning: 'text-warning-400 bg-warning-500/10 border-warning-500/20',
-    muted: 'text-ink-300 bg-ink-700/30 border-ink-600/40',
+    primary: 'text-primary-300',
+    accent: 'text-accent-300',
+    warning: 'text-warning-300',
+    muted: 'text-led-300',
   } as const;
   return (
-    <div className="rounded-2xl border border-ink-800 bg-ink-900/60 p-4 flex items-center gap-3.5">
-      <div className={`h-10 w-10 rounded-xl flex items-center justify-center border ${toneMap[tone]}`}>
-        {icon}
-      </div>
+    <div className="px-5 py-4 flex items-center justify-between gap-3">
       <div>
-        <div className="text-2xl font-bold text-white tabular-nums leading-none">{value}</div>
-        <div className="text-xs text-ink-500 mt-1">{label}</div>
+        <div className={`flex items-center gap-1.5 text-xs font-medium ${toneMap[tone]}`}>
+          {icon}
+          {label}
+        </div>
+        <div className={`font-display text-3xl font-extrabold tabular-nums leading-none mt-2 ${value > 0 ? 'text-white' : 'text-ink-600'}`}>{value}</div>
       </div>
     </div>
   );
@@ -891,25 +893,27 @@ function CollapsibleLabel({
       onClick={onToggle}
       data-testid={testid}
       aria-expanded={!collapsed}
-      className="w-full flex items-center justify-between gap-3 mb-3 group"
+      className="w-full flex items-center gap-1 mb-4 group"
     >
-      <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-ink-500 group-hover:text-ink-300 transition-colors">
-        {collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+      <span className="flex items-center gap-2 font-display text-base font-bold text-ink-100 group-hover:text-white">
+        {collapsed ? <ChevronRight size={16} className="text-ink-500" /> : <ChevronDown size={16} className="text-ink-500" />}
         {children}
-        <span className="normal-case tracking-normal font-medium text-ink-600">({count})</span>
+        <span className="font-sans text-xs font-semibold text-ink-400 bg-ink-850 border border-ink-800 rounded-md px-1.5 py-0.5 tabular-nums">{count}</span>
       </span>
-      <span className="text-xs text-ink-600 group-hover:text-ink-400">{collapsed ? t('aufklappen', 'expand') : t('einklappen', 'collapse')}</span>
+      <span className="flex-1 h-px bg-ink-800 mx-2" aria-hidden="true" />
+      <span className="text-xs text-ink-500 group-hover:text-ink-300">{collapsed ? t('aufklappen', 'expand') : t('einklappen', 'collapse')}</span>
     </button>
   );
 }
 
 function EmptyState({ onCreate }: { onCreate: () => void }) {
   return (
-    <div className="rounded-3xl border border-dashed border-ink-700/60 bg-ink-900/40 px-6 py-16 text-center">
-      <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-primary-500/20 to-accent-500/20 border border-primary-500/30 flex items-center justify-center mb-5">
-        <Sprout size={28} className="text-primary-400" />
+    <div className="relative rounded-3xl border border-ink-800 bg-ink-900/60 px-6 py-16 text-center overflow-hidden" data-testid="empty-state">
+      <span className="absolute inset-x-0 top-0 h-[3px] gm-spectrum opacity-70" aria-hidden="true" />
+      <div className="mx-auto h-16 w-16 rounded-2xl bg-ink-850 border border-ink-700 flex items-center justify-center mb-5">
+        <Sprout size={28} className="text-primary-300" />
       </div>
-      <h2 className="text-xl font-bold text-white">{t('Starte deinen ersten Grow', 'Start your first grow')}</h2>
+      <h2 className="font-display text-2xl font-bold text-white tracking-tight">{t('Starte deinen ersten Grow', 'Start your first grow')}</h2>
       <p className="text-sm text-ink-400 mt-2 max-w-md mx-auto leading-relaxed">
         {t(
           'Erstelle einen Tent oder Grow, setze deine Meilenstein-Daten und beginne, täglich pH, EC, Temperatur, Luftfeuchtigkeit und Gießmenge zu protokollieren.',
@@ -918,7 +922,7 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
       </p>
       <button
         onClick={onCreate}
-        className="mt-6 inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold text-ink-950 bg-primary-500 hover:bg-primary-400 transition-colors shadow-glow"
+        className="mt-7 inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold text-ink-950 bg-primary-400 hover:bg-primary-300 shadow-glow"
       >
         <Plus size={18} />
         {t('Ersten Grow anlegen', 'Create first grow')}
@@ -974,7 +978,7 @@ function HarvestedByYear({
     <section>
       <CollapsibleLabel collapsed={pastCollapsed} onToggle={() => setPastCollapsed((v) => !v)} count={harvestedGrows.length} testid="toggle-past">
         <span className="flex items-center gap-2">
-          <Flower2 size={14} className="text-error-400" />
+          <Flower2 size={15} className="text-warning-400" />
           {t('Bisherige Grows', 'Past grows')}
         </span>
       </CollapsibleLabel>
@@ -996,7 +1000,7 @@ function HarvestedByYear({
                   ) : (
                     <ChevronRight size={16} className="text-ink-400" />
                   )}
-                  <span className="text-base font-bold text-white tabular-nums">{year}</span>
+                  <span className="font-display text-lg font-bold text-white tabular-nums">{year}</span>
                   <span className="text-xs font-medium text-ink-500">
                     {grows.length} {grows.length === 1 ? 'Grow' : 'Grows'}
                   </span>

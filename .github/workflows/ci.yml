@@ -41,6 +41,7 @@ jobs:
 
       # Gebautes Frontend als Vorschau auf einen Hilfs-Branch legen (zum Testen ohne lokales npm)
       - name: dist auf Branch ci-preview legen
+        if: github.ref != 'refs/heads/main'
         run: |
           cd dist
           git init -q -b ci-preview

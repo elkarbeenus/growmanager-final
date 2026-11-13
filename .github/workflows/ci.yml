@@ -1,0 +1,44 @@
+name: CI (Typecheck, Lint, Web-Build)
+
+# Schneller Check ohne Tauri/Rust: läuft bei Pushes auf Branches (nicht bei Tags)
+# und lädt das gebaute Web-Frontend (dist/) als Artefakt hoch.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "**"
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Node-Pakete installieren
+        run: npm install
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Web-Build
+        run: npm run build
+
+      - name: dist hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: dist
+          retention-days: 3
+          if-no-files-found: error

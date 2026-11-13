@@ -82,11 +82,13 @@ export const ATHENA_BLENDED: AthenaColumn[] = [
   },
   {
     week: 14, label: 'Blüte 8', stage: 'Flower',
-    bloomA: '11', bloomB: '11', pk: '26', cleanse: '5–13', fade: '16', balance: 'nach Bedarf', ec: 1.5, ppm500: 750, ppm700: 1050,
+    // ab Blüte 8 kein Bloom A/B mehr (nur PK, Fade, Cleanse)
+    pk: '26', cleanse: '5–13', fade: '16', balance: 'nach Bedarf', ec: 1.5, ppm500: 750, ppm700: 1050,
   },
   {
     week: 15, label: 'Blüte 9', stage: 'Flower',
-    bloomA: '11', bloomB: '11', pk: '26', cleanse: '5–13', fade: '16', balance: 'nach Bedarf', ec: 1.5, ppm500: 750, ppm700: 1050,
+    // ab Blüte 8 kein Bloom A/B mehr (nur PK, Fade, Cleanse)
+    pk: '26', cleanse: '5–13', fade: '16', balance: 'nach Bedarf', ec: 1.5, ppm500: 750, ppm700: 1050,
   },
 ];
 

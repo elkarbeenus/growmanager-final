@@ -585,7 +585,7 @@ export default function App() {
       {toast && (
         <div
           data-testid="app-toast"
-          className={`fixed bottom-14 left-1/2 -translate-x-1/2 z-[60] w-[min(92vw,34rem)] animate-slide-up flex items-start gap-2 rounded-xl px-3.5 py-3 shadow-2xl border bg-ink-900 ${
+          className={`fixed bottom-14 left-1/2 -translate-x-1/2 z-[45] w-[min(92vw,34rem)] animate-slide-up flex items-start gap-2 rounded-xl px-3.5 py-3 shadow-2xl border bg-ink-900 ${
             toast.ok ? 'border-accent-500/40' : 'border-error-500/40'
           }`}
         >

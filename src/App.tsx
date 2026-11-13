@@ -97,6 +97,13 @@ export default function App() {
     saveData(data);
   }, [data]);
 
+  // Hinweis unten blendet sich nach einigen Sekunden selbst aus (Fehler bleiben länger stehen)
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), toast.ok ? 7000 : 15000);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
   // Beim ersten Start dieser Version: aktuellen Stand als „gesichert“ übernehmen
   useEffect(() => {
     ensureSavedBaseline(data);
@@ -578,7 +585,7 @@ export default function App() {
       {toast && (
         <div
           data-testid="app-toast"
-          className={`fixed bottom-14 left-1/2 -translate-x-1/2 z-50 w-[min(92vw,34rem)] flex items-start gap-2 rounded-xl px-3.5 py-3 shadow-2xl border bg-ink-900 ${
+          className={`fixed bottom-14 left-1/2 -translate-x-1/2 z-[60] w-[min(92vw,34rem)] animate-slide-up flex items-start gap-2 rounded-xl px-3.5 py-3 shadow-2xl border bg-ink-900 ${
             toast.ok ? 'border-accent-500/40' : 'border-error-500/40'
           }`}
         >
@@ -774,14 +781,17 @@ function Shell({
 
           <span className="absolute left-0 right-0 -bottom-px h-px gm-spectrum opacity-40" aria-hidden="true" />
 
-          <NutrientBanner batches={batches} grows={grows} onClick={() => onTabChange('nutrient')} />
-
           {importError && (
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-2 mt-1">
               <div className="text-xs text-error-300 bg-error-500/10 border border-error-500/30 rounded-lg px-3 py-2">{importError}</div>
             </div>
           )}
         </header>
+
+        {/* Nährlösungs-Erinnerungen – nicht in der festen Kopfzeile, damit sie keinen Platz dauerhaft belegen */}
+        <div className="w-full max-w-6xl mx-auto pt-5 empty:hidden">
+          <NutrientBanner batches={batches} grows={grows} onClick={() => onTabChange('nutrient')} />
+        </div>
 
         <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-9">{children}</main>
 

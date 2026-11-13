@@ -20,7 +20,7 @@ export default function NutrientBanner({ batches, grows = [], onClick }: Props) 
   const more = groups.length - visible.length;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-2.5 space-y-1.5" data-testid="nutrient-banners">
+    <div className="px-4 sm:px-6 lg:px-8 space-y-1.5" data-testid="nutrient-banners">
       {visible.map((g) => (
         <BannerRow key={g.key} group={g} showName={showNames} onClick={onClick} />
       ))}

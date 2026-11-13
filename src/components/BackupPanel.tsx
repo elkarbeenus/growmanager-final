@@ -82,7 +82,6 @@ export default function BackupPanel({ data, onRestore }: BackupPanelProps) {
   const [dirFiles, setDirFiles] = useState<{ name: string; size: number; lastModified: number }[]>([]);
   const [dirStatus, setDirStatus] = useState<{ ok: boolean; message: string } | null>(null);
   const [pendingDirHandle, setPendingDirHandle] = useState<FileSystemDirectoryHandle | null>(null);
-  const [autoPermanent, setAutoPermanent] = useState(false);
 
   const refresh = () => {
     setBackups(getAutoBackups());

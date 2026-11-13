@@ -22,7 +22,6 @@ import type { AppData, DeviceUsage, DimProfile, Grow, NutrientBatch } from '@/ty
 import {
   loadData,
   saveData,
-  exportDataAsJSON,
   importDataFromJSON,
   createAutoBackupIfDue,
   createSafetyBackup,
@@ -870,14 +869,6 @@ function SummaryStat({
         <div className="text-xs text-ink-500 mt-1">{label}</div>
       </div>
     </div>
-  );
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <h3 className="text-xs font-semibold uppercase tracking-widest text-ink-500 mb-3">
-      {children}
-    </h3>
   );
 }
 

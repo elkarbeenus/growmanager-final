@@ -1,4 +1,4 @@
-import { Wind, Thermometer, Droplets, CalendarDays, StickyNote, Cloud, Scale } from 'lucide-react';
+import { Thermometer, Droplets, CalendarDays, StickyNote, Cloud, Scale } from 'lucide-react';
 import type { DryingData, Grow } from '@/types';
 import { t } from '@/lib/i18n';
 

@@ -34,7 +34,7 @@ function Row({ label, value, min, max, unit, onChange, id }: { label: string; va
 }
 
 /** Schieberegler für das Dimm-Profil einer LED (pro Grow anpassbar). */
-export default function DimSliders({ value, base, custom, onChange, onReset, testid = 'dim-sliders' }: DimSlidersProps) {
+export default function DimSliders({ value, custom, onChange, onReset, testid = 'dim-sliders' }: DimSlidersProps) {
   const set = (patch: Partial<DimProfile>) => onChange({ ...value, ...patch });
   return (
     <div className="rounded-xl border border-ink-800 bg-ink-900/50 p-3 space-y-2.5" data-testid={testid}>

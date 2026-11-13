@@ -383,7 +383,7 @@ function WeekDetail({ week }: { week: number }) {
         <div className="text-xs font-semibold uppercase tracking-wide text-ink-500 mb-2">
           {t('Düngemittel diese Woche (in Mischreihenfolge)', 'Nutrients this week (in mixing order)')}
         </div>
-        {activeProducts.map((pc, idx) => (
+        {activeProducts.map((pc) => (
           <div
             key={pc.key}
             className="flex items-center justify-between rounded-lg bg-ink-850/60 border border-ink-800 px-3.5 py-2.5"

@@ -67,7 +67,7 @@ export async function pickBackupDirectory(): Promise<FileSystemDirectoryHandle |
       showDirectoryPicker: (opts?: { mode?: 'read' | 'readwrite' }) => Promise<FileSystemDirectoryHandle>;
     }).showDirectoryPicker({ mode: 'readwrite' });
     return handle;
-  } catch (e) {
+  } catch {
     // User cancelled
     return null;
   }

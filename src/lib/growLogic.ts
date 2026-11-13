@@ -1,7 +1,6 @@
 import type {
   Grow,
   MilestoneKey,
-  Milestones,
   PhaseInfo,
   PhaseKey,
 } from '@/types';

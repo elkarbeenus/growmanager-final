@@ -146,8 +146,10 @@ export default function DatePicker({
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-500 hover:text-primary-400 transition-colors"
+          // z-10: liegt über dem Eingabefeld, sonst landet der Klick im Feld statt im Kalender
+          className="absolute z-10 inset-y-0 left-0 w-10 flex items-center justify-center rounded-l-xl text-ink-400 hover:text-primary-300 hover:bg-ink-800/60"
           style={value ? { color: accentColor } : undefined}
+          aria-expanded={open}
           aria-label={t('Kalender öffnen', 'Open calendar')}
         >
           <Calendar size={15} />
@@ -161,7 +163,7 @@ export default function DatePicker({
             if (!v && e.target.validity.badInput) return;
             onChange(v || undefined);
           }}
-          className="w-full bg-ink-850 border border-ink-700/70 rounded-xl pl-9 pr-3 py-2.5 text-sm text-ink-100 placeholder-ink-500 focus:outline-none focus:border-primary-500/60 focus:ring-2 focus:ring-primary-500/20 transition-all"
+          className="gm-date w-full bg-ink-850 border border-ink-700/70 rounded-xl pl-11 pr-3 py-2.5 text-sm text-ink-100 placeholder-ink-500 focus:outline-none focus:border-primary-500/60 focus:ring-2 focus:ring-primary-500/20 transition-all"
         />
       </div>
 

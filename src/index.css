@@ -51,7 +51,7 @@
     transition-duration: 140ms;
     transition-timing-function: ease-out;
   }
-  button:active:not(:disabled) {
+  button:active:not(:disabled):not([class*='translate']):not(.absolute) {
     transform: translateY(1px);
   }
   input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
@@ -120,6 +120,11 @@ input[type='date']::-webkit-calendar-picker-indicator {
 }
 input[type='date']::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
+}
+
+/* Eigener Kalender (DatePicker): natives Symbol rechts ausblenden – geöffnet wird über das Symbol links */
+input.gm-date::-webkit-calendar-picker-indicator {
+  display: none;
 }
 
 /* Number input cleanup */

@@ -114,7 +114,7 @@ export default function OverviewPanel({ data, onOpenGrow }: Props) {
             <div className="overflow-x-auto">
               <table className="w-full text-sm" data-testid="overview-table">
                 <thead>
-                  <tr className="text-[11px] uppercase tracking-wide text-ink-500 border-b border-ink-800">
+                  <tr className="text-[11px] text-ink-500 border-b border-ink-800">
                     <Th>{t('Grow', 'Grow')}</Th>
                     <Th right>{t('Pflanzen', 'Plants')}</Th>
                     <Th right>{t('Dauer', 'Days')}</Th>

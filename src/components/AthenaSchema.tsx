@@ -205,7 +205,7 @@ export default function AthenaSchema() {
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b border-ink-800">
-                <th className="sticky left-0 z-10 bg-ink-900 text-left px-4 py-3 text-xs font-semibold text-ink-400 uppercase tracking-wide whitespace-nowrap">
+                <th className="sticky left-0 z-10 bg-ink-900 text-left px-4 py-3 text-xs font-semibold text-ink-400 whitespace-nowrap">
                   {t('Dünger', 'Nutrient')}
                 </th>
                 {ATHENA_BLENDED.map((col) => (
@@ -260,7 +260,7 @@ export default function AthenaSchema() {
               ))}
               {/* EC / PPM Zeilen */}
               <tr className="border-b border-ink-850">
-                <td className="sticky left-0 z-10 bg-ink-900 px-4 py-2.5 text-xs font-semibold text-primary-300 uppercase tracking-wide whitespace-nowrap">
+                <td className="sticky left-0 z-10 bg-ink-900 px-4 py-2.5 text-xs font-semibold text-primary-300 whitespace-nowrap">
                   EC
                 </td>
                 {ATHENA_BLENDED.map((col) => (
@@ -275,7 +275,7 @@ export default function AthenaSchema() {
                 ))}
               </tr>
               <tr className="border-b border-ink-850">
-                <td className="sticky left-0 z-10 bg-ink-900 px-4 py-2.5 text-xs font-semibold text-ink-400 uppercase tracking-wide whitespace-nowrap">
+                <td className="sticky left-0 z-10 bg-ink-900 px-4 py-2.5 text-xs font-semibold text-ink-400 whitespace-nowrap">
                   PPM 500
                 </td>
                 {ATHENA_BLENDED.map((col) => (
@@ -290,7 +290,7 @@ export default function AthenaSchema() {
                 ))}
               </tr>
               <tr>
-                <td className="sticky left-0 z-10 bg-ink-900 px-4 py-2.5 text-xs font-semibold text-ink-400 uppercase tracking-wide whitespace-nowrap">
+                <td className="sticky left-0 z-10 bg-ink-900 px-4 py-2.5 text-xs font-semibold text-ink-400 whitespace-nowrap">
                   PPM 700
                 </td>
                 {ATHENA_BLENDED.map((col) => (
@@ -380,7 +380,7 @@ function WeekDetail({ week }: { week: number }) {
       </div>
 
       <div className="space-y-2">
-        <div className="text-xs font-semibold uppercase tracking-wide text-ink-500 mb-2">
+        <div className="text-xs font-semibold text-ink-500 mb-2">
           {t('Düngemittel diese Woche (in Mischreihenfolge)', 'Nutrients this week (in mixing order)')}
         </div>
         {activeProducts.map((pc) => (
@@ -425,7 +425,7 @@ function DetailStat({
 }) {
   return (
     <div className="rounded-xl border border-ink-800 bg-ink-850/60 p-3 text-center">
-      <div className="text-[10px] uppercase tracking-wide text-ink-500 mb-1">{label}</div>
+      <div className="text-[11px] text-ink-500 mb-1">{label}</div>
       <div className={`text-xl font-bold tabular-nums ${color}`}>{value}</div>
     </div>
   );

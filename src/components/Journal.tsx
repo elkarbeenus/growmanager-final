@@ -70,7 +70,7 @@ export default function Journal({ grow, onAdd, onEdit, onDelete }: JournalProps)
               <div className="flex items-start justify-between gap-3 px-4 py-3">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="h-9 w-9 rounded-lg bg-ink-850 border border-ink-700/60 flex flex-col items-center justify-center shrink-0">
-                    <span className="text-[9px] uppercase tracking-wide text-ink-500 leading-none">
+                    <span className="text-[9px] text-ink-500 leading-none">
                       {new Date(entry.date + 'T00:00:00').toLocaleDateString(locale(), { month: 'short' })}
                     </span>
                     <span className="text-sm font-bold text-white leading-none mt-0.5">
@@ -143,7 +143,7 @@ function Metric({
 }) {
   return (
     <div className="rounded-lg bg-ink-850/60 border border-ink-800 px-2.5 py-1.5">
-      <div className="text-[10px] uppercase tracking-wide text-ink-500 flex items-center gap-1">
+      <div className="text-[11px] text-ink-500 flex items-center gap-1">
         <span className="text-ink-600">{icon}</span>
         {label}
       </div>

@@ -176,7 +176,7 @@ export default function CostsPanel({ grow, allGrows, batches, fertPrices, onFert
           <>
             <div className="flex items-end justify-between gap-3 mt-3">
               <div>
-                <div className="text-[10px] uppercase tracking-wide text-ink-500">{t('Dünger-Kosten (berechnet)', 'Fertilizer costs (calculated)')}</div>
+                <div className="text-[11px] text-ink-500">{t('Dünger-Kosten (berechnet)', 'Fertilizer costs (calculated)')}</div>
                 <div className={`text-2xl font-bold tabular-nums ${auto.enabled ? 'text-white' : 'text-ink-600 line-through'}`} data-testid="auto-fert-amount">
                   {formatMoney(auto.amount)}
                 </div>
@@ -187,7 +187,7 @@ export default function CostsPanel({ grow, allGrows, batches, fertPrices, onFert
             <div className="mt-3 rounded-xl border border-ink-800 bg-ink-900/50 overflow-x-auto">
               <table className="w-full text-xs" data-testid="auto-fert-table">
                 <thead>
-                  <tr className="text-[10px] uppercase tracking-wide text-ink-500 border-b border-ink-800">
+                  <tr className="text-[11px] text-ink-500 border-b border-ink-800">
                     <th className="px-3 py-2 text-left font-semibold">{t('Produkt', 'Product')}</th>
                     <th className="px-3 py-2 text-right font-semibold">{t('Verbrauch', 'Used')}</th>
                     <th className="px-3 py-2 text-right font-semibold">{t('Preis / Liter', 'Price / liter')}</th>
@@ -331,7 +331,7 @@ export default function CostsPanel({ grow, allGrows, batches, fertPrices, onFert
 
         {devices.length > 0 && (
           <div className="mt-3" data-testid="device-chips">
-            <div className="text-[11px] uppercase tracking-wide text-ink-500 mb-1.5">{t('Weitere Geräte in diesem Grow', 'Other devices in this grow')}</div>
+            <div className="text-[11px] text-ink-500 mb-1.5">{t('Weitere Geräte in diesem Grow', 'Other devices in this grow')}</div>
             <div className="flex flex-wrap gap-2">
               {devices.map((d) => {
                 const on = (grow.deviceIds ?? []).includes(d.id);
@@ -379,14 +379,14 @@ export default function CostsPanel({ grow, allGrows, batches, fertPrices, onFert
           <>
             <div className="flex items-end justify-between gap-3 mt-3 flex-wrap">
               <div>
-                <div className="text-[10px] uppercase tracking-wide text-ink-500">{t('Stromkosten bisher', 'Electricity so far')}</div>
+                <div className="text-[11px] text-ink-500">{t('Stromkosten bisher', 'Electricity so far')}</div>
                 <div className={`text-2xl font-bold tabular-nums ${power.enabled ? 'text-white' : 'text-ink-600 line-through'}`} data-testid="auto-power-amount">
                   {formatMoney(power.amount)}
                 </div>
               </div>
               {power.plannedAmount !== undefined && (
                 <div className="text-right">
-                  <div className="text-[10px] uppercase tracking-wide text-ink-500">{t('bis geplante Ernte', 'until planned harvest')}</div>
+                  <div className="text-[11px] text-ink-500">{t('bis geplante Ernte', 'until planned harvest')}</div>
                   <div className="text-sm font-semibold text-ink-200 tabular-nums" data-testid="auto-power-planned">
                     {formatMoney(power.plannedAmount)}
                   </div>
@@ -396,7 +396,7 @@ export default function CostsPanel({ grow, allGrows, batches, fertPrices, onFert
             <div className="mt-3 rounded-xl border border-ink-800 bg-ink-900/50 overflow-x-auto" data-testid="auto-power-detail">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="text-[10px] uppercase tracking-wide text-ink-500 border-b border-ink-800">
+                  <tr className="text-[11px] text-ink-500 border-b border-ink-800">
                     <th className="px-3 py-2 text-left font-semibold">{t('Gerät', 'Device')}</th>
                     <th className="px-3 py-2 text-right font-semibold">{t('Leistung', 'Power')}</th>
                     <th className="px-3 py-2 text-right font-semibold">{t('Laufzeit/Tag', 'Run time/day')}</th>
@@ -535,7 +535,7 @@ function Tile({
 }) {
   return (
     <div className={`rounded-xl border p-3 ${tone ? 'bg-primary-500/10 border-primary-500/20' : 'bg-ink-850/60 border-ink-800'}`}>
-      <div className="text-[10px] uppercase tracking-wide text-ink-500 flex items-center gap-1">
+      <div className="text-[11px] text-ink-500 flex items-center gap-1">
         {icon}
         {label}
       </div>

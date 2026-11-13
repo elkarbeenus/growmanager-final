@@ -30,7 +30,7 @@ export default function OrderClonesPanel() {
         </h2>
         <p className="text-sm text-ink-500 mt-0.5">
           {t(
-            'Ein Klick öffnet den Shop in deinem Standardbrowser. Die Bestellung läuft direkt beim Shop – der Grow Manager speichert oder überträgt dabei nichts.',
+            'Ein Klick öffnet den Shop in deinem Standardbrowser. Die Bestellung läuft direkt beim Shop – der growmanager speichert oder überträgt dabei nichts.',
             'One click opens the shop in your default browser. You order directly from the shop – Grow Manager does not store or send anything.'
           )}
         </p>

@@ -86,7 +86,7 @@ export default function ShotSizeCalculator() {
       </div>
 
       <div className="rounded-2xl border border-ink-800 bg-ink-900/60 p-5">
-        <label className="block text-xs font-semibold uppercase tracking-widest text-ink-500 mb-2">
+        <label className="block text-xs font-semibold text-ink-500 mb-2">
           {t('Mediumgröße', 'Medium size')} ({volumeUnit()})
         </label>
         <input
@@ -181,13 +181,13 @@ function ResultCard({
 
       <div className="mt-5 flex items-end gap-6">
         <div>
-          <div className="text-xs uppercase tracking-widest text-ink-500">{t('Shotgröße', 'Shot size')}</div>
+          <div className="text-xs text-ink-500">{t('Shotgröße', 'Shot size')}</div>
           <div className="text-3xl font-bold text-white tabular-nums" data-testid={`pct-${mode}`}>
             {fmtNum(pct, 1)} %
           </div>
         </div>
         <div>
-          <div className="text-xs uppercase tracking-widest text-ink-500">mL</div>
+          <div className="text-xs text-ink-500">mL</div>
           <div className="text-3xl font-bold text-white tabular-nums" data-testid={`ml-${mode}`}>
             {valid ? fmtNum(ml(pct), 0) : '–'}
           </div>

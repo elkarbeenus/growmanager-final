@@ -29,7 +29,7 @@ export default function FertPriceEditor({ schedule, prices, onChange }: Props) {
   return (
     <div data-testid="price-editor">
       <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
-        <div className="text-xs font-semibold uppercase tracking-widest text-ink-500">
+        <div className="text-xs font-semibold text-ink-500">
           {schedule.brand} · {t('Preise in € pro Liter', 'prices in € per liter')}
         </div>
         {anyCustom && (

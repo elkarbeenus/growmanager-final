@@ -46,7 +46,7 @@ export default function UpdateDialog() {
 
         {lines.length > 0 && (
           <div className="mt-4">
-            <div className="text-[11px] font-semibold uppercase tracking-widest text-ink-500 mb-2">{t('Neu in dieser Version', 'New in this version')}</div>
+            <div className="text-[11px] font-semibold text-ink-500 mb-2">{t('Neu in dieser Version', 'New in this version')}</div>
             <ul className="max-h-48 overflow-y-auto scrollbar-thin space-y-1.5 pr-1" data-testid="update-notes">
               {lines.map((l, i) => (
                 <li key={i} className="text-sm text-ink-300 flex gap-2">

@@ -19,7 +19,7 @@ function steps(): Step[] {
   return [
     {
       id: 'welcome',
-      title: t('Willkommen im Grow Manager', 'Welcome to Grow Manager'),
+      title: t('Willkommen bei growmanager', 'Welcome to growmanager'),
       intro: t(
         'Diese kurze Tour (ca. 1 Minute) zeigt dir, wo du was findest. Du kannst sie jederzeit überspringen und später über „? Tour“ oben rechts oder im Reiter „Über“ erneut starten.',
         'This short tour (about 1 minute) shows you where to find what. You can skip it any time and restart it later via “? Tour” at the top right or in the “About” tab.'

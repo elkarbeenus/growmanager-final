@@ -143,13 +143,15 @@ export default function GrowDetail({
             />
             <button
               onClick={onEditGrow}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-ink-300 bg-ink-800 hover:bg-ink-700 transition-colors"
+              data-testid="grow-edit"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-ink-200 bg-ink-900 hover:bg-ink-850 border border-ink-800 hover:border-ink-700"
             >
               <Pencil size={14} />
               <span className="hidden sm:inline">{t('Bearbeiten', 'Edit')}</span>
             </button>
             <button
               onClick={onDeleteGrow}
+              data-testid="grow-delete"
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-error-300 bg-error-500/10 hover:bg-error-500/20 border border-error-500/20 transition-colors"
             >
               <Trash2 size={14} />
@@ -160,11 +162,8 @@ export default function GrowDetail({
       </div>
 
       {/* Phase banner + progress */}
-      <div className="rounded-3xl border border-ink-800 bg-ink-900/60 p-5 sm:p-6 mb-5 overflow-hidden relative">
-        <div
-          className="absolute -top-20 -right-20 h-48 w-48 rounded-full blur-3xl opacity-30"
-          style={{ backgroundColor: grow.color }}
-        />
+      <div className="rounded-3xl border border-ink-800 bg-ink-900/70 p-5 sm:p-6 mb-5 overflow-hidden relative shadow-card">
+        <span className="absolute inset-y-0 left-0 w-1" style={{ backgroundColor: grow.color }} aria-hidden="true" />
         <div className="relative flex flex-col lg:flex-row gap-6 lg:items-center lg:justify-between">
           <div className="space-y-3 flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -191,15 +190,15 @@ export default function GrowDetail({
                   {progress.completed}/{progress.total} {t('Meilensteine', 'milestones')} · {progress.percent}%
                 </span>
               </div>
-              <div className="h-2.5 rounded-full bg-ink-850 border border-ink-800 overflow-hidden">
+              <div className="relative h-2.5 rounded-full bg-ink-800 overflow-hidden" data-testid="detail-spectrum">
+                <div className="absolute inset-0 gm-spectrum opacity-[0.18]" />
                 <div
-                  className="h-full rounded-full transition-all duration-700"
-                  style={{
-                    width: `${progress.percent}%`,
-                    background: `linear-gradient(90deg, ${grow.color}, ${grow.color}cc)`,
-                    boxShadow: `0 0 12px ${grow.color}66`,
-                  }}
+                  className="absolute inset-y-0 left-0 gm-spectrum transition-[width] duration-700"
+                  style={{ width: `${progress.percent}%`, backgroundSize: `${progress.percent > 0 ? (100 / progress.percent) * 100 : 100}% 100%` }}
                 />
+                {Array.from({ length: progress.total - 1 }, (_, k) => (
+                  <span key={k} className="absolute inset-y-0 w-[2px] bg-ink-900" style={{ left: `${((k + 1) / progress.total) * 100}%` }} />
+                ))}
               </div>
             </div>
 
@@ -376,30 +375,15 @@ function StatTile({
   tone?: 'warning';
 }) {
   return (
-    <div
-      className={`rounded-2xl border p-3.5 text-center ${
-        tone === 'warning'
-          ? 'bg-warning-500/10 border-warning-500/30'
-          : 'bg-ink-850/60 border-ink-800'
-      }`}
-    >
-      <div
-        className={`mx-auto h-8 w-8 rounded-lg flex items-center justify-center mb-2 ${
-          tone === 'warning'
-            ? 'text-warning-400 bg-warning-500/10'
-            : 'text-primary-400 bg-primary-500/10'
-        }`}
-      >
+    <div className={`rounded-2xl border px-3.5 py-3 ${tone === 'warning' ? 'bg-warning-500/10 border-warning-500/30' : 'bg-ink-850/70 border-ink-800'}`}>
+      <div className={`flex items-center gap-1.5 text-xs font-medium ${tone === 'warning' ? 'text-warning-300' : 'text-ink-400'}`}>
         {icon}
+        {label}
       </div>
-      <div className={`text-2xl font-bold tabular-nums ${tone === 'warning' ? 'text-warning-200' : 'text-white'}`}>
+      <div className={`font-display text-3xl font-extrabold tabular-nums leading-none mt-2.5 ${tone === 'warning' ? 'text-warning-200' : 'text-white'}`}>
         {value}
-      </div>
-      <div className="text-[11px] uppercase tracking-wide text-ink-500 mt-0.5">
-        {label} · {unit}
+        <span className="font-sans text-xs font-medium text-ink-500 ml-1">{unit}</span>
       </div>
     </div>
   );
 }
-
-

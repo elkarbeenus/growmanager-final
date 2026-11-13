@@ -377,7 +377,7 @@ export default function BackupPanel({ data, onRestore }: BackupPanelProps) {
             <div className="text-2xl font-bold text-warning-300 tabular-nums">
               {nextBackupInfo.hours}h {nextBackupInfo.minutes}m
             </div>
-            <div className="text-[10px] uppercase tracking-wide text-ink-500 mt-0.5">
+            <div className="text-[11px] text-ink-500 mt-0.5">
               {t('bis Mitternacht', 'until midnight')}
             </div>
           </div>
@@ -513,11 +513,11 @@ export default function BackupPanel({ data, onRestore }: BackupPanelProps) {
                       {dirHandle.name}
                     </span>
                     {dirPermanent ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-accent-400 bg-accent-500/10 border border-accent-500/20 px-1.5 py-0.5 rounded">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-accent-400 bg-accent-500/10 border border-accent-500/20 px-1.5 py-0.5 rounded">
                         <HardDrive size={10} /> {t('dauerhaft', 'permanent')}
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-warning-400 bg-warning-500/10 border border-warning-500/20 px-1.5 py-0.5 rounded">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-warning-400 bg-warning-500/10 border border-warning-500/20 px-1.5 py-0.5 rounded">
                         {t('einmalig', 'once')} ({onceCount}/{getPermanentThreshold()})
                       </span>
                     )}
@@ -576,7 +576,7 @@ export default function BackupPanel({ data, onRestore }: BackupPanelProps) {
             {/* Dateien im Speicherort */}
             {dirFiles.length > 0 && (
               <div className="rounded-xl border border-ink-800 bg-ink-900/40 overflow-hidden">
-                <div className="px-3.5 py-2 text-xs font-semibold uppercase tracking-wide text-ink-500 border-b border-ink-800 flex items-center gap-1.5">
+                <div className="px-3.5 py-2 text-xs font-semibold text-ink-500 border-b border-ink-800 flex items-center gap-1.5">
                   <FileJson size={12} />
                   {t('Backups in diesem Ordner', 'Backups in this folder')}
                 </div>
@@ -733,12 +733,12 @@ export default function BackupPanel({ data, onRestore }: BackupPanelProps) {
                   <div className="text-sm font-semibold text-ink-100">
                     {formatBackupDate(b.date)}
                     {b.manual && !b.label && (
-                      <span className="ml-2 text-[10px] font-bold uppercase tracking-wide text-primary-400">
+                      <span className="ml-2 text-[11px] font-bold text-primary-400">
                         {t('manuell', 'manual')}
                       </span>
                     )}
                     {b.label && (
-                      <span className="ml-2 text-[10px] font-bold uppercase tracking-wide text-warning-400" data-testid="backup-safety-label">
+                      <span className="ml-2 text-[11px] font-bold text-warning-400" data-testid="backup-safety-label">
                         {{ import: t('vor Import', 'before import'), restore: t('vor Wiederherstellung', 'before restore'), reset: t('vor Zurücksetzen', 'before reset') }[b.label]}
                       </span>
                     )}
@@ -815,7 +815,7 @@ export default function BackupPanel({ data, onRestore }: BackupPanelProps) {
                     <div className="text-sm font-medium text-ink-100">
                       {i === 0 ? t('Zuletzt erstellt', 'Most recent') : t('Davor', 'Before that')} · {formatBackupDate(b.date)} {formatBackupTime(b.timestamp)}
                       {b.label && (
-                        <span className="ml-2 text-[10px] font-bold uppercase tracking-wide text-warning-400">
+                        <span className="ml-2 text-[11px] font-bold text-warning-400">
                           {{ import: t('vor Import', 'before import'), restore: t('vor Wiederherstellung', 'before restore'), reset: t('vor Zurücksetzen', 'before reset') }[b.label]}
                         </span>
                       )}

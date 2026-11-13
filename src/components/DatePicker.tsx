@@ -222,7 +222,7 @@ export default function DatePicker({
             {WEEKDAY_LABELS.map((w) => (
               <div
                 key={w}
-                className="text-center text-[10px] font-semibold uppercase tracking-wide text-ink-600 py-1"
+                className="text-center text-[11px] font-semibold text-ink-600 py-1"
               >
                 {w}
               </div>

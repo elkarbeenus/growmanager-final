@@ -1,33 +1,33 @@
-name: Build AppImage
- 
+name: Build & Release
+
 # Läuft NICHT bei jedem Push (spart Minuten), sondern:
-#  - per Knopfdruck (Actions-Tab -> "Run workflow")
-#  - wenn du einen Versions-Tag pushst, z.B. v1.2.0
+#  - per Knopfdruck (Actions-Tab -> "Run workflow") – nur Build, kein Release
+#  - wenn ein Versions-Tag gepusht wird:
+#      v0.5.1          -> normales Release
+#      v0.5.1-test.1   -> Test-Release (als „Vorabversion“ markiert, die App zeigt es nicht als Update)
 on:
   workflow_dispatch:
   push:
     tags:
       - "v*"
- 
-# Wenn ein neuer Build startet, wird ein noch laufender alter abgebrochen
+
 concurrency:
-  group: build-appimage
+  group: build-release-${{ github.ref }}
   cancel-in-progress: true
 
-# Nötig, damit der Workflow Releases anlegen und das AppImage anhängen darf
+# Nötig, damit der Workflow Releases anlegen und Dateien anhängen darf
 permissions:
   contents: write
- 
+
 jobs:
   build-linux:
     # Ubuntu 22.04 = ältere glibc -> AppImage läuft auch auf SteamOS
     runs-on: ubuntu-22.04
     timeout-minutes: 45
- 
     steps:
       - name: Code auschecken
         uses: actions/checkout@v4
- 
+
       - name: System-Abhängigkeiten für Tauri installieren
         run: |
           sudo apt-get update
@@ -40,56 +40,113 @@ jobs:
             libssl-dev \
             libgtk-3-dev \
             file
- 
+
       - name: Node.js einrichten
         uses: actions/setup-node@v4
         with:
           node-version: 20
- 
+
       - name: Rust einrichten
         uses: dtolnay/rust-toolchain@stable
- 
-      - name: Rust-Build-Cache (macht spätere Builds viel schneller)
+
+      - name: Rust-Build-Cache
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: "./src-tauri -> target"
- 
+
       - name: Node-Pakete installieren
         run: npm install
- 
-      - name: AppImage bauen
-        run: npx tauri build --bundles appimage
- 
-      - name: AppImage hochladen
+
+      - name: AppImage und .deb bauen
+        run: npx tauri build --bundles appimage deb
+
+      - name: Dateien hochladen
         uses: actions/upload-artifact@v4
         with:
-          name: grow-app-appimage
-          path: src-tauri/target/release/bundle/appimage/*.AppImage
-          # Nach 7 Tagen automatisch löschen -> Speicher läuft nicht wieder voll
+          name: linux
+          path: |
+            src-tauri/target/release/bundle/appimage/*.AppImage
+            src-tauri/target/release/bundle/deb/*.deb
           retention-days: 7
           if-no-files-found: error
 
-      # Nur bei Versions-Tags (v1.9.0 …): öffentliches GitHub-Release mit AppImage erstellen.
-      # Die App prüft beim Start genau dieses „neueste Release“ und zeigt dann den Update-Hinweis.
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Rust einrichten
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust-Build-Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "./src-tauri -> target"
+
+      - name: Node-Pakete installieren
+        run: npm install
+
+      - name: Windows-Setup bauen
+        run: npx tauri build --bundles nsis
+
+      - name: Dateien hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: src-tauri/target/release/bundle/nsis/*.exe
+          retention-days: 7
+          if-no-files-found: error
+
+  # Nur bei Versions-Tags: GitHub-Release mit allen Dateien erstellen.
+  # Die App prüft beim Start das „neueste Release“ (ohne Vorabversionen) und zeigt dann den Update-Hinweis.
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Gebaute Dateien holen
+        uses: actions/download-artifact@v4
+        with:
+          path: dist-release
+
       - name: Patchnotes aus CHANGELOG.md holen
-        if: startsWith(github.ref, 'refs/tags/v')
+        id: notes
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          # Abschnitt "## vX.Y.Z" bis zum nächsten "## " ausschneiden
-          awk -v v="## v${VERSION}" '
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          BASE="${VERSION%%-*}"          # v0.5.1-test.1 -> 0.5.1
+          if [ "$VERSION" != "$BASE" ]; then echo "prerelease=true" >> "$GITHUB_OUTPUT"; else echo "prerelease=false" >> "$GITHUB_OUTPUT"; fi
+          # Abschnitt "## vX.Y.Z" bis zur nächsten Überschrift bzw. Trennlinie ausschneiden
+          awk -v v="## v${BASE}" '
             $0 == v { found = 1; next }
-            found && /^## / { exit }
+            found && (/^#/ || /^---/) { exit }
             found { print }
           ' CHANGELOG.md > release-notes.md
-          if [ ! -s release-notes.md ]; then echo "Version ${VERSION}" > release-notes.md; fi
+          if [ ! -s release-notes.md ]; then echo "Version ${BASE}" > release-notes.md; fi
+          if [ "$VERSION" != "$BASE" ]; then
+            printf '> **Test-Release** – zum Ausprobieren vor dem eigentlichen Release %s.\n\n' "v${BASE}" | cat - release-notes.md > tmp.md && mv tmp.md release-notes.md
+          fi
           cat release-notes.md
 
       - name: GitHub-Release erstellen
-        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           name: growmanager ${{ github.ref_name }}
           body_path: release-notes.md
-          files: src-tauri/target/release/bundle/appimage/*.AppImage
+          prerelease: ${{ steps.notes.outputs.prerelease }}
+          make_latest: ${{ steps.notes.outputs.prerelease == 'true' && 'false' || 'true' }}
+          files: |
+            dist-release/linux/**/*.AppImage
+            dist-release/linux/**/*.deb
+            dist-release/windows/**/*.exe
           fail_on_unmatched_files: true
- 

@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "growmanager",
-    "version": "1.9.0"
+    "version": "0.5.0"
   },
   "tauri": {
     "allowlist": {
@@ -55,7 +55,7 @@
         "fullscreen": false,
         "height": 820,
         "resizable": true,
-        "title": "Grow Manager",
+        "title": "growmanager",
         "width": 1200,
         "minWidth": 420,
         "minHeight": 480,

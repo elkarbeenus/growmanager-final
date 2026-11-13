@@ -207,7 +207,7 @@ function Field({
 function SummaryItem({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-wide text-ink-500">{label}</div>
+      <div className="text-[11px] text-ink-500">{label}</div>
       <div className="text-base font-bold text-ink-100 tabular-nums mt-0.5">{value}</div>
     </div>
   );

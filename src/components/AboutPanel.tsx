@@ -51,7 +51,7 @@ export default function AboutPanel({ onStartTour, onReset }: { onStartTour?: () 
 
         {/* Entwickler */}
         <div className="rounded-2xl border border-ink-800 bg-ink-900/60 p-5">
-          <div className="text-xs font-semibold uppercase tracking-widest text-ink-500 mb-3">
+          <div className="text-xs font-semibold text-ink-500 mb-3">
             {t('Entwickler', 'Developer')}
           </div>
           <div className="flex items-center gap-3">
@@ -138,7 +138,7 @@ export default function AboutPanel({ onStartTour, onReset }: { onStartTour?: () 
 
       {/* Patchnotes */}
       <div className="rounded-2xl border border-ink-800 bg-ink-900/60 p-5">
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-ink-500 mb-4">
+        <div className="flex items-center gap-2 text-xs font-semibold text-ink-500 mb-4">
           <ListOrdered size={14} /> {t('Patchnotes', 'Patch notes')}
         </div>
         <div className="space-y-5">

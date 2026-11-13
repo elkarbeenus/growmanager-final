@@ -17,7 +17,7 @@ export default function FertPhaseTable({ usage, plants }: Props) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm" data-testid="fert-table">
           <thead>
-            <tr className="text-[11px] uppercase tracking-wide text-ink-500 border-b border-ink-800 align-bottom">
+            <tr className="text-[11px] text-ink-500 border-b border-ink-800 align-bottom">
               <th className="px-4 py-2.5 text-left font-semibold">{t('Produkt', 'Product')}</th>
               {usage.phases.map((p) => (
                 <th key={p.stage} className="px-3 py-2.5 text-right font-semibold whitespace-nowrap" data-testid={`fert-head-${p.stage}`}>

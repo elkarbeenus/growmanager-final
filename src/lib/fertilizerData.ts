@@ -310,6 +310,7 @@ const ATHENA = (): FertSchedule => ({
   })),
   notes: [
     t('Quelle: Athena Ag, Inc. (Blended_Feed_Schedule_Imperial, A01.004). Original in US-Gallonen, hier auf mL pro 10 Liter umgerechnet.', 'Source: Athena Ag, Inc. (Blended_Feed_Schedule_Imperial, A01.004). Shown in mL per US gallon.'),
+    t('Blüte 8 und 9: kein Bloom A/B mehr – nur PK, Fade und Cleanse.', 'Flower weeks 8 and 9: no more Bloom A/B – only PK, Fade and Cleanse.'),
     t('Balance wird nur nach Bedarf zum Anheben des pH eingesetzt, nicht wöchentlich.', 'Balance is only used as needed to raise the pH, not weekly.'),
     t('Das ausführliche Athena-Schema mit PPM-Werten und Ziel-pH findest du unter „Athena Detailschema“.', 'The detailed Athena schedule with PPM values and target pH can be found under “Athena detailed schedule”.'),
   ],

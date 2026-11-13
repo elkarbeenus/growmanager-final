@@ -72,7 +72,7 @@ export default function FertUsagePanel({ grow, allGrows, batches, onFertilizerCh
       <div className="space-y-4 mb-4">
         {usage.groups.map((g) => (
           <div key={g.schedule.id} className="space-y-2">
-            {usage.groups.length > 1 && <div className="text-xs font-semibold uppercase tracking-widest text-ink-500">{g.schedule.brand} · {g.schedule.line}</div>}
+            {usage.groups.length > 1 && <div className="text-xs font-semibold text-ink-500">{g.schedule.brand} · {g.schedule.line}</div>}
             <FertPhaseTable usage={g} plants={plants} />
           </div>
         ))}
@@ -121,7 +121,7 @@ export default function FertUsagePanel({ grow, allGrows, batches, onFertilizerCh
 function Tile({ label, value, testid, icon, tone }: { label: string; value: string; testid: string; icon?: React.ReactNode; tone?: boolean }) {
   return (
     <div className={`rounded-xl border p-3 ${tone ? 'bg-primary-500/10 border-primary-500/20' : 'bg-ink-850/60 border-ink-800'}`}>
-      <div className="text-[10px] uppercase tracking-wide text-ink-500 flex items-center gap-1">
+      <div className="text-[11px] text-ink-500 flex items-center gap-1">
         {icon}
         {label}
       </div>

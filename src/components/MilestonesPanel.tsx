@@ -243,7 +243,7 @@ export default function MilestonesPanel({ grow, onChange, onPlantCountChange }: 
 
         {(grow.milestones.expectedHarvest || grow.milestones.actualHarvest) && (
           <div className="rounded-2xl border border-ink-800 bg-ink-900/60 p-4">
-            <div className="text-xs uppercase tracking-wide text-ink-500 mb-2">
+            <div className="text-xs text-ink-500 mb-2">
               {t('Wichtige Daten', 'Key dates')}
             </div>
             <div className="space-y-1.5 text-sm">

@@ -1,5 +1,7 @@
 # growmanager
-Now Version 1.9.0
+
+**Current version: 0.5.0** · [Download the latest release](https://github.com/elkarbeenus/growmanager/releases/latest)
+
 **Your personal grow manager – plan every grow, track nutrients, costs and yield, and keep everything on your own device.**
 
 growmanager is an offline desktop app (Linux AppImage and Windows installer) for home growers. It combines a grow journal, nutrient solution tracking, fertilizer schedules, automatic cost calculation (fertilizer and electricity), yield analysis, PDF reports and safe backups in one place. It is available in **English and German**, and no account or cloud is needed – all data stays on your computer.
@@ -8,7 +10,18 @@ growmanager is an offline desktop app (Linux AppImage and Windows installer) for
 
 ![Grows overview with active, planned and past grows](docs/screenshot-1-grows.png)
 
+![A single grow with phase progress, milestones and journal](docs/screenshot-3-grow-detail.png)
+
 ![Fertilizer usage by phase, calculated from the nutrient solution you mixed](docs/screenshot-2-fertilizer-usage.png)
+
+## Design
+
+Version 0.5 brings a completely new look, built around the idea of a **grow tent at night**:
+
+- dark plum tones (like Mylar under LED light), leaf green for actions, LED violet as the second colour and amber for flower and harvest,
+- a **sidebar** on the left, grouped into *Garden*, *Tools* and *System* (a top bar in small windows),
+- a **light-spectrum strip** on every grow that lights up further with each milestone reached,
+- bundled fonts (Inter / Inter Display), so the app looks the same offline on Linux, SteamOS and Windows.
 
 ## Features
 
@@ -22,7 +35,7 @@ growmanager is an offline desktop app (Linux AppImage and Windows installer) for
 
 ### Nutrient solution & fertilizer
 - Log every batch of nutrient solution (date and liters) and mark it as **use** or **soaking**. A timer reminds you when to mix a fresh batch – **separately for every grow** the batch is assigned to; soaking batches do not count for the countdown.
-- Choose your fertilizer: Athena (Blended Line, manufacturer values), Hesi, Plagron, Biobizz and Advanced Nutrients (guideline values). Doses are shown in **mL per gallon** (English) or **mL per 10 L** (German).
+- Choose your fertilizer: Athena (Blended Line, manufacturer values – no Bloom A/B in flower weeks 8 and 9), Hesi, Plagron, Biobizz and Advanced Nutrients (guideline values). Doses are shown in **mL per gallon** (English) or **mL per 10 L** (German).
 - See your **fertilizer usage in mL per product, split by phase** (veg / flower), plus the liters of solution mixed – per grow or for all grows. Batches are matched to the right grow and schedule week automatically, or you can set them by hand.
 
 ### Costs & yield – calculated automatically
@@ -55,7 +68,7 @@ growmanager is an offline desktop app (Linux AppImage and Windows installer) for
 - **Order clones** tab with links to clone shops that open in your default browser.
 - The app **remembers your layout** (tab, open grow, collapsed sections, scroll position, window size) and asks to make a backup when you close it with unsaved changes.
 - Optional **hardware acceleration** on Linux for smooth scrolling, with automatic fallback to safe mode.
-- A short **guided tour** explains where to find what. It runs once and can be switched off or restarted at any time. Hint cards can be dismissed.
+- A short **guided tour** explains where to find what – the sidebar, the header buttons and every tab. It runs once and can be switched off or restarted at any time. Hint cards can be dismissed.
 - English and German, liters and gallons.
 - Dark interface for use in low light.
 
@@ -63,10 +76,14 @@ growmanager is an offline desktop app (Linux AppImage and Windows installer) for
 
 Ready-made builds are attached to each release:
 
-- **Linux:** AppImage (and .deb)
+- **Linux / SteamOS:** AppImage (and .deb)
 - **Windows:** setup `.exe`
 
-Go to **Releases** and download the latest version.
+Go to **[Releases](https://github.com/elkarbeenus/growmanager/releases)** and download the latest version. The app tells you on start when a new version is available.
+
+## Versioning
+
+growmanager is in its 0.x phase: every release raises the patch number (0.5.0 → 0.5.1 → 0.5.2 …) until version **1.0**. Test builds are published as pre-releases (`v0.5.1-test.1`) and are not offered as updates.
 
 ## Tech stack
 
@@ -82,7 +99,9 @@ npx tauri dev      # desktop app (requires Rust)
 npx tauri build    # installer for your current system
 ```
 
-When the version is raised, update `package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` and the `tagName` / `releaseName` in `.github/workflows/main.yml`.
+When the version is raised, update `package.json`, `package-lock.json`, `src-tauri/tauri.conf.json` and `src-tauri/Cargo.toml`, add a `## vX.Y.Z` section to both changelogs and to `CHANGELOG` in `src/lib/appInfo.ts`, then push a tag `vX.Y.Z`. GitHub Actions builds Linux and Windows and publishes the release with the patch notes from `CHANGELOG.md`.
+
+Every push to a branch also runs a quick check (typecheck, lint, web build).
 
 ## Disclaimer
 

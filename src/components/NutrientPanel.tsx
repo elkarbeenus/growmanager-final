@@ -244,7 +244,7 @@ export default function NutrientPanel({ batches, grows = [], onChange }: Props) 
 
       {/* Verlauf */}
       <div>
-        <h3 className="text-xs font-semibold uppercase tracking-widest text-ink-500 mb-3">{t('Verlauf', 'History')}</h3>
+        <h3 className="text-xs font-semibold text-ink-500 mb-3">{t('Verlauf', 'History')}</h3>
         {sorted.length === 0 ? (
           <p className="text-sm text-ink-600">{t('Noch keine Einträge.', 'No entries yet.')}</p>
         ) : (
@@ -255,12 +255,12 @@ export default function NutrientPanel({ batches, grows = [], onChange }: Props) 
                   <div className="text-sm font-medium text-ink-100">
                     {formatDate(b.date)} · {fmtNum(litersToDisplay(b.liters) ?? 0, 2)} {volumeUnit()}
                     {currentIds.has(b.id) && (
-                      <span className="ml-2 text-[10px] uppercase tracking-wide text-primary-300 bg-primary-500/10 border border-primary-500/20 rounded px-1.5 py-0.5">
+                      <span className="ml-2 text-[11px] text-primary-300 bg-primary-500/10 border border-primary-500/20 rounded px-1.5 py-0.5">
                         {t('aktuell', 'current')}
                       </span>
                     )}
                     {!countsForTimer(b) && (
-                      <span data-testid="badge-soak" className="ml-2 text-[10px] uppercase tracking-wide text-accent-300 bg-accent-500/10 border border-accent-500/20 rounded px-1.5 py-0.5">
+                      <span data-testid="badge-soak" className="ml-2 text-[11px] text-accent-300 bg-accent-500/10 border border-accent-500/20 rounded px-1.5 py-0.5">
                         {t('Tränken', 'Soaking')}
                       </span>
                     )}
@@ -392,7 +392,7 @@ function TimerStatus({ group, showName }: { group: TimerGroup; showName: boolean
     <div data-testid="timer-status" data-group={group.key}>
       <div className="flex items-end justify-between gap-3 flex-wrap">
         <div>
-          <div className="text-xs uppercase tracking-widest text-ink-500 flex items-center gap-2">
+          <div className="text-xs text-ink-500 flex items-center gap-2">
             {showName ? (
               <>
                 {group.color && <span className="h-2 w-2 rounded-full" style={{ backgroundColor: group.color }} />}

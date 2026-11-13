@@ -35,6 +35,12 @@ export default function FertilizerSchema({
 
   return (
     <div className="space-y-6 animate-fade-in">
+      <div>
+        <h2 className="gm-title">{t('Dünger', 'Nutrients')}</h2>
+        <p className="text-sm text-ink-400 mt-1.5 max-w-2xl">
+          {t('Düngeschemata nach Woche – und die Grundlage für Verbrauch und Kosten.', 'Feed schedules by week – and the basis for usage and costs.')}
+        </p>
+      </div>
       {/* Hersteller-Auswahl */}
       <div className="rounded-2xl border border-ink-800 bg-ink-900/60 p-5">
         <h2 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
@@ -232,11 +238,11 @@ function ScheduleView({
           </div>
           {week.ec && (
             <div className="mb-4 rounded-xl border border-ink-800 bg-ink-850/60 p-3 text-center max-w-[10rem]">
-              <div className="text-[10px] uppercase tracking-wide text-ink-500 mb-1">{t('Ziel-EC', 'Target EC')}</div>
+              <div className="text-[11px] text-ink-500 mb-1">{t('Ziel-EC', 'Target EC')}</div>
               <div className="text-xl font-bold tabular-nums text-primary-300">{week.ec}</div>
             </div>
           )}
-          <div className="text-xs font-semibold uppercase tracking-wide text-ink-500 mb-2">
+          <div className="text-xs font-semibold text-ink-500 mb-2">
             {t('Dünger diese Woche (in Mischreihenfolge)', 'Nutrients this week (in mixing order)')}
           </div>
           <div className="space-y-2">
@@ -289,7 +295,7 @@ function ScheduleView({
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b border-ink-800">
-                <th className="sticky left-0 z-10 bg-ink-900 text-left px-4 py-3 text-xs font-semibold text-ink-400 uppercase tracking-wide whitespace-nowrap">
+                <th className="sticky left-0 z-10 bg-ink-900 text-left px-4 py-3 text-xs font-semibold text-ink-400 whitespace-nowrap">
                   {t('Dünger', 'Nutrient')}
                 </th>
                 {schedule.weeks.map((w, i) => (
@@ -337,7 +343,7 @@ function ScheduleView({
               ))}
               {hasEc && (
                 <tr>
-                  <td className="sticky left-0 z-10 bg-ink-900 px-4 py-2.5 text-xs font-semibold text-primary-300 uppercase tracking-wide whitespace-nowrap">
+                  <td className="sticky left-0 z-10 bg-ink-900 px-4 py-2.5 text-xs font-semibold text-primary-300 whitespace-nowrap">
                     {t('Ziel-EC', 'Target EC')}
                   </td>
                   {schedule.weeks.map((w, i) => (

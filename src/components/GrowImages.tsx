@@ -5,6 +5,7 @@ import { deleteImage, prepareImage, putImage, useImageUrl } from '@/lib/imageSto
 import { localToday } from '@/lib/nutrientLogic';
 import { formatDate } from '@/lib/growLogic';
 import ConfirmDialog from './ConfirmDialog';
+import DatePicker from './DatePicker';
 import { t } from '@/lib/i18n';
 
 interface Props {
@@ -265,13 +266,9 @@ function Lightbox({
           placeholder={t('Beschreibung (z. B. Woche 3 Blüte)', 'Caption (e.g. flower week 3)')}
           className="w-full bg-ink-900 border border-ink-700 rounded-lg px-3 py-2 text-sm text-ink-100 placeholder-ink-500 focus:outline-none focus:border-primary-500/60"
         />
-        <input
-          type="date"
-          value={img.date ?? ''}
-          data-testid="lightbox-date"
-          onChange={(e) => e.target.value && onUpdate(img.id, { date: e.target.value })}
-          className="bg-ink-900 border border-ink-700 rounded-lg px-3 py-2 text-sm text-ink-100"
-        />
+        <div className="sm:w-52 shrink-0" data-testid="lightbox-date">
+          <DatePicker value={img.date} onChange={(v) => v && onUpdate(img.id, { date: v })} />
+        </div>
       </div>
     </div>
   );

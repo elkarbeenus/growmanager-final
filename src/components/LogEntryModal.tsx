@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Droplets, Beaker, Thermometer, Wind, FlaskConical, StickyNote, Check } from 'lucide-react';
 import Modal from './Modal';
+import DatePicker from './DatePicker';
 import type { LogEntry } from '@/types';
 import { todayStr } from '@/lib/growLogic';
 import { t, isEn, volumeUnit, litersToDisplay, displayToLiters } from '@/lib/i18n';
@@ -89,15 +90,10 @@ export default function LogEntryModal({
       maxWidth="max-w-lg"
     >
       <div className="space-y-5">
-        <label className="block">
+        <div className="block" data-testid="log-date">
           <span className="text-sm font-medium text-ink-200 mb-1.5 block">{t('Datum', 'Date')}</span>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="w-full bg-ink-850 border border-ink-700/70 rounded-xl px-3.5 py-2.5 text-sm text-ink-100 focus:outline-none focus:border-primary-500/60 focus:ring-2 focus:ring-primary-500/20 transition-all"
-          />
-        </label>
+          <DatePicker value={date} onChange={(v) => setDate(v ?? todayStr())} />
+        </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {getFields().map((f) => {
